@@ -25,6 +25,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sync user state from localStorage if available
   useEffect(() => {
+    const savedUserJson = localStorage.getItem("auth_user");
+    if (savedUserJson) {
+      try {
+        const parsed = JSON.parse(savedUserJson);
+        setUser(parsed);
+        if (parsed.kpspamsId !== null && parsed.kpspamsId !== undefined) {
+          setActiveKpspamsId(parsed.kpspamsId);
+        }
+        return;
+      } catch {
+        // invalid json, fallback
+      }
+    }
+
     const savedUserId = localStorage.getItem("demo_user_id");
     if (savedUserId) {
       const found = DEMO_USERS.find((u) => u.id === Number(savedUserId));
@@ -47,43 +61,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return found ? found.name : "KPSPAMS Terpilih";
   };
 
-  const syncBackendToken = async (username: string, password: string = "Kuajang2026!") => {
+  const login = async (username: string, password: string = "Kuajang2026!"): Promise<boolean> => {
+    // 1. Coba otentikasi utama melalui REST API Backend resmi
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ username, password }),
       });
+
       if (res.ok) {
         const json = await res.json();
-        if (json.data?.access_token) {
+        if (json.data?.access_token && json.data?.user) {
+          const apiUser = json.data.user;
+          const roleName = (apiUser.roles?.[0] as DemoUser['role']) || "admin_desa";
+          const roleLabel = apiUser.role_labels?.[0] || "Operator SI-KPSPAMS";
+
+          const mappedUser: DemoUser = {
+            id: apiUser.id,
+            username: apiUser.username,
+            name: apiUser.name,
+            role: roleName,
+            roleLabel: roleLabel,
+            kpspamsId: apiUser.kpspams_id ?? null,
+            kpspamsName: apiUser.kpspams_name ?? null,
+            phone: apiUser.phone || "",
+          };
+
+          setUser(mappedUser);
+          setActiveKpspamsId(mappedUser.kpspamsId);
           localStorage.setItem("auth_token", json.data.access_token);
+          localStorage.setItem("auth_user", JSON.stringify(mappedUser));
+          localStorage.setItem("demo_user_id", String(mappedUser.id));
+          return true;
         }
       }
     } catch {
-      // Backend offline or local demo fallback
+      // Backend offline atau jaringan lokal, beralih ke fallback demo offline
     }
-  };
 
-  const login = async (username: string, password: string = "Kuajang2026!"): Promise<boolean> => {
-    const found = DEMO_USERS.find((u) => u.username.toLowerCase() === username.toLowerCase());
+    // 2. Fallback offline persona demo
+    const found = DEMO_USERS.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
     if (found) {
       setUser(found);
       localStorage.setItem("demo_user_id", String(found.id));
+      localStorage.setItem("auth_user", JSON.stringify(found));
       if (found.kpspamsId !== null) {
         setActiveKpspamsId(found.kpspamsId);
       } else {
         setActiveKpspamsId(null);
       }
-      await syncBackendToken(username, password);
       return true;
     }
+
     return false;
   };
 
   const logout = () => {
     localStorage.removeItem("demo_user_id");
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
     localStorage.removeItem("kpspams_context_id");
     setUser(null);
     window.location.href = "/login";
@@ -112,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setActiveKpspamsId(null);
         localStorage.removeItem("kpspams_context_id");
       }
-      await syncBackendToken(found.username);
+      await login(found.username, "Kuajang2026!");
     }
   };
 

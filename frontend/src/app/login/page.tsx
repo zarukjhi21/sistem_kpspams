@@ -3,60 +3,65 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Droplet, ShieldCheck, Lock, ArrowRight, UserCheck, Sparkles, Building2, User } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 import { DEMO_USERS } from "@/lib/demo-data";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [username, setUsername] = useState("admin.desa");
   const [password, setPassword] = useState("Kuajang2026!");
   const [error, setError] = useState<string | null>(null);
-
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
-
-  const fetchToken = async (u: string, p: string = "Kuajang2026!") => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ username: u, password: p }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data?.access_token) {
-          localStorage.setItem("auth_token", json.data.access_token);
-        }
-      }
-    } catch {
-      // offline/fallback
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const found = DEMO_USERS.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-    if (found) {
-      localStorage.setItem("demo_user_id", String(found.id));
-      await fetchToken(found.username, password);
-      if (found.role === "pelanggan") {
-        router.push("/portal");
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const success = await login(username.trim(), password);
+      if (success) {
+        const savedUser = localStorage.getItem("auth_user");
+        let isPelanggan = false;
+        if (savedUser) {
+          try {
+            const u = JSON.parse(savedUser);
+            isPelanggan = u.role === "pelanggan";
+          } catch {
+            // fallback
+          }
+        }
+        if (isPelanggan) {
+          router.push("/portal");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
-        router.push("/dashboard");
+        setError("Username atau kata sandi tidak valid.");
       }
-    } else {
-      setError("Username atau kata sandi tidak valid.");
+    } catch {
+      setError("Terjadi kesalahan saat otentikasi. Silakan periksa koneksi.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleQuickLogin = async (demoUsername: string) => {
-    const found = DEMO_USERS.find((u) => u.username === demoUsername);
-    if (found) {
-      localStorage.setItem("demo_user_id", String(found.id));
-      await fetchToken(found.username);
-      if (found.role === "pelanggan") {
-        router.push("/portal");
-      } else {
-        router.push("/dashboard");
+    setError(null);
+    setIsLoading(true);
+    try {
+      const success = await login(demoUsername, "Kuajang2026!");
+      if (success) {
+        const found = DEMO_USERS.find((u) => u.username === demoUsername);
+        if (found?.role === "pelanggan") {
+          router.push("/portal");
+        } else {
+          router.push("/dashboard");
+        }
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
