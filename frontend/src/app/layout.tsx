@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import { Providers } from "@/components/Providers";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -21,8 +22,9 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className="min-h-screen bg-surface-bg text-slate-900 flex flex-col">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
+
