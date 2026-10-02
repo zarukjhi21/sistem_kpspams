@@ -1,0 +1,44 @@
+FROM php:8.3-fpm-alpine
+
+# Set working directory
+WORKDIR /var/www/backend
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    postgresql-dev \
+    linux-headers \
+    $PHPIZE_DEPS
+
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_pgsql \
+        pgsql \
+        bcmath \
+        gd \
+        zip \
+        opcache \
+        pcntl
+
+# Install Redis extension via PECL
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Copy custom php.ini configuration
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Expose port 9000 for PHP-FPM
+EXPOSE 9000
+
+CMD ["php-fpm"]

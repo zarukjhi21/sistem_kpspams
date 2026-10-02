@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: sikpspams_dev_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/storage/app/public:/var/www/backend/storage/app/public:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - sikpspams_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: sikpspams_dev_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost/api/v1
+    networks:
+      - sikpspams_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.dev
+    container_name: sikpspams_dev_backend
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./backend:/var/www/backend
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - sikpspams_net
+
+  queue_worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.dev
+    container_name: sikpspams_dev_queue
+    restart: unless-stopped
+    command: php artisan queue:listen redis --tries=3 --timeout=120
+    volumes:
+      - ./backend:/var/www/backend
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - sikpspams_net
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.dev
+    container_name: sikpspams_dev_scheduler
+    restart: unless-stopped
+    command: ["sh", "-c", "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"]
+    volumes:
+      - ./backend:/var/www/backend
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+    networks:
+      - sikpspams_net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sikpspams_dev_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-sikpspams_db}
+      POSTGRES_USER: ${DB_USERNAME:-sikpspams_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-KuajangDev2026!}
+    volumes:
+      - pg_dev_data:/var/lib/postgresql/data
+    networks:
+      - sikpspams_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: sikpspams_dev_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - sikpspams_net
+
+networks:
+  sikpspams_net:
+    driver: bridge
+
+volumes:
+  pg_dev_data:
+  redis_dev_data:

@@ -1,0 +1,100 @@
+# ==============================================================================
+# SI-KPSPAMS KUAJANG - NGINX PRODUCTION CONFIGURATION WITH SSL (HTTPS)
+# Ganti nama file ini menjadi default.conf atau salin isinya saat sertifikat SSL siap
+# ==============================================================================
+
+# 1. HTTP Server - Redirect semua traffic ke HTTPS
+server {
+    listen 80;
+    server_name kpspams.desakuajang.id;
+
+    # Let's Encrypt ACME challenge endpoint
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# 2. HTTPS Server - Main Application Entrypoint
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name kpspams.desakuajang.id;
+    client_max_body_size 20M;
+
+    # SSL Certificates
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+
+    # SSL Security Protocols & Ciphers
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    # Gzip Compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(self), camera=(), microphone=()" always;
+
+    # Backend API & Health Check routing
+    location ^~ /api {
+        root /var/www/backend/public;
+        try_files $uri $uri/ /index.php?$query_string;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass backend:9000;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
+            fastcgi_param PATH_INFO $fastcgi_path_info;
+            fastcgi_read_timeout 300;
+        }
+    }
+
+    # Backend Health Check
+    location = /up {
+        root /var/www/backend/public;
+        try_files $uri /index.php?$query_string;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass backend:9000;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
+        }
+    }
+
+    # Public Storage Assets (logos, public images)
+    location ^~ /storage {
+        alias /var/www/backend/storage/app/public;
+        try_files $uri =404;
+        access_log off;
+        expires max;
+    }
+
+    # Frontend (Next.js Application)
+    location / {
+        proxy_pass http://frontend:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}

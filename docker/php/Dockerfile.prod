@@ -1,0 +1,63 @@
+# Stage 1: Build & Composer dependencies
+FROM php:8.3-fpm-alpine AS builder
+
+WORKDIR /var/www/backend
+
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    postgresql-dev \
+    $PHPIZE_DEPS
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_pgsql \
+        pgsql \
+        bcmath \
+        gd \
+        zip \
+        opcache \
+        pcntl
+
+RUN pecl install redis && docker-php-ext-enable redis
+
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Copy application source
+COPY backend/ .
+
+# Install production dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Stage 2: Final Production Image
+FROM php:8.3-fpm-alpine
+
+WORKDIR /var/www/backend
+
+RUN apk add --no-cache \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    libzip \
+    postgresql-libs
+
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+COPY --from=builder /usr/bin/composer /usr/bin/composer
+COPY --from=builder /var/www/backend /var/www/backend
+
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+RUN chown -R www-data:www-data /var/www/backend/storage /var/www/backend/bootstrap/cache
+
+USER www-data
+
+EXPOSE 9000
+
+CMD ["php-fpm"]

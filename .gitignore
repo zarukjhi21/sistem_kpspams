@@ -1,0 +1,52 @@
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+.env.backup
+.env.production
+.env.local
+*.env
+
+# Dependencies
+node_modules/
+vendor/
+.pnpm-store/
+
+# Next.js Build
+frontend/.next/
+frontend/out/
+
+# Laravel Storage & Cache
+backend/storage/*.key
+backend/storage/app/private/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*.log
+backend/bootstrap/cache/*
+
+# Logs & Runtime
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Docker volumes & data
+postgres_data/
+redis_data/
+docker/nginx/ssl/*.crt
+docker/nginx/ssl/*.key
+docker/nginx/ssl/*.pem
+
+# Build Artifacts & Binaries
+*.tsbuildinfo
+backend/composer.phar
+frontend/*.traineddata
