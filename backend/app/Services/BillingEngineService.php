@@ -82,8 +82,11 @@ class BillingEngineService
             // 3. Komponen Biaya Tetap (Admin & Pemeliharaan)
             $adminFee = (float) $tariff->fixed_admin_fee;
             if ($adminFee > 0) {
-                $adminDesc = ($tariff->kpspams_id == 1 && $adminFee == 10000)
-                    ? 'Biaya Beban Tetap Bulanan (Termasuk s.d 15 m³)'
+                $firstComp = $components->first();
+                $hasFreeBaseTier = $firstComp && ((float) $firstComp->rate_per_m3 === 0.0) && $firstComp->tier_max_m3 !== null;
+
+                $adminDesc = $hasFreeBaseTier
+                    ? "Biaya Beban Tetap Bulanan (Termasuk s.d {$firstComp->tier_max_m3} m³)"
                     : 'Biaya Administrasi Pengelolaan';
 
                 $itemsData[] = [
