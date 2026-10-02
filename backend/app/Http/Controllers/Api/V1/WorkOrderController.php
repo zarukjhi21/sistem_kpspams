@@ -138,8 +138,8 @@ class WorkOrderController extends BaseApiController
         $validator = Validator::make($request->all(), [
             'action_taken' => 'required|string|min:10',
             'labor_cost' => 'nullable|numeric|min:0',
-            'before_photo' => 'nullable|image|max:5120',
-            'after_photo' => 'nullable|image|max:5120',
+            'before_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'after_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
             'used_items' => 'nullable|array',
             'used_items.*.inventory_item_id' => 'required|exists:inventory_items,id',
             'used_items.*.quantity' => 'required|integer|min:1',

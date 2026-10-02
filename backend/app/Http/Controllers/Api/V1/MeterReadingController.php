@@ -75,7 +75,7 @@ class MeterReadingController extends BaseApiController
             'billing_period_id' => 'required|exists:billing_periods,id',
             'current_reading' => 'required|numeric|min:0',
             'reading_date' => 'required|date',
-            'meter_photo' => 'nullable|image|max:5120', // max 5MB
+            'meter_photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120', // max 5MB raster only
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'notes' => 'nullable|string',
@@ -274,10 +274,13 @@ class MeterReadingController extends BaseApiController
 
                 $synced[] = $reading;
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Meter sync failure for connection {$item['connection_id']}: " . $e->getMessage());
                 $errors[] = [
                     'index' => $idx,
                     'connection_id' => $item['connection_id'],
-                    'message' => $e->getMessage(),
+                    'message' => config('app.debug') || $e instanceof \DomainException || $e instanceof \InvalidArgumentException
+                        ? $e->getMessage()
+                        : 'Gagal memproses pembacaan meter untuk sambungan ini.',
                 ];
             }
         }

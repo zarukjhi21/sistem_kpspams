@@ -67,7 +67,7 @@ class AssetController extends BaseApiController
             'funding_source' => 'required|string|max:100', // e.g. PAMSIMAS, Dana Desa, Swadaya
             'purchase_value' => 'required|numeric|min:0',
             'condition' => 'required|in:GOOD,LIGHT_DAMAGE,HEAVY_DAMAGE,SCRAPPED',
-            'photo' => 'nullable|image|max:5120',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'person_in_charge' => 'nullable|string|max:100',

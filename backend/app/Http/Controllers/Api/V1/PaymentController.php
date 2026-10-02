@@ -117,7 +117,11 @@ class PaymentController extends BaseApiController
 
             return $this->sendResponse($payment->load(['invoice', 'customer', 'cashAccount', 'receivedBy']), 'Pembayaran kasir berhasil diproses.', 201);
         } catch (\Throwable $e) {
-            return $this->sendError('Gagal memproses pembayaran: ' . $e->getMessage(), [], 500);
+            \Illuminate\Support\Facades\Log::error('Payment processing error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $msg = config('app.debug') || $e instanceof \InvalidArgumentException || $e instanceof \DomainException
+                ? $e->getMessage()
+                : 'Terjadi kesalahan sistem saat memproses transaksi pembayaran.';
+            return $this->sendError('Gagal memproses pembayaran: ' . $msg, [], 500);
         }
     }
 

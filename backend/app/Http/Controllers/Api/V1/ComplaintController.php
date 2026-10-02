@@ -65,7 +65,7 @@ class ComplaintController extends BaseApiController
             'connection_id' => 'nullable|exists:connections,id',
             'category' => 'required|in:AIR_KERUH,PIPA_BOCOR,METER_RUSAK,TEKANAN_RENDAH,TAGIHAN_TIDAK_SESUAI,LAINNYA',
             'description' => 'required|string|min:10',
-            'photo' => 'nullable|image|max:5120',
+            'photo' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'priority' => 'nullable|in:LOW,MEDIUM,HIGH,EMERGENCY',

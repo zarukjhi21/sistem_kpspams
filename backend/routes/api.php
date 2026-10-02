@@ -42,7 +42,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Authenticated API Routes
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
 
         // Auth management
         Route::prefix('auth')->group(function () {

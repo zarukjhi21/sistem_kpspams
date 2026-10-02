@@ -185,12 +185,15 @@ class BillingPeriodController extends BaseApiController
                 $reading->update(['status' => 'INVOICED']);
                 $generatedInvoices[] = $invoice;
             } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Invoice generation failed for reading {$reading->id}: " . $e->getMessage());
                 $failedCount++;
                 $errors[] = [
                     'connection_id' => $reading->connection_id,
                     'connection_no' => $reading->connection->connection_no,
                     'connection_number' => $reading->connection->connection_no,
-                    'message' => $e->getMessage(),
+                    'message' => config('app.debug') || $e instanceof \DomainException || $e instanceof \InvalidArgumentException
+                        ? $e->getMessage()
+                        : 'Gagal menghasilkan tagihan untuk sambungan ini.',
                 ];
             }
         }
