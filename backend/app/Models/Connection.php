@@ -28,6 +28,16 @@ class Connection extends Model
         'notes',
     ];
 
+    protected $appends = [
+        'connection_number',
+    ];
+
+    public function getConnectionNumberAttribute(): ?string
+    {
+        return $this->connection_no;
+    }
+
+
     protected function casts(): array
     {
         return [

@@ -10,6 +10,7 @@ use App\Models\AuditLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends BaseApiController
 {
@@ -61,7 +62,7 @@ class CustomerController extends BaseApiController
     {
         $validator = Validator::make($request->all(), [
             'customer_type_id' => 'required|exists:customer_types,id',
-            'nik' => 'required|string|size:16|unique:customers,nik',
+            'nik' => ['required', 'string', 'size:16', Rule::unique('customers', 'nik')->whereNull('deleted_at')],
             'no_kk' => 'nullable|string|size:16',
             'full_name' => 'required|string|max:150',
             'birth_place_date' => 'nullable|string|max:100',

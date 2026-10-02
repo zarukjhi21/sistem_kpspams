@@ -146,4 +146,45 @@ class UserController extends BaseApiController
 
         return $this->sendResponse($user->load(['roles', 'kpspams']), 'Data pengguna berhasil diperbarui.');
     }
+
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $currentUser = $request->user();
+
+        // Hanya super_admin atau admin_desa yang boleh menghapus user
+        if (!$currentUser->isSuperAdmin() && !$currentUser->hasRole('admin_desa')) {
+            return $this->sendError('Hanya Administrator yang memiliki wewenang untuk menghapus akun pengguna.', [], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        // Mencegah hapus akun sendiri
+        if ($user->id === $currentUser->id) {
+            return $this->sendError('Anda tidak dapat menghapus akun Anda sendiri.', [], 400);
+        }
+
+        // Mencegah hapus super_admin
+        if ($user->isSuperAdmin()) {
+            return $this->sendError('Akun Super Administrator tidak dapat dihapus.', [], 400);
+        }
+
+        $oldData = $user->toArray();
+        $user->delete(); // Soft delete
+
+        AuditLog::create([
+            'user_id' => $currentUser->id,
+            'kpspams_id' => $user->kpspams_id,
+            'action' => 'DELETE_USER',
+            'entity' => 'User',
+            'entity_id' => $user->id,
+            'old_values' => $oldData,
+            'new_values' => ['deleted_at' => now()],
+            'ip_address' => $request->ip() ?? '127.0.0.1',
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
+
+        return $this->sendResponse(null, 'Akun pengguna berhasil dihapus/dinonaktifkan (soft delete).');
+    }
 }
+

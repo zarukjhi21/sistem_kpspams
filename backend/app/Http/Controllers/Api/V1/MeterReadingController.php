@@ -42,7 +42,7 @@ class MeterReadingController extends BaseApiController
         if ($request->filled('search')) {
             $s = $request->query('search');
             $query->whereHas('connection', function ($q) use ($s) {
-                $q->where('connection_number', 'like', "%{$s}%")
+                $q->where('connection_no', 'like', "%{$s}%")
                   ->orWhereHas('customer', function ($sq) use ($s) {
                       $sq->where('full_name', 'ilike', "%{$s}%")
                         ->orWhere('code', 'like', "%{$s}%");
@@ -88,9 +88,18 @@ class MeterReadingController extends BaseApiController
         $user = $request->user();
         $connection = Connection::with('meter')->findOrFail($request->input('connection_id'));
 
+        if (!$connection->meter_id) {
+            return $this->sendError('Sambungan rumah ini belum memiliki meter air aktif.', [], 422);
+        }
+
+        $billingPeriod = BillingPeriod::findOrFail($request->input('billing_period_id'));
+        if ($billingPeriod->kpspams_id !== $connection->kpspams_id) {
+            return $this->sendError('Periode tagihan tidak sesuai dengan lingkup KPSPAMS sambungan ini.', [], 422);
+        }
+
         // Cek duplikasi catat meter di periode yang sama
         $existing = MeterReading::where('connection_id', $connection->id)
-            ->where('billing_period_id', $request->input('billing_period_id'))
+            ->where('billing_period_id', $billingPeriod->id)
             ->first();
 
         if ($existing) {
@@ -178,7 +187,7 @@ class MeterReadingController extends BaseApiController
             $query->where('dusun_id', $request->query('dusun_id'));
         }
 
-        $connections = $query->orderBy('connection_number')->get();
+        $connections = $query->orderBy('connection_no')->get();
 
         $routes = $connections->map(function ($conn) use ($periodId) {
             $currentReading = null;
@@ -195,11 +204,12 @@ class MeterReadingController extends BaseApiController
 
             return [
                 'connection_id' => $conn->id,
-                'connection_number' => $conn->connection_number,
+                'connection_no' => $conn->connection_no,
+                'connection_number' => $conn->connection_no,
                 'customer_name' => $conn->customer->full_name,
                 'customer_code' => $conn->customer->code,
                 'dusun_name' => $conn->dusun->name,
-                'install_address' => $conn->install_address,
+                'install_address' => $conn->address_detail,
                 'meter_serial' => $conn->meter?->serial_number,
                 'previous_reading' => $lastReading ? $lastReading->current_reading : ($conn->meter?->initial_reading ?? 0),
                 'is_read' => $currentReading !== null,

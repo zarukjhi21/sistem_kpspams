@@ -22,6 +22,23 @@ class BillingEngineService
     public function generateInvoice(Connection $connection, BillingPeriod $period, MeterReading $reading): Invoice
     {
         return DB::transaction(function () use ($connection, $period, $reading) {
+            // Validasi Integritas Scope Tenant KPSPAMS & Referential Integrity
+            if ($connection->kpspams_id !== $period->kpspams_id) {
+                throw new Exception("Scope tenant KPSPAMS tidak cocok: Sambungan milik KPSPAMS ID {$connection->kpspams_id}, sedangkan periode tagihan milik KPSPAMS ID {$period->kpspams_id}.");
+            }
+
+            if ($connection->customer->kpspams_id !== $connection->kpspams_id) {
+                throw new Exception("Scope tenant KPSPAMS tidak cocok: Pelanggan ID {$connection->customer_id} tidak terdaftar pada KPSPAMS ID {$connection->kpspams_id}.");
+            }
+
+            if ($reading->connection_id !== $connection->id || $reading->kpspams_id !== $connection->kpspams_id) {
+                throw new Exception("Data meter reading ID {$reading->id} tidak cocok dengan sambungan ID {$connection->id} atau lingkup KPSPAMS.");
+            }
+
+            if ($reading->billing_period_id !== $period->id) {
+                throw new Exception("Data meter reading ID {$reading->id} tercatat pada periode ID {$reading->billing_period_id}, berbeda dengan periode penagihan ID {$period->id}.");
+            }
+
             // 1. Ambil skema tarif aktif spesifik untuk KPSPAMS dan tipe pelanggan sambungan
             $tariff = Tariff::where('kpspams_id', $connection->kpspams_id)
                 ->where('customer_type_id', $connection->customer->customer_type_id)

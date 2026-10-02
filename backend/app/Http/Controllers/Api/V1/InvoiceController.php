@@ -40,7 +40,7 @@ class InvoiceController extends BaseApiController
                         ->orWhere('code', 'like', "%{$s}%");
                   })
                   ->orWhereHas('connection', function ($sq) use ($s) {
-                      $sq->where('connection_number', 'like', "%{$s}%");
+                      $sq->where('connection_no', 'like', "%{$s}%");
                   });
             });
         }
@@ -124,7 +124,8 @@ class InvoiceController extends BaseApiController
 
             return [
                 'connection_id' => (int) $connectionId,
-                'connection_number' => $connection->connection_number,
+                'connection_no' => $connection->connection_no,
+                'connection_number' => $connection->connection_no,
                 'customer_name' => $customer->full_name,
                 'customer_code' => $customer->code,
                 'phone' => $customer->phone,

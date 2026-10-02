@@ -38,6 +38,15 @@ class PaymentProcessingService
                 throw new Exception("Nominal pembayaran (Rp {$formattedAmount}) melebihi sisa tagihan (Rp {$formattedDue}).");
             }
 
+            // Validasi & Kunci Akun Kas (Tenant Isolation & Concurrency Guard)
+            $cashAccount = CashAccount::where('id', $cashAccountId)->lockForUpdate()->first();
+            if (!$cashAccount || $cashAccount->kpspams_id !== $lockedInvoice->kpspams_id) {
+                throw new Exception("Akun kas tidak valid atau berada di luar lingkup KPSPAMS tagihan.");
+            }
+            if (!$cashAccount->is_active) {
+                throw new Exception("Akun kas sedang tidak aktif.");
+            }
+
             // 2. Buat entri pembayaran resmi
             $receiptNumber = $this->generateReceiptNumber($lockedInvoice->kpspams_id);
 
@@ -63,7 +72,7 @@ class PaymentProcessingService
             $lockedInvoice->save();
 
             // 4. Tambah saldo pada akun kas unit KPSPAMS
-            CashAccount::where('id', $cashAccountId)->increment('current_balance', $amount);
+            $cashAccount->increment('current_balance', $amount);
 
             // 5. Catat mutasi arus kas pemasukan
             FinancialTransaction::create([
@@ -125,8 +134,14 @@ class PaymentProcessingService
             $invoice->paid_at = null;
             $invoice->save();
 
-            // 3. Potong kembali saldo akun kas
-            CashAccount::where('id', $payment->cash_account_id)->decrement('current_balance', $payment->amount_paid);
+            // 3. Potong kembali saldo akun kas dengan verifikasi kecukupan saldo & pessimistic lock
+            $cashAccount = CashAccount::where('id', $payment->cash_account_id)->lockForUpdate()->firstOrFail();
+            if ((float) $cashAccount->current_balance < (float) $payment->amount_paid) {
+                $formattedBal = number_format((float) $cashAccount->current_balance, 0, ',', '.');
+                $formattedAmt = number_format((float) $payment->amount_paid, 0, ',', '.');
+                throw new Exception("Saldo akun kas '{$cashAccount->account_name}' tidak mencukupi untuk melakukan pembatalan (VOID). Saldo saat ini: Rp {$formattedBal}, dibutuhkan: Rp {$formattedAmt}.");
+            }
+            $cashAccount->decrement('current_balance', $payment->amount_paid);
 
             // 4. Catat mutasi pengurang kas
             FinancialTransaction::create([
@@ -226,8 +241,14 @@ class PaymentProcessingService
             $invoice->paid_at = null;
             $invoice->save();
 
-            // 4. Koreksi saldo kas
-            CashAccount::where('id', $payment->cash_account_id)->decrement('current_balance', $payment->amount_paid);
+            // 4. Koreksi saldo kas dengan verifikasi kecukupan saldo & pessimistic lock
+            $cashAccount = CashAccount::where('id', $payment->cash_account_id)->lockForUpdate()->firstOrFail();
+            if ((float) $cashAccount->current_balance < (float) $payment->amount_paid) {
+                $formattedBal = number_format((float) $cashAccount->current_balance, 0, ',', '.');
+                $formattedAmt = number_format((float) $payment->amount_paid, 0, ',', '.');
+                throw new Exception("Saldo akun kas '{$cashAccount->account_name}' tidak mencukupi untuk persetujuan pembalikan (REVERSAL). Saldo saat ini: Rp {$formattedBal}, dibutuhkan: Rp {$formattedAmt}.");
+            }
+            $cashAccount->decrement('current_balance', $payment->amount_paid);
 
             // 5. Catat mutasi pengurang kas
             FinancialTransaction::create([

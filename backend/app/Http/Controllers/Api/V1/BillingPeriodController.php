@@ -188,7 +188,8 @@ class BillingPeriodController extends BaseApiController
                 $failedCount++;
                 $errors[] = [
                     'connection_id' => $reading->connection_id,
-                    'connection_number' => $reading->connection->connection_number,
+                    'connection_no' => $reading->connection->connection_no,
+                    'connection_number' => $reading->connection->connection_no,
                     'message' => $e->getMessage(),
                 ];
             }
