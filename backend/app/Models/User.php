@@ -63,6 +63,24 @@ class User extends Authenticatable
         return $this->roles->contains('name', $roleName);
     }
 
+    public function hasAnyRole(array $roleNames): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->roles->pluck('name')->intersect($roleNames)->isNotEmpty();
+    }
+
+    public function hasPermission(string $permissionName): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return $this->roles->flatMap(fn($role) => $role->permissions)->contains('name', $permissionName);
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super_admin');

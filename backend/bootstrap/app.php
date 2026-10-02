@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
             'tenant.kpspams' => \App\Http\Middleware\EnforceKpspamsScope::class,
             'audit.context' => \App\Http\Middleware\AuditContextMiddleware::class,
         ]);

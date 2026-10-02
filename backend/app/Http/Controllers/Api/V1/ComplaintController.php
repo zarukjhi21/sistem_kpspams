@@ -76,6 +76,13 @@ class ComplaintController extends BaseApiController
         }
 
         $user = $request->user();
+        $customerId = (int) $request->input('customer_id');
+
+        // IDOR Defense: Pelanggan can only create complaints for their own customer record
+        if ($user->hasRole('pelanggan') || $user->customer_id) {
+            $customerId = (int) $user->customer_id;
+        }
+
         $kpspamsId = $user->kpspams_id;
 
         if (!$kpspamsId && $request->filled('kpspams_id')) {
@@ -95,7 +102,7 @@ class ComplaintController extends BaseApiController
 
         $complaint = Complaint::create([
             'kpspams_id' => $kpspamsId,
-            'customer_id' => $request->input('customer_id'),
+            'customer_id' => $customerId,
             'connection_id' => $request->input('connection_id'),
             'ticket_number' => $ticketNumber,
             'category' => $request->input('category'),
@@ -124,7 +131,22 @@ class ComplaintController extends BaseApiController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $user = $request->user();
         $complaint = Complaint::findOrFail($id);
+
+        // IDOR / RBAC Defense for updating complaints
+        if ($user->hasRole('pelanggan') || $user->customer_id) {
+            if ($complaint->customer_id !== $user->customer_id) {
+                return $this->sendError('Akses ditolak: Anda tidak memiliki wewenang untuk mengubah pengaduan pelanggan lain.', [], 403);
+            }
+            if ($complaint->status !== 'SUBMITTED') {
+                return $this->sendError('Pengaduan yang sedang diproses atau sudah selesai tidak dapat diubah.', [], 422);
+            }
+        } elseif (!$user->isSuperAdmin() && !$user->isDesaLevel()) {
+            if ($complaint->kpspams_id !== $user->kpspams_id) {
+                return $this->sendError('Akses ditolak: Pengaduan berada di luar unit KPSPAMS Anda.', [], 403);
+            }
+        }
 
         $validator = Validator::make($request->all(), [
             'priority' => 'sometimes|in:LOW,MEDIUM,HIGH,EMERGENCY',

@@ -70,6 +70,16 @@ class ConnectionController extends BaseApiController
         $customer = Customer::findOrFail($request->input('customer_id'));
         $kpspamsId = $customer->kpspams_id;
 
+        // Validasi Batas Wilayah Layanan KPSPAMS (Service Area Boundary Check)
+        $isDusunAssigned = DB::table('kpspams_dusun')
+            ->where('kpspams_id', $kpspamsId)
+            ->where('dusun_id', (int) $request->input('dusun_id'))
+            ->exists();
+
+        if (!$isDusunAssigned) {
+            return $this->sendError('Dusun yang dipilih berada di luar wilayah layanan KPSPAMS ini.', [], 422);
+        }
+
         return DB::transaction(function () use ($request, $customer, $kpspamsId) {
             // 1. Buat unit meter fisik
             $meter = Meter::create([

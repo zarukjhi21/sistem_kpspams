@@ -18,7 +18,15 @@ class UserController extends BaseApiController
 {
     public function index(Request $request): JsonResponse
     {
+        $currentUser = $request->user();
         $query = User::with(['roles', 'kpspams']);
+
+        // Scope to tenant for KPSPAMS-level users
+        if (!$currentUser->isSuperAdmin() && !$currentUser->isDesaLevel()) {
+            $query->where('kpspams_id', $currentUser->kpspams_id);
+        } elseif ($request->filled('kpspams_id')) {
+            $query->where('kpspams_id', $request->query('kpspams_id'));
+        }
 
         if ($request->filled('role')) {
             $query->whereHas('roles', function ($q) use ($request) {
@@ -45,9 +53,18 @@ class UserController extends BaseApiController
         ]);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $currentUser = $request->user();
         $user = User::with(['roles.permissions', 'kpspams'])->findOrFail($id);
+
+        // Tenant boundary check for KPSPAMS users
+        if (!$currentUser->isSuperAdmin() && !$currentUser->isDesaLevel()) {
+            if ($user->kpspams_id !== $currentUser->kpspams_id) {
+                return $this->sendError('Akses ditolak: Pengguna berada di luar unit KPSPAMS Anda.', [], 403);
+            }
+        }
+
         return $this->sendResponse($user, 'Detail pengguna berhasil dimuat.');
     }
 
@@ -72,14 +89,26 @@ class UserController extends BaseApiController
         }
 
         $currentUser = $request->user();
+        $roleName = $request->input('role');
 
-        return DB::transaction(function () use ($request, $currentUser) {
-            $role = Role::where('name', $request->input('role'))->firstOrFail();
+        // Privilege Escalation Defense: Only super_admin or admin_desa can create admin/desa roles
+        if (!$currentUser->isSuperAdmin() && !$currentUser->hasRole('admin_desa')) {
+            if (in_array($roleName, ['super_admin', 'admin_desa', 'pemerintah_desa'])) {
+                return $this->sendError('Anda tidak memiliki wewenang untuk membuat akun dengan hak akses tingkat Desa atau Super Admin.', [], 403);
+            }
+        }
 
-            $kpspamsId = $request->input('kpspams_id');
-            // Jika role petugas/bendahara/ketua tapi kpspams_id null, gunakan kpspams_id pembuat jika bukan admin desa
-            if (!$kpspamsId && in_array($role->name, ['ketua_kpspams', 'admin_kpspams', 'bendahara_kpspams', 'petugas_lapangan'])) {
-                $kpspamsId = $currentUser->kpspams_id ?? 1;
+        return DB::transaction(function () use ($request, $currentUser, $roleName) {
+            $role = Role::where('name', $roleName)->firstOrFail();
+
+            // KPSPAMS Tenant Isolation Defense: Non-desa/super_admin users can only create users in their own KPSPAMS
+            if (!$currentUser->isSuperAdmin() && !$currentUser->isDesaLevel()) {
+                $kpspamsId = $currentUser->kpspams_id;
+            } else {
+                $kpspamsId = $request->input('kpspams_id');
+                if (!$kpspamsId && in_array($role->name, ['ketua_kpspams', 'admin_kpspams', 'bendahara_kpspams', 'petugas_lapangan'])) {
+                    $kpspamsId = $currentUser->kpspams_id ?? 1;
+                }
             }
 
             $newUser = User::create([
@@ -121,7 +150,15 @@ class UserController extends BaseApiController
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $currentUser = $request->user();
         $user = User::findOrFail($id);
+
+        // Tenant Boundary Defense: KPSPAMS user can only update their own KPSPAMS users
+        if (!$currentUser->isSuperAdmin() && !$currentUser->isDesaLevel()) {
+            if ($user->kpspams_id !== $currentUser->kpspams_id) {
+                return $this->sendError('Akses ditolak: Pengguna berada di luar unit KPSPAMS Anda.', [], 403);
+            }
+        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|required|string|max:100',
@@ -133,6 +170,16 @@ class UserController extends BaseApiController
 
         if ($validator->fails()) {
             return $this->sendError('Validasi input gagal.', $validator->errors(), 422);
+        }
+
+        // Privilege Escalation Defense: Non-super_admin / non-desa users cannot assign desa/super_admin roles
+        if ($request->filled('role')) {
+            $targetRole = $request->input('role');
+            if (!$currentUser->isSuperAdmin() && !$currentUser->hasRole('admin_desa')) {
+                if (in_array($targetRole, ['super_admin', 'admin_desa', 'pemerintah_desa'])) {
+                    return $this->sendError('Anda tidak memiliki wewenang untuk memberikan hak akses tingkat Desa atau Super Admin.', [], 403);
+                }
+            }
         }
 
         $user->update($request->only(['name', 'phone', 'email', 'is_active']));
