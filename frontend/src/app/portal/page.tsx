@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { getApiBaseUrl } from "@/lib/api-client";
 
 interface CustomerData {
   id: number;
@@ -74,8 +75,6 @@ interface PortalSearchResult {
   consumption_history: ConsumptionHistoryItem[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
-
 function CitizenPortalContent() {
   const searchParams = useSearchParams();
   const [searchSr, setSearchSr] = useState("");
@@ -94,19 +93,19 @@ function CitizenPortalContent() {
   // Invoice modal state
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
 
-  // Auto-search if ?sr= parameter is provided in URL
+  // Auto-search if ?sr= or ?nik= parameter is provided in URL
   useEffect(() => {
-    const srQuery = searchParams.get("sr");
-    if (srQuery) {
-      setSearchSr(srQuery);
-      fetchRealCustomerData(srQuery);
+    const qParam = searchParams.get("sr") || searchParams.get("nik") || searchParams.get("q");
+    if (qParam) {
+      setSearchSr(qParam);
+      fetchRealCustomerData(qParam);
     }
   }, [searchParams]);
 
   const fetchRealCustomerData = async (query: string) => {
     const cleanQuery = query.trim();
     if (!cleanQuery) {
-      setErrorMessage("Silakan masukkan Nomor Sambungan Rumah (No. SR) atau NIK.");
+      setErrorMessage("Silakan masukkan Nomor NIK Anda atau No. SR.");
       return;
     }
 
@@ -114,7 +113,8 @@ function CitizenPortalContent() {
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/portal/check-sr?sr=${encodeURIComponent(cleanQuery)}`, {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/portal/check-sr?q=${encodeURIComponent(cleanQuery)}`, {
         headers: {
           Accept: "application/json",
         },
@@ -122,20 +122,20 @@ function CitizenPortalContent() {
 
       const json = await res.json();
 
-      if (res.ok && json.status === "success") {
+      if (res.ok && json.status === "success" && json.data?.customer) {
         setData(json.data);
         setErrorMessage(null);
       } else {
         setData(null);
         setErrorMessage(
           json.message ||
-            `Nomor Sambungan Rumah (No. SR) '${cleanQuery}' tidak ditemukan dalam basis data resmi Desa Kuajang.`
+            `Data NIK / No. SR '${cleanQuery}' tidak ditemukan dalam basis data resmi Desa Kuajang.`
         );
       }
     } catch {
       setData(null);
       setErrorMessage(
-        "Gagal terhubung ke server SI-KPSPAMS. Pastikan koneksi server aktif dan coba lagi."
+        "Gagal terhubung ke server SI-KPSPAMS. Pastikan koneksi internet aktif dan coba lagi."
       );
     } finally {
       setIsLoading(false);
@@ -160,13 +160,16 @@ function CitizenPortalContent() {
     setIsSubmittingComplaint(true);
     setComplaintError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/portal/complaint`, {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/portal/complaint`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
         body: JSON.stringify({
+          customer_id: data.customer.id,
+          kpspams_id: data.connection.kpspams_id,
           connection_no: data.connection.connection_no,
           category: complaintCategory,
           description: complaintDesc,
@@ -175,7 +178,7 @@ function CitizenPortalContent() {
 
       const resJson = await res.json();
       if (res.ok && resJson.status === "success") {
-        setTicketGenerated(resJson.data.ticket_number);
+        setTicketGenerated(resJson.data?.ticket_number || "TKT/PROSES");
         setComplaintDesc("");
       } else {
         setComplaintError(resJson.message || "Gagal mengirim pengaduan. Silakan periksa formulir.");
@@ -283,7 +286,7 @@ function CitizenPortalContent() {
                           setSearchSr(e.target.value);
                           if (errorMessage) setErrorMessage(null);
                         }}
-                        placeholder="Contoh: SR-LMB-00001 atau NIK Anda"
+                        placeholder="Masukkan NIK KTP Anda (16 digit) atau No. SR"
                         className="w-full pl-12 pr-4 py-3.5 text-sm sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 text-slate-900 transition font-mono tracking-wider shadow-inner disabled:opacity-50"
                       />
                     </div>

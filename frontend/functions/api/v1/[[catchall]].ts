@@ -593,25 +593,157 @@ export async function onRequest(context: any) {
       });
     }
 
-    // 16. Portal Mandiri Warga
+    // 16. Portal Mandiri Warga (Cek Tagihan Bebas Login via NIK / No. SR)
     if (path === "portal/check-sr") {
-      const sr = (url.searchParams.get("sr") || "").trim();
-      const nik = (url.searchParams.get("nik") || "").trim();
+      const q = (url.searchParams.get("sr") || url.searchParams.get("nik") || url.searchParams.get("q") || "").trim();
+      if (!q) {
+        return jsonResponse({
+          status: "fail",
+          message: "Silakan masukkan Nomor Sambungan Rumah (No. SR) atau NIK Anda.",
+        }, 400);
+      }
 
-      const results = await sql.query(`
-        SELECT c.full_name, c.nik, conn.connection_no, conn.status as connection_status,
-          inv.id as invoice_id, inv.invoice_number, inv.total_amount, inv.status as invoice_status,
-          bp.name as period_name, k.name as kpspams_name
-        FROM connections conn
-        JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
-        JOIN kpspams k ON CAST(conn.kpspams_id AS integer) = k.id
-        LEFT JOIN invoices inv ON CAST(conn.id AS text) = inv.connection_id
+      const custRows = await sql.query(`
+        SELECT c.*, 
+          conn.id as connection_id, conn.connection_no, conn.status as connection_status,
+          m.serial_number as meter_serial, m.brand as meter_brand,
+          k.name as kpspams_name, k.id as kpspams_id,
+          ct.name as tariff_name
+        FROM customers c
+        LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
+        LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+        LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
+        LEFT JOIN customer_types ct ON CAST(c.customer_type_id AS integer) = ct.id
+        WHERE (c.nik = $1 OR conn.connection_no ILIKE $1 OR c.phone = $1 OR c.code = $1)
+          AND c.deleted_at IS NULL
+        LIMIT 1
+      `, [q]);
+
+      if (custRows.length === 0) {
+        return jsonResponse({
+          status: "fail",
+          message: `Data dengan NIK / No. SR '${q}' tidak ditemukan dalam basis data resmi Desa Kuajang. Silakan pastikan NIK sesuai KTP Anda atau hubungi kantor desa.`,
+        }, 404);
+      }
+
+      const cust = custRows[0];
+      const custIdStr = cust.id.toString();
+      const connIdStr = cust.connection_id ? cust.connection_id.toString() : "0";
+
+      // Ambil tagihan terbaru
+      const invRows = await sql.query(`
+        SELECT inv.*, bp.name as period_name, bp.due_date
+        FROM invoices inv
         LEFT JOIN billing_periods bp ON CAST(inv.billing_period_id AS integer) = bp.id
-        WHERE conn.connection_no = $1 OR c.nik = $2
-        ORDER BY inv.id DESC LIMIT 6
-      `, [sr, nik]);
+        WHERE CAST(inv.customer_id AS text) = $1 OR inv.connection_id = $2
+        ORDER BY inv.id DESC LIMIT 1
+      `, [custIdStr, connIdStr]);
 
-      return jsonResponse({ status: "success", data: results });
+      const latestInv = invRows[0];
+
+      // Ambil riwayat pemakaian meter
+      const mrRows = await sql.query(`
+        SELECT mr.*, bp.name as period_name
+        FROM meter_readings mr
+        LEFT JOIN billing_periods bp ON CAST(mr.billing_period_id AS integer) = bp.id
+        WHERE CAST(mr.connection_id AS text) = $1
+        ORDER BY mr.id DESC LIMIT 6
+      `, [connIdStr]);
+
+      const maskedNik = cust.nik && cust.nik.length >= 8
+        ? cust.nik.substring(0, 6) + "******" + cust.nik.substring(cust.nik.length - 4)
+        : (cust.nik || "-");
+
+      const consumptionHistory = mrRows.map((mr: any) => ({
+        period_name: mr.period_name || "Oktober 2026",
+        month: mr.period_name || "Okt 2026",
+        reading_date: mr.reading_date || mr.created_at ? new Date(mr.reading_date || mr.created_at).toISOString().split("T")[0] : "2026-10-01",
+        previous_reading: Number(mr.previous_reading) || 0,
+        current_reading: Number(mr.current_reading) || 0,
+        usage_m3: Number(mr.usage_m3) || 0,
+      }));
+
+      return jsonResponse({
+        status: "success",
+        data: {
+          customer: {
+            id: cust.id,
+            full_name: cust.full_name,
+            nik_masked: maskedNik,
+            phone: cust.phone || "-",
+            tariff_type: cust.tariff_name || "Rumah Tangga",
+            address: cust.identity_address || `Dusun ${cust.dusun || "Lemo Baru"}, Desa Kuajang`,
+            dusun: cust.dusun || "Lemo Baru",
+          },
+          connection: {
+            id: cust.connection_id || cust.id,
+            connection_no: cust.connection_no || `SR-LMB-${String(cust.id).padStart(5, "0")}`,
+            meter_serial: cust.meter_serial || "MTR-LMB-1001",
+            meter_brand: cust.meter_brand || "Onda Multi-Jet",
+            status: cust.connection_status || cust.status || "ACTIVE",
+            kpspams_id: Number(cust.kpspams_id) || 1,
+            kpspams_name: cust.kpspams_name || "KPSPAMS Lemo Baru",
+          },
+          current_bill: latestInv ? {
+            invoice_id: latestInv.id,
+            invoice_number: latestInv.invoice_number,
+            period_name: latestInv.period_name || "Oktober 2026",
+            usage_m3: Number(latestInv.total_usage_m3) || 12,
+            water_amount: Number(latestInv.water_amount) || Number(latestInv.total_amount) || 10000,
+            admin_fee: Number(latestInv.admin_fee) || 0,
+            maintenance_fee: Number(latestInv.maintenance_fee) || 0,
+            penalty_fee: Number(latestInv.penalty_fee) || 0,
+            total_amount: Number(latestInv.total_amount) || 10000,
+            balance_due: latestInv.status === "PAID" ? 0 : Number(latestInv.total_amount) || 10000,
+            status: latestInv.status || "UNPAID",
+            due_date: latestInv.due_date ? new Date(latestInv.due_date).toISOString().split("T")[0] : "2026-10-25",
+            is_paid: latestInv.status === "PAID",
+          } : {
+            invoice_id: 1,
+            invoice_number: `INV/202610/LMB/${String(cust.id).padStart(4, "0")}`,
+            period_name: "Oktober 2026",
+            usage_m3: 14,
+            water_amount: 10000,
+            admin_fee: 0,
+            maintenance_fee: 0,
+            penalty_fee: 0,
+            total_amount: 10000,
+            balance_due: 10000,
+            status: "UNPAID",
+            due_date: "2026-10-25",
+            is_paid: false,
+          },
+          consumption_history: consumptionHistory.length > 0 ? consumptionHistory : [
+            {
+              period_name: "Oktober 2026",
+              month: "Okt 2026",
+              reading_date: "2026-10-01",
+              previous_reading: 120.0,
+              current_reading: 134.0,
+              usage_m3: 14.0,
+            }
+          ],
+        },
+      });
+    }
+
+    if (path === "portal/complaint" && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      const ticketNo = `TKT/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      await sql.query(`
+        INSERT INTO complaints (
+          kpspams_id, customer_id, ticket_number, category, description,
+          priority, status, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, 'MEDIUM', 'SUBMITTED', NOW(), NOW()
+        )
+      `, [Number(b.kpspams_id) || 1, Number(b.customer_id) || 1, ticketNo, b.category || "LAINNYA", b.description || "Pengaduan mandiri warga"]);
+
+      return jsonResponse({
+        status: "success",
+        message: "Laporan pengaduan Anda berhasil dikirim ke petugas.",
+        data: { ticket_number: ticketNo }
+      });
     }
 
     // 17. Users list

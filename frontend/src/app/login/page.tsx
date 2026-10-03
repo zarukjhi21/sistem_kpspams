@@ -157,7 +157,7 @@ export default function LoginPage() {
                 htmlFor="username"
                 className="block text-xs font-semibold text-slate-700 mb-1.5 cursor-pointer"
               >
-                Username Petugas / ID Pelanggan
+                Username Petugas / Pengurus
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -172,7 +172,7 @@ export default function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 font-medium text-slate-900 transition shadow-2xs placeholder:text-slate-400"
-                  placeholder="Masukkan username akun Anda"
+                  placeholder="Masukkan username akun dinas"
                 />
               </div>
             </div>
@@ -263,13 +263,16 @@ export default function LoginPage() {
         </div>
 
         {/* Portal Warga Quick Link */}
-        <div className="mt-4 p-3 rounded-2xl bg-white/70 backdrop-blur border border-slate-200/70 shadow-xs flex items-center justify-between text-xs text-slate-600">
-          <span className="font-medium text-slate-700">Warga ingin cek tagihan air?</span>
+        <div className="mt-4 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 shadow-sm flex items-center justify-between text-xs text-amber-950">
+          <div>
+            <div className="font-bold text-slate-800">Warga / Pelanggan Air Bersih?</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Warga tidak perlu akun login, cukup cek dengan <strong>NIK KTP</strong>.</div>
+          </div>
           <Link
             href="/portal"
-            className="font-bold text-brand-maroon-800 hover:text-brand-maroon-900 hover:underline flex items-center space-x-1"
+            className="font-bold text-brand-maroon-800 hover:text-brand-maroon-900 transition px-3 py-1.5 rounded-xl bg-white border border-brand-gold-400 shadow-2xs hover:shadow flex items-center space-x-1 shrink-0 ml-3"
           >
-            <span>Buka Portal Warga</span>
+            <span>Portal Warga</span>
             <ArrowRight className="w-3.5 h-3.5 text-brand-gold-600" />
           </Link>
         </div>
