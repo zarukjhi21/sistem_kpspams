@@ -36,8 +36,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
     status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
-    latitude: primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215,
-    longitude: primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452,
+    latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
+    longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452),
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
   };
@@ -601,6 +601,14 @@ function PelangganContent() {
       return;
     }
 
+    const dusunMap: Record<string, number> = {
+      "Sarampu 1": 1,
+      "Sarampu 2": 2,
+      "Lemo Baru": 3,
+      "Lemo Tua": 4,
+      "Pakkandoang": 5,
+    };
+
     try {
       const editPayload = {
         full_name: editFullName.trim(),
@@ -610,11 +618,16 @@ function PelangganContent() {
         identity_address: editAddress.trim() || `Dusun ${editDusun}`,
         rt_rw: editRtRw.trim() || undefined,
         dusun: editDusun,
+        dusun_id: dusunMap[editDusun] || 3,
         village: editVillage.trim() || undefined,
         district: editDistrict.trim() || undefined,
         religion: editReligion,
         marital_status: editMaritalStatus.trim() || undefined,
         occupation: editOccupation.trim() || undefined,
+        latitude: editLatitude,
+        longitude: editLongitude,
+        meter_serial: editMeterSerial.trim() || undefined,
+        status: editStatus,
       };
 
       await apiClient(`/customers/${editingCustomer.id}`, {

@@ -231,6 +231,7 @@ export async function onRequest(context: any) {
         const rows = await sql.query(`
           SELECT c.*, 
             conn.id as connection_id, conn.connection_no, conn.status as connection_status, conn.installed_date as installed_at,
+            conn.latitude, conn.longitude, conn.dusun_id, conn.address_detail,
             m.serial_number as meter_serial,
             k.name as kpspams_name, k.code as kpspams_code
           FROM customers c
@@ -349,7 +350,42 @@ export async function onRequest(context: any) {
         b.dusun, b.village, b.district, b.birth_place_date, b.gender,
         b.religion, b.marital_status, b.occupation, custId
       ]);
-      return jsonResponse({ status: "success", message: "Data pelanggan berhasil diperbarui." });
+
+      // Update connections table (latitude, longitude, status, address_detail, meter)
+      if (b.latitude !== undefined || b.longitude !== undefined || b.status !== undefined || b.dusun_id !== undefined || b.identity_address !== undefined) {
+        await sql.query(`
+          UPDATE connections SET
+            latitude = COALESCE($1, latitude),
+            longitude = COALESCE($2, longitude),
+            status = COALESCE($3, status),
+            address_detail = COALESCE($4, address_detail),
+            dusun_id = COALESCE($5, dusun_id),
+            updated_at = NOW()
+          WHERE CAST(customer_id AS text) = $6
+        `, [
+          b.latitude !== undefined && b.latitude !== null ? b.latitude.toString() : null,
+          b.longitude !== undefined && b.longitude !== null ? b.longitude.toString() : null,
+          b.status || null,
+          b.identity_address || null,
+          b.dusun_id !== undefined && b.dusun_id !== null ? Number(b.dusun_id) : null,
+          custId.toString()
+        ]);
+      }
+
+      if (b.meter_serial) {
+        const connRows = await sql.query(`SELECT id, meter_id, kpspams_id FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
+        if (connRows.length > 0 && connRows[0].meter_id) {
+          await sql.query(`UPDATE meters SET serial_number = $1, updated_at = NOW() WHERE id = $2`, [b.meter_serial, connRows[0].meter_id]);
+        } else if (connRows.length > 0) {
+          const newMeter = await sql.query(`
+            INSERT INTO meters (kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at)
+            VALUES ($1, $2, 'Onda Multi-Jet', 0, true, 'GOOD', NOW(), NOW()) RETURNING id
+          `, [connRows[0].kpspams_id || 1, b.meter_serial]);
+          await sql.query(`UPDATE connections SET meter_id = $1 WHERE id = $2`, [newMeter[0].id, connRows[0].id]);
+        }
+      }
+
+      return jsonResponse({ status: "success", message: "Data pelanggan dan titik lokasi GIS berhasil diperbarui." });
     }
 
     if (path.startsWith("customers/") && method === "DELETE") {
