@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 // Scheduled routine checks
 Schedule::command('queue:prune-batches --hours=48')->daily();
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
+Schedule::command('app:db-backup')->dailyAt('02:00');

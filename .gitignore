@@ -21,6 +21,7 @@ frontend/out/
 # Laravel Storage & Cache
 backend/storage/*.key
 backend/storage/app/private/*
+backend/storage/app/backups/*
 backend/storage/framework/cache/*
 backend/storage/framework/sessions/*
 backend/storage/framework/views/*
