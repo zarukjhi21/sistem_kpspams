@@ -237,6 +237,7 @@ export async function onRequest(context: any) {
           LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
           LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
           LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
+          WHERE c.deleted_at IS NULL
           ORDER BY c.id DESC
         `);
         return jsonResponse({ status: "success", data: rows });
@@ -244,60 +245,190 @@ export async function onRequest(context: any) {
 
       if (method === "POST") {
         const b = await request.json().catch(() => ({}));
-        const newCode = b.code || `CUST-${Date.now().toString().slice(-4)}`;
+        const kpspamsId = Number(b.kpspams_id) || 1;
+        const newCode = b.code || `CUST-${kpspamsId}-${Date.now().toString().slice(-6)}`;
+        const prefix = kpspamsId === 1 ? "SR-LMB" : kpspamsId === 2 ? "SR-LMT" : "SR-KP1";
         
         const inserted = await sql.query(`
           INSERT INTO customers (
             kpspams_id, customer_type_id, code, full_name, nik, phone,
-            identity_address, rt_rw, village, district, status, created_at, updated_at
+            identity_address, rt_rw, dusun, village, district,
+            birth_place_date, gender, religion, marital_status, occupation,
+            status, created_at, updated_at
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ACTIVE', NOW(), NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+            'ACTIVE', NOW(), NOW()
           ) RETURNING *
         `, [
-          b.kpspams_id || 1, b.customer_type_id || 1, newCode,
-          b.full_name || b.name || "Warga Kuajang", b.nik || "", b.phone || "",
-          b.identity_address || b.address || "Desa Kuajang", b.rt_rw || "000/000",
-          b.village || "KUAJANG", b.district || "BINUANG"
+          kpspamsId,
+          Number(b.customer_type_id) || 1,
+          newCode,
+          b.full_name || b.name || "Warga Kuajang",
+          b.nik || "",
+          b.phone || "",
+          b.identity_address || b.address || "Desa Kuajang",
+          b.rt_rw || "000/000",
+          b.dusun || "Lemo Baru",
+          b.village || "KUAJANG",
+          b.district || "BINUANG",
+          b.birth_place_date || null,
+          b.gender || "LAKI-LAKI",
+          b.religion || "ISLAM",
+          b.marital_status || null,
+          b.occupation || null
         ]);
         const newCust = inserted[0];
 
-        const connNo = b.connection_no || `SR-${newCust.id.toString().padStart(4, "0")}`;
+        // Buat meter air fisik jika nomor seri diisi
+        let meterId = null;
+        if (b.meter_serial) {
+          const mInserted = await sql.query(`
+            INSERT INTO meters (
+              kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, true, 'GOOD', NOW(), NOW()
+            ) RETURNING id
+          `, [kpspamsId, b.meter_serial, b.meter_brand || "Onda Multi-Jet", Number(b.initial_reading) || 0]);
+          meterId = mInserted[0]?.id || null;
+        }
+
+        const connNo = b.connection_no || `${prefix}-${newCust.id.toString().padStart(5, "0")}`;
         const connInserted = await sql.query(`
           INSERT INTO connections (
-            kpspams_id, customer_id, connection_no, status, created_at, updated_at
+            kpspams_id, customer_id, dusun_id, meter_id, connection_no,
+            address_detail, latitude, longitude, status, installed_date, created_at, updated_at
           ) VALUES (
-            $1, $2, $3, 'ACTIVE', NOW(), NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, 'ACTIVE', NOW(), NOW(), NOW()
           ) RETURNING *
-        `, [newCust.kpspams_id, newCust.id, connNo]);
-
-        if (b.meter_serial) {
-          await sql.query(`
-            INSERT INTO meters (
-              kpspams_id, serial_number, brand, initial_reading, current_reading, status, created_at, updated_at
-            ) VALUES (
-              $1, $2, 'Standard Meter', 0, 0, 'ACTIVE', NOW(), NOW()
-            )
-          `, [newCust.kpspams_id, b.meter_serial]);
-        }
+        `, [
+          kpspamsId,
+          newCust.id,
+          Number(b.dusun_id) || 3,
+          meterId,
+          connNo,
+          b.identity_address || `Dusun ${b.dusun || 'Lemo Baru'}`,
+          Number(b.latitude) || -3.4215,
+          Number(b.longitude) || 119.3452
+        ]);
 
         return jsonResponse({
           status: "success",
           message: "Pelanggan baru berhasil didaftarkan ke SI-KPSPAMS Desa Kuajang.",
-          data: newCust,
+          data: {
+            ...newCust,
+            connection: connInserted[0],
+            connection_no: connNo,
+          },
         }, 201);
       }
     }
 
-    // 10. Connections
+    if (path.startsWith("customers/") && method === "PUT") {
+      const custId = parseInt(path.split("/")[1], 10);
+      const b = await request.json().catch(() => ({}));
+      await sql.query(`
+        UPDATE customers SET
+          full_name = COALESCE($1, full_name),
+          nik = COALESCE($2, nik),
+          phone = COALESCE($3, phone),
+          identity_address = COALESCE($4, identity_address),
+          rt_rw = COALESCE($5, rt_rw),
+          dusun = COALESCE($6, dusun),
+          village = COALESCE($7, village),
+          district = COALESCE($8, district),
+          birth_place_date = COALESCE($9, birth_place_date),
+          gender = COALESCE($10, gender),
+          religion = COALESCE($11, religion),
+          marital_status = COALESCE($12, marital_status),
+          occupation = COALESCE($13, occupation),
+          updated_at = NOW()
+        WHERE id = $14
+      `, [
+        b.full_name, b.nik, b.phone, b.identity_address, b.rt_rw,
+        b.dusun, b.village, b.district, b.birth_place_date, b.gender,
+        b.religion, b.marital_status, b.occupation, custId
+      ]);
+      return jsonResponse({ status: "success", message: "Data pelanggan berhasil diperbarui." });
+    }
+
+    if (path.startsWith("customers/") && method === "DELETE") {
+      const custId = parseInt(path.split("/")[1], 10);
+      await sql.query(`UPDATE connections SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE CAST(customer_id AS text) = $1`, [custId.toString()]);
+      await sql.query(`UPDATE customers SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE id = $1`, [custId]);
+      return jsonResponse({ status: "success", message: "Data pelanggan berhasil dihapus." });
+    }
+
+    // 10. Connections (CRUD)
     if (path === "connections") {
-      const rows = await sql.query(`
-        SELECT conn.*, c.full_name as customer_name, c.nik, k.name as kpspams_name
-        FROM connections conn
-        LEFT JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
-        LEFT JOIN kpspams k ON CAST(conn.kpspams_id AS integer) = k.id
-        ORDER BY conn.id DESC
-      `);
-      return jsonResponse({ status: "success", data: rows });
+      if (method === "GET") {
+        const rows = await sql.query(`
+          SELECT conn.*, c.full_name as customer_name, c.nik, k.name as kpspams_name
+          FROM connections conn
+          LEFT JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
+          LEFT JOIN kpspams k ON CAST(conn.kpspams_id AS integer) = k.id
+          ORDER BY conn.id DESC
+        `);
+        return jsonResponse({ status: "success", data: rows });
+      }
+
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const custId = Number(b.customer_id);
+
+        let meterId = null;
+        if (b.meter_serial) {
+          const m = await sql.query(`
+            INSERT INTO meters (
+              kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, true, 'GOOD', NOW(), NOW()
+            ) RETURNING id
+          `, [Number(b.kpspams_id) || 1, b.meter_serial, b.meter_brand || "Onda Multi-Jet", Number(b.initial_reading) || 0]);
+          meterId = m[0]?.id || null;
+        }
+
+        const existing = await sql.query(`SELECT * FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
+        if (existing.length > 0) {
+          const updated = await sql.query(`
+            UPDATE connections SET
+              dusun_id = COALESCE($1, dusun_id),
+              meter_id = COALESCE($2, meter_id),
+              address_detail = COALESCE($3, address_detail),
+              latitude = COALESCE($4, latitude),
+              longitude = COALESCE($5, longitude),
+              updated_at = NOW()
+            WHERE id = $6
+            RETURNING *
+          `, [Number(b.dusun_id) || existing[0].dusun_id, meterId || existing[0].meter_id, b.address_detail, Number(b.latitude) || existing[0].latitude, Number(b.longitude) || existing[0].longitude, existing[0].id]);
+          return jsonResponse({ status: "success", data: updated[0] });
+        } else {
+          const prefix = Number(b.kpspams_id) === 2 ? "SR-LMT" : Number(b.kpspams_id) === 3 ? "SR-KP1" : "SR-LMB";
+          const connNo = b.connection_no || `${prefix}-${custId.toString().padStart(5, "0")}`;
+          const inserted = await sql.query(`
+            INSERT INTO connections (
+              kpspams_id, customer_id, dusun_id, meter_id, connection_no,
+              address_detail, latitude, longitude, status, installed_date, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, 'ACTIVE', NOW(), NOW(), NOW()
+            ) RETURNING *
+          `, [
+            Number(b.kpspams_id) || 1, custId.toString(), Number(b.dusun_id) || 3, meterId, connNo,
+            b.address_detail || "Desa Kuajang", Number(b.latitude) || -3.4215, Number(b.longitude) || 119.3452
+          ]);
+          return jsonResponse({ status: "success", data: inserted[0] }, 201);
+        }
+      }
+    }
+
+    if (path.includes("connections/") && path.endsWith("/status") && method === "PATCH") {
+      const connId = parseInt(path.split("/")[1], 10);
+      const b = await request.json().catch(() => ({}));
+      const newStatus = b.status || "ACTIVE";
+      await sql.query(`
+        UPDATE connections SET status = $1, notes = COALESCE($2, notes), updated_at = NOW()
+        WHERE id = $3 OR CAST(customer_id AS text) = $4
+      `, [newStatus, b.notes || null, connId, connId.toString()]);
+      return jsonResponse({ status: "success", message: "Status koneksi berhasil diperbarui." });
     }
 
     // 11. Invoices
