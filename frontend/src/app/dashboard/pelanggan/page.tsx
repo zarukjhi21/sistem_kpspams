@@ -460,7 +460,32 @@ function PelangganContent() {
     const customerTypeId = typeMap[newTariffType] || 1;
 
     try {
-      // 1. Simpan Pelanggan Baru ke Backend API (Database SQLite)
+      // 1. Unggah arsip foto fisik KTP ke Google Drive Desa jika foto ada
+      let gdrivePhotoUrl: string | undefined = undefined;
+      if (ktpPreviewUrl) {
+        try {
+          const base64Data = ktpPreviewUrl.replace(/^data:image\/\w+;base64,/, "");
+          const cleanNik = newNik.trim() || Date.now().toString();
+          const cleanName = newFullName.trim().replace(/[^a-zA-Z0-9]/g, "_") || "WARGA";
+          const filename = `KTP_${cleanNik}_${cleanName}.jpg`;
+
+          const gdriveRes: any = await apiClient("/upload-ktp-drive", {
+            method: "POST",
+            body: JSON.stringify({
+              image: base64Data,
+              filename,
+              mimeType: "image/jpeg",
+            }),
+          });
+          if (gdriveRes?.fileUrl || gdriveRes?.data?.fileUrl) {
+            gdrivePhotoUrl = gdriveRes?.fileUrl || gdriveRes?.data?.fileUrl;
+          }
+        } catch (driveErr) {
+          console.warn("Gagal mengunggah foto KTP ke Google Drive:", driveErr);
+        }
+      }
+
+      // 2. Simpan Pelanggan Baru ke Backend API
       const custPayload = {
         customer_type_id: customerTypeId,
         nik: newNik.trim(),
@@ -477,6 +502,7 @@ function PelangganContent() {
         marital_status: newMaritalStatus.trim() || undefined,
         occupation: newOccupation.trim() || undefined,
         kpspams_id: kInfo.id,
+        ktp_photo_path: gdrivePhotoUrl || undefined,
       };
 
       const custRes = await apiClient("/customers", {
@@ -945,6 +971,17 @@ function PelangganContent() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center space-x-1.5">
+                          {cust.ktpPhotoUrl && (
+                            <a
+                              href={cust.ktpPhotoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-600 hover:text-indigo-800 transition"
+                              title="Buka Arsip Foto e-KTP di Google Drive"
+                            >
+                              <Camera className="w-4 h-4" />
+                            </a>
+                          )}
                           <button
                             onClick={() => setSelectedCustomer(cust)}
                             className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-maroon-800 transition"
@@ -1646,6 +1683,20 @@ function PelangganContent() {
                   </div>
                 </div>
               ) : null}
+              {selectedCustomer.ktpPhotoUrl && (
+                <div className="flex justify-between items-center py-2 border-b border-slate-50 bg-indigo-50/50 px-3 rounded-xl mt-1">
+                  <span className="text-slate-600 text-xs font-semibold">Arsip e-KTP Warga:</span>
+                  <a
+                    href={selectedCustomer.ktpPhotoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1.5 text-xs font-bold text-indigo-700 hover:text-indigo-900 bg-white shadow-sm hover:shadow px-2.5 py-1 rounded-lg border border-indigo-200 transition"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Buka di Google Drive ↗</span>
+                  </a>
+                </div>
+              )}
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Status Sambungan:</span>
                 <Badge variant={selectedCustomer.status === "ACTIVE" ? "success" : "warning"} size="sm">

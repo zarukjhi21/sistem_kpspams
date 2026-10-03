@@ -254,9 +254,9 @@ export async function onRequest(context: any) {
             kpspams_id, customer_type_id, code, full_name, nik, phone,
             identity_address, rt_rw, dusun, village, district,
             birth_place_date, gender, religion, marital_status, occupation,
-            status, created_at, updated_at
+            ktp_photo_path, status, created_at, updated_at
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17,
             'ACTIVE', NOW(), NOW()
           ) RETURNING *
         `, [
@@ -275,7 +275,8 @@ export async function onRequest(context: any) {
           b.gender || "LAKI-LAKI",
           b.religion || "ISLAM",
           b.marital_status || null,
-          b.occupation || null
+          b.occupation || null,
+          b.ktp_photo_path || b.ktp_photo_url || null
         ]);
         const newCust = inserted[0];
 
@@ -550,6 +551,27 @@ export async function onRequest(context: any) {
         ORDER BY u.id ASC
       `);
       return jsonResponse({ status: "success", data: rows });
+    }
+
+    // 18. Upload KTP to Google Drive
+    if (path === "upload-ktp-drive" && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      const gdriveWebhook = "https://script.google.com/macros/s/AKfycbzRdFzr7S9RizyzOa4DoXWyYEcUtQxp2O1S1uxz8hc2yMqy4cTJpOk3pf0v3Eo6g1wZ/exec";
+      try {
+        const res = await fetch(gdriveWebhook, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            image: b.image || b.base64,
+            filename: b.filename || `KTP_${Date.now()}.jpg`,
+            mimeType: b.mimeType || "image/jpeg",
+          }),
+        });
+        const json = await res.json();
+        return jsonResponse(json);
+      } catch (err: any) {
+        return jsonResponse({ status: "error", message: err.message }, 500);
+      }
     }
 
     return jsonResponse({
