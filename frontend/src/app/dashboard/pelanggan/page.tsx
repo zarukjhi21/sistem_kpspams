@@ -10,6 +10,7 @@ import { DEMO_CUSTOMERS, DemoCustomer } from "@/lib/demo-data";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
+import { scanKtpImage } from "@/lib/ktp-ocr-client";
 
 const mapApiCustomerToDemo = (item: any): DemoCustomer => {
   const primaryConn = item.connections?.[0];
@@ -353,7 +354,7 @@ function PelangganContent() {
     }
   };
 
-  // Pindai Foto KTP dengan AI OCR Vision Asli via Server API
+  // Pindai Foto KTP dengan AI OCR Vision Asli (Web Worker + Gemini AI)
   const triggerAiOcrExtraction = async (dataUrl: string, fileName: string) => {
     setIsScanningKtp(true);
     setOcrError(null);
@@ -361,15 +362,12 @@ function PelangganContent() {
     setScanProgressText("AI Vision sedang membaca NIK, Nama, dan Wilayah dari KTP...");
 
     try {
-      const res = await fetch("/api/ai/ocr-ktp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: dataUrl }),
+      const result = await scanKtpImage(dataUrl, (prog) => {
+        setScanProgressText(prog);
       });
 
-      const json = await res.json();
-      if (res.ok && json.success && json.data) {
-        const d = json.data;
+      if (result.success && result.data) {
+        const d = result.data;
 
         // Terapkan hasil pembacaan teks asli dari KTP langsung ke state form
         if (d.nik) setNewNik(d.nik);
@@ -400,9 +398,9 @@ function PelangganContent() {
         const kInfo = getKpspamsByDusun(targetDusun);
         setNewMeterSerial(`MTR-${kInfo.codePrefix}-${Math.floor(1000 + Math.random() * 9000)}`);
         
-        const seconds = json.executionTimeMs ? (json.executionTimeMs / 1000).toFixed(1) : "1.8";
+        const seconds = result.executionTimeMs ? (result.executionTimeMs / 1000).toFixed(1) : "1.8";
         setScanDuration(Number(seconds));
-        if (json.engine) setOcrEngine(json.engine);
+        if (result.engine) setOcrEngine(result.engine);
 
         // Validasi apakah setidaknya Nama, NIK, atau Alamat berhasil terekstrak
         if (d.name || d.nik || d.address) {
@@ -412,12 +410,12 @@ function PelangganContent() {
           setAiExtracted(false);
         }
       } else {
-        setOcrError(json.message || "Teks KTP tidak terbaca jelas. Silakan periksa formulir dan isi secara manual jika diperlukan.");
+        setOcrError(result.message || "Teks KTP tidak terbaca jelas. Silakan periksa formulir dan isi secara manual jika diperlukan.");
         setAiExtracted(false);
       }
     } catch (err: any) {
       console.error("OCR API error:", err);
-      setOcrError("Terjadi kendala jaringan saat memindai KTP. Silakan coba lagi atau isi formulir secara manual.");
+      setOcrError("Terjadi kendala saat memindai KTP. Silakan coba lagi atau isi formulir secara manual.");
       setAiExtracted(false);
     } finally {
       setIsScanningKtp(false);

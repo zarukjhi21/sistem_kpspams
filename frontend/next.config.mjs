@@ -1,17 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: 'export',
+  trailingSlash: true,
   reactStrictMode: true,
-  experimental: {
-    serverComponentsExternalPackages: ['tesseract.js'],
-  },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-    ],
+    unoptimized: true,
   },
 };
 

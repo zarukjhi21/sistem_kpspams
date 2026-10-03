@@ -1,62 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
-import { createWorker, Worker } from "tesseract.js";
-import { parseKtpRawText, ParsedKtpData } from "@/lib/ktp-parser";
+/**
+ * Client-side KTP OCR helper for SI-KPSPAMS Desa Kuajang
+ * Runs directly in the browser using Web Workers (Tesseract.js) and optional Google Gemini Vision.
+ * Enables 100% static export deployment on Cloudflare Pages without server-side Node.js dependencies.
+ */
 
-export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+import { parseKtpRawText, ParsedKtpData } from "./ktp-parser";
 
-// Persistent Tesseract worker cache as high-speed fallback
-let globalWorkerPromise: Promise<Worker> | null = null;
-let queuePromise: Promise<any> = Promise.resolve();
-
-function getWorkerOptions() {
-  const localWorker = path.resolve(
-    process.cwd(),
-    "node_modules/tesseract.js/src/worker-script/node/index.js"
-  );
-  if (fs.existsSync(localWorker)) {
-    return { workerPath: localWorker };
-  }
-  return {};
+export interface OcrResult {
+  success: boolean;
+  engine?: string;
+  executionTimeMs?: number;
+  data?: ParsedKtpData;
+  message?: string;
+  rawText?: string;
 }
 
-async function getOrCreateWorker(): Promise<Worker> {
-  if (!globalWorkerPromise) {
-    globalWorkerPromise = (async () => {
-      const options = getWorkerOptions();
-      const worker = await createWorker(["ind", "eng"], 1, options);
-      return worker;
-    })().catch((err) => {
-      globalWorkerPromise = null;
-      console.error("Failed to initialize Tesseract worker:", err);
-      throw err;
-    });
-  }
-  return globalWorkerPromise;
-}
-
-async function performLocalOcr(buffer: Buffer): Promise<string> {
-  return new Promise((resolve, reject) => {
-    queuePromise = queuePromise
-      .then(async () => {
-        try {
-          const worker = await getOrCreateWorker();
-          const ret = await worker.recognize(buffer);
-          resolve(ret.data.text);
-        } catch (workerErr) {
-          globalWorkerPromise = null;
-          reject(workerErr);
-        }
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-}
-
-// Ekstraksi Vision Multimodal via Google Gemini 1.5 Flash
+// Ekstraksi Vision Multimodal via Google Gemini jika API key tersedia di client
 async function extractWithGemini(
   base64Data: string,
   apiKey: string
@@ -78,8 +37,7 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
   "occupation": "PEKERJAAN SESUAI KTP"
 }`;
 
-  // Coba model multimodal terbaru yang aktif: gemini-3.1-flash-lite lalu gemini-3.8-flash
-  const candidateModels = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-1.5-flash"];
+  const candidateModels = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
   let responseJson: any = null;
   let lastErrorMsg = "";
 
@@ -90,7 +48,6 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
         },
         body: JSON.stringify({
           contents: [
@@ -133,7 +90,6 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
     responseJson?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
   const parsed = JSON.parse(rawContent.trim());
 
-  // Deteksi dusun dari field dusun atau dari address
   let dusunResult = (parsed.dusun || "").trim();
   const fullAddressText = `${dusunResult} ${parsed.address || ""}`.toUpperCase();
 
@@ -149,7 +105,6 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
     }
   }
 
-  // Tentukan titik koordinat GIS berdasarkan Dusun hasil Gemini
   let suggestedLat = -3.4565;
   let suggestedLng = 119.3435;
   if (/LEMO\s*TUA/i.test(dusunResult)) {
@@ -181,76 +136,67 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
   };
 }
 
-export async function POST(req: NextRequest) {
+/**
+ * Scan KTP image data URL and extract Indonesian ID Card fields
+ */
+export async function scanKtpImage(
+  dataUrl: string,
+  onProgress?: (text: string) => void
+): Promise<OcrResult> {
   const startTime = Date.now();
 
   try {
-    const body = await req.json();
-    const { imageBase64 } = body;
+    const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, "");
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    if (!imageBase64) {
-      return NextResponse.json(
-        { success: false, message: "Berkas gambar KTP tidak ditemukan." },
-        { status: 400 }
-      );
-    }
-
-    // Convert base64 data URL ke buffer dan data mentah
-    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
-
-    if (buffer.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "Data gambar kosong." },
-        { status: 400 }
-      );
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    // STRATEGI 1: Gunakan Google Gemini 1.5 Flash jika API Key terkonfigurasi
+    // Strategi 1: Google Gemini jika API key dikonfigurasi
     if (apiKey && apiKey.trim() !== "") {
+      onProgress?.("Menghubungi Google Gemini Vision AI...");
       try {
         const geminiData = await extractWithGemini(base64Data, apiKey.trim());
         const executionTimeMs = Date.now() - startTime;
-
-        return NextResponse.json({
+        return {
           success: true,
-          engine: "Google Gemini AI Vision (Multimodal)",
+          engine: "Google Gemini AI Vision",
           executionTimeMs,
           data: geminiData,
-        });
+        };
       } catch (geminiError: any) {
         console.warn(
-          "Gemini API belum aktif/terkendala, beralih otomatis ke Tesseract lokal:",
-          geminiError.message
+          "Gemini API terkendala, beralih ke Tesseract Web Worker:",
+          geminiError
         );
       }
     }
 
-    // STRATEGI 2: Fallback Cepat Menggunakan Mesin Tesseract Lokal (Offline-Ready)
-    const rawText = await performLocalOcr(buffer);
+    // Strategi 2: Tesseract OCR di Browser Client via Web Worker
+    onProgress?.("Memuat mesin OCR Tesseract di peramban...");
+    const { createWorker } = await import("tesseract.js");
+    const worker = await createWorker(["ind", "eng"]);
+
+    onProgress?.("Menganalisis pola teks KTP...");
+    const ret = await worker.recognize(dataUrl);
+    await worker.terminate();
+
+    const rawText = ret.data.text;
     const parsedData = parseKtpRawText(rawText);
     const executionTimeMs = Date.now() - startTime;
 
-    return NextResponse.json({
+    return {
       success: true,
-      engine: "Tesseract OCR Engine (Lokal)",
+      engine: "Tesseract OCR (Browser Client)",
       executionTimeMs,
       rawText,
       data: parsedData,
-    });
+    };
   } catch (err: any) {
-    console.error("KTP OCR Server Error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          err.message ||
-          "Gagal memproses OCR KTP. Pastikan foto jelas dan terbaca.",
-        executionTimeMs: Date.now() - startTime,
-      },
-      { status: 500 }
-    );
+    console.error("Client KTP OCR Error:", err);
+    return {
+      success: false,
+      message:
+        err.message ||
+        "Gagal memproses OCR KTP. Pastikan foto KTP cukup jelas dan terbaca.",
+      executionTimeMs: Date.now() - startTime,
+    };
   }
 }
