@@ -6,12 +6,19 @@ import { Providers } from "@/components/Providers";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0284c7",
+  maximumScale: 5,
+  themeColor: "#7f1d1d",
 };
 
 export const metadata: Metadata = {
   title: "SI-KPSPAMS KUAJANG | Sistem Informasi Pengelolaan Air Perdesaan",
   description: "Sistem Informasi Terpadu Pengelolaan KPSPAMS Lemo Baru, Lemo Tua, dan Sarampu 1 Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SI-KPSPAMS",
+  },
   icons: {
     icon: "/logo.jpg",
     shortcut: "/logo.jpg",
