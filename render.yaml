@@ -25,15 +25,17 @@ services:
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        sync: false
+        value: "ep-red-morning-azj1g0gk-pooler.c-3.ap-southeast-1.aws.neon.tech"
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
-        sync: false
+        value: "neondb"
       - key: DB_USERNAME
-        sync: false
+        value: "neondb_owner"
       - key: DB_PASSWORD
-        sync: false
+        value: "npg_xXdSNh8Jf2Hw"
+      - key: DATABASE_URL
+        value: "postgresql://neondb_owner:npg_xXdSNh8Jf2Hw@ep-red-morning-azj1g0gk-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
       - key: SESSION_DRIVER
         value: cookie
       - key: CACHE_STORE

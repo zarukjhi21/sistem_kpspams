@@ -51,3 +51,4 @@ docker/nginx/ssl/*.pem
 *.tsbuildinfo
 backend/composer.phar
 frontend/*.traineddata
+.neon
