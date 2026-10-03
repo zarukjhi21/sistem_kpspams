@@ -36,8 +36,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
     status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
-    latitude: primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215,
-    longitude: primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452,
+    latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
+    longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452),
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
   };
@@ -132,6 +132,9 @@ function PenagihanLapanganContent() {
       if (custRes?.status === "success" && Array.isArray(custRes.data) && custRes.data.length > 0) {
         const mapped = custRes.data.map(mapApiCustomerToDemo);
         setCustomers(mapped);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("kpspams_customers", JSON.stringify(mapped));
+        }
       }
     } catch (err) {
       console.warn("Gagal fetch pelanggan dari server:", err);
