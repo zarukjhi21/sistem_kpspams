@@ -37,7 +37,7 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
   "occupation": "PEKERJAAN SESUAI KTP"
 }`;
 
-  const candidateModels = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
+  const candidateModels = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"];
   let responseJson: any = null;
   let lastErrorMsg = "";
 
