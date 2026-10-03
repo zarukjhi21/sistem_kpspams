@@ -68,8 +68,8 @@ function PenagihanLapanganContent() {
   // 4 = Kirim Struk Otomatis via WhatsApp (Tanpa Cetak Fisik)
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
 
-  // Mode Tampilan Step 1: Peta GIS Rute vs Daftar Antrean Warga
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  // Mode Tampilan Step 1: Peta GIS Rute vs Daftar Antrean Warga (Default: List agar render instan tanpa loading spinner GIS)
+  const [viewMode, setViewMode] = useState<"map" | "list">("list");
 
   // State Pelanggan Demo Lokal (mendukung perubahan dinamis status lunas realtime & localStorage)
   const [customers, setCustomers] = useState<DemoCustomer[]>(() => {
