@@ -194,6 +194,8 @@ function PenagihanLapanganContent() {
   const [currentReading, setCurrentReading] = useState<string>(
     (selectedCustomer.lastReading + 14.5).toFixed(2)
   );
+  // Opsi Mode Opname Stand Awal untuk meteran yang baru pertama kali dicatat
+  const [isInitialSetup, setIsInitialSetup] = useState<boolean>(selectedCustomer.lastReading === 0);
 
   // Step 3: Pembayaran Tunai
   const [tenderAmount, setTenderAmount] = useState<number>(10000);
@@ -205,18 +207,30 @@ function PenagihanLapanganContent() {
     selectedCustomer?.phone || ""
   );
 
-  // Sinkronkan nomor WhatsApp otomatis setiap kali warga yang dipilih berganti
+  // Sinkronkan nomor WhatsApp & status stand awal otomatis saat pelanggan berganti
   React.useEffect(() => {
     if (selectedCustomer) {
       setCustomerPhone(selectedCustomer.phone || "");
+      if (selectedCustomer.lastReading === 0) {
+        setIsInitialSetup(true);
+      }
     }
   }, [selectedCustomerId, selectedCustomer]);
 
   // Kalkulasi Kubikasi & Tagihan Otomatis
   const previousReading = selectedCustomer.lastReading;
   const currentNum = parseFloat(currentReading) || 0;
-  const usageM3 = Math.max(0, currentNum - previousReading);
-  const billCalc = calculateWaterBill(selectedCustomer.kpspamsId, usageM3);
+  const usageM3 = isInitialSetup ? 0 : Math.max(0, currentNum - previousReading);
+  const rawBillCalc = calculateWaterBill(selectedCustomer.kpspamsId, usageM3);
+  const billCalc = isInitialSetup
+    ? {
+        ...rawBillCalc,
+        totalAmount: rawBillCalc.baseFee,
+        excessM3: 0,
+        excessFee: 0,
+        formulaDescription: `Pencatatan Perdana Stand Awal (${currentNum.toFixed(2)} m³) — Paket Beban Dasar: Rp ${rawBillCalc.baseFee.toLocaleString("id-ID")}`,
+      }
+    : rawBillCalc;
   const totalDue = billCalc.totalAmount;
   const changeDue = Math.max(0, tenderAmount - totalDue);
 
@@ -394,6 +408,32 @@ function PenagihanLapanganContent() {
 
   // Teks Resmi Kwitansi WhatsApp SI-KPSPAMS
   const getWhatsAppMessage = () => {
+    if (isInitialSetup) {
+      return encodeURIComponent(
+        `*KWITANSI PEMBAYARAN AIR BERSIH RESMI*\n` +
+        `*SI-KPSPAMS KUAJANG*\n` +
+        `Unit: ${selectedCustomer.kpspamsName} (Desa Kuajang)\n` +
+        `----------------------------------------\n` +
+        `No. Kwitansi  : ${generatedReceiptNo}\n` +
+        `No. Sambungan : ${selectedCustomer.connectionNo}\n` +
+        `Nama Warga    : ${selectedCustomer.name}\n` +
+        `Wilayah       : ${selectedCustomer.dusun}\n` +
+        `Periode       : Oktober 2026 (Pencatatan Perdana)\n` +
+        `Stand Meter Fisik: ${currentNum.toFixed(2)} m³ (Titik Dasar Baru)\n` +
+        `Status Catat  : *STAND AWAL TRANSISI*\n` +
+        `Paket Dasar   : Rp ${totalDue.toLocaleString("id-ID")},- (Masa Transisi s.d 15 m³)\n` +
+        `Total Bayar   : Rp ${totalDue.toLocaleString("id-ID")},-\n` +
+        `Uang Diterima : Rp ${tenderAmount.toLocaleString("id-ID")},-\n` +
+        `Kembalian     : Rp ${changeDue.toLocaleString("id-ID")},-\n` +
+        `Status        : *LUNAS* (Diterima Tunai Petugas di Tempat)\n` +
+        `Petugas Kasir : ${user?.name || "Petugas Lapangan"}\n` +
+        `Waktu Transaksi: ${transactionTime}\n` +
+        `----------------------------------------\n` +
+        `*Catatan*: Angka meteran ${currentNum.toFixed(2)} m³ telah resmi terekam di sistem sebagai Stand Awal. Mulai bulan depan, pemakaian kubikasi riil akan dihitung dari angka ini.\n` +
+        `_Terima kasih telah berpartisipasi menjaga kelestarian & operasional air bersih Desa Kuajang._`
+      );
+    }
+
     return encodeURIComponent(
       `*KWITANSI PEMBAYARAN AIR BERSIH RESMI*\n` +
       `*SI-KPSPAMS KUAJANG*\n` +
@@ -782,6 +822,11 @@ function PenagihanLapanganContent() {
                 <div className="text-xl font-black font-tabular text-slate-700 mt-1">
                   {previousReading.toFixed(2)} m³
                 </div>
+                {previousReading === 0 && (
+                  <span className="text-[10px] text-amber-700 font-semibold block mt-1">
+                    Stand lalu masih 0 m³. Sangat disarankan aktifkan Mode Opname Perdana di bawah jika meteran fisik sudah berjalan lama.
+                  </span>
+                )}
               </div>
 
               <div>
@@ -800,6 +845,33 @@ function PenagihanLapanganContent() {
                   <span className="absolute right-3.5 top-3 text-xs font-bold text-slate-400">m³</span>
                 </div>
               </div>
+            </div>
+
+            {/* Opsi Transisi / Opname Perdana (Solusi Meteran Fisik yang Sudah Berjalan Lama) */}
+            <div className={`p-3.5 rounded-2xl border transition-all ${
+              isInitialSetup 
+                ? "bg-amber-50/90 border-amber-300 ring-2 ring-amber-400/40" 
+                : "bg-slate-50 border-slate-200 hover:bg-slate-100/60"
+            }`}>
+              <label className="flex items-start space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isInitialSetup}
+                  onChange={(e) => setIsInitialSetup(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded text-brand-maroon-700 border-slate-300 focus:ring-brand-maroon-700"
+                />
+                <div className="space-y-0.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-900">
+                      Pencatatan Perdana / Opname Stand Awal (Bulan Pertama Aplikasi)
+                    </span>
+                    <Badge variant="warning" size="sm" className="text-[9px]">Transisi</Badge>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Centang ini jika meteran fisik warga sudah berjalan berbulan-bulan sebelumnya. Angka yang Anda catat hari ini ({parseFloat(currentReading) || 0} m³) akan ditetapkan sebagai <strong>titik nol baru (baseline)</strong>, dan tagihan warga bulan ini otomatis <strong>Paket Beban Dasar (Rp 10.000)</strong> agar warga tidak terbebani selisih akumulasi bulan lalu.
+                  </p>
+                </div>
+              </label>
             </div>
 
             {/* Kotak Kalkulasi Tagihan Sesuai Sistem Air (Gravitasi vs Sumur Bor) */}
@@ -831,10 +903,16 @@ function PenagihanLapanganContent() {
               </div>
 
               <div className="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1.5 text-xs">
+                {isInitialSetup && (
+                  <div className="p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-950 text-[11px] font-medium leading-relaxed">
+                    ⚡ <strong>Mode Transisi Aktif:</strong> Angka stand meter fisik ({currentNum.toFixed(2)} m³) akan disimpan resmi sebagai <strong>titik awal (baseline)</strong>. Tagihan bulan ini otomatis Paket Beban Dasar Rp 10.000. Mulai bulan depan penagihan dihitung murni dari selisih pemakaian kubikasi.
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span className="text-slate-600">Kubikasi Pemakaian Air:</span>
                   <span className="font-tabular font-bold text-emerald-800 text-sm">
-                    {usageM3.toFixed(2)} m³
+                    {isInitialSetup ? "0.00 m³ (Stand Awal)" : `${usageM3.toFixed(2)} m³`}
                   </span>
                 </div>
 
