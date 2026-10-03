@@ -28,7 +28,7 @@ export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
     name: 'KPSPAMS Lemo Baru',
     dusuns: ['Dusun Lemo Baru'],
     head: 'Hasanuddin',
-    activeCustomers: 185,
+    activeCustomers: 1, // 1 SR Aktif Terverifikasi Server (Muhammad Yusuf)
     waterUsageThisMonth: 0,
     totalBilled: 0,
     totalCollected: 0,
@@ -218,13 +218,13 @@ export interface DemoCustomer {
 }
 
 export const DEMO_CUSTOMERS: DemoCustomer[] = [
-  // Dusun Lemo Baru (KPSPAMS Lemo Baru)
+  // Dusun Lemo Baru (KPSPAMS Lemo Baru) - Data Riil Terverifikasi
   {
     id: 1,
     connectionNo: 'SR-LMB-00001',
     name: 'Muhammad Yusuf',
     nik: '7604031508850001',
-    phone: '085242111001',
+    phone: '085242000001',
     dusun: 'Lemo Baru',
     kpspamsId: 1,
     kpspamsName: 'KPSPAMS Lemo Baru',
@@ -234,57 +234,6 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     tariffType: 'Rumah Tangga',
     latitude: -3.4578,
     longitude: 119.3412,
-    billingStatus: 'UNPAID',
-  },
-  {
-    id: 2,
-    connectionNo: 'SR-LMB-00002',
-    name: 'Baharuddin S.',
-    nik: '7604031405820005',
-    phone: '085242111002',
-    dusun: 'Lemo Baru',
-    kpspamsId: 1,
-    kpspamsName: 'KPSPAMS Lemo Baru',
-    meterSerial: 'MTR-LMB-1002',
-    lastReading: 210.00,
-    status: 'ACTIVE',
-    tariffType: 'Rumah Tangga',
-    latitude: -3.4595,
-    longitude: 119.3428,
-    billingStatus: 'UNPAID',
-  },
-  {
-    id: 7,
-    connectionNo: 'SR-LMB-00003',
-    name: 'H. Kamaruddin Basri',
-    nik: '7604031508850009',
-    phone: '085242111003',
-    dusun: 'Lemo Baru',
-    kpspamsId: 1,
-    kpspamsName: 'KPSPAMS Lemo Baru',
-    meterSerial: 'MTR-LMB-1003',
-    lastReading: 12.00,
-    status: 'ACTIVE',
-    tariffType: 'Rumah Tangga',
-    latitude: -3.4565,
-    longitude: 119.3435,
-    billingStatus: 'UNPAID',
-  },
-  {
-    id: 8,
-    connectionNo: 'SR-LMB-00004',
-    name: 'Ibu Salmawati',
-    nik: '7604032103870008',
-    phone: '085242111004',
-    dusun: 'Lemo Baru',
-    kpspamsId: 1,
-    kpspamsName: 'KPSPAMS Lemo Baru',
-    meterSerial: 'MTR-LMB-1004',
-    lastReading: 178.20,
-    status: 'ACTIVE',
-    tariffType: 'Rumah Tangga',
-    latitude: -3.4588,
-    longitude: 119.3398,
     billingStatus: 'UNPAID',
   },
 ];
@@ -306,7 +255,7 @@ export interface DemoInvoice {
 export const DEMO_INVOICES: DemoInvoice[] = [
   {
     id: 101,
-    invoiceNo: 'INV/202610/KP01/A8F12',
+    invoiceNo: 'INV/202610/KP01/41C5FD',
     customerName: 'Muhammad Yusuf',
     connectionNo: 'SR-LMB-00001',
     dusun: 'Lemo Baru',
@@ -315,19 +264,6 @@ export const DEMO_INVOICES: DemoInvoice[] = [
     usageM3: 14.50,
     totalAmount: 10000, // Aturan Lemo Baru: Rp10.000 s/d 15 m³
     status: 'UNPAID',
-    dueDate: '2026-10-20',
-  },
-  {
-    id: 102,
-    invoiceNo: 'INV/202610/KP01/B7C34',
-    customerName: 'Baharuddin S.',
-    connectionNo: 'SR-LMB-00002',
-    dusun: 'Lemo Baru',
-    kpspamsId: 1,
-    period: 'Oktober 2026',
-    usageM3: 18.00,
-    totalAmount: 13000, // Aturan Lemo Baru: Rp10.000 (15 m³) + (3 m³ x Rp1.000) = Rp13.000
-    status: 'PAID',
     dueDate: '2026-10-20',
   },
 ];

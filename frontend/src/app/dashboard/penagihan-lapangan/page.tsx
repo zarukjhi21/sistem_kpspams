@@ -72,13 +72,16 @@ function PenagihanLapanganContent() {
   // Mode Tampilan Step 1: Peta GIS Rute vs Daftar Antrean Warga (Default: List agar render instan tanpa loading spinner GIS)
   const [viewMode, setViewMode] = useState<"map" | "list">("list");
 
-  // State Pelanggan Demo Lokal (mendukung perubahan dinamis status lunas realtime & localStorage)
+  // State Pelanggan (mendukung perubahan dinamis status lunas realtime & sinkronisasi data riil)
   const [customers, setCustomers] = useState<DemoCustomer[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("kpspams_customers");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && !parsed.some((c: any) => c.name === "Baharuddin S." || c.connectionNo === "SR-LMB-00005")) {
+            return parsed;
+          }
         } catch {
           // fallback
         }
@@ -86,6 +89,17 @@ function PenagihanLapanganContent() {
     }
     return DEMO_CUSTOMERS;
   });
+
+  // Hapus cache lama jika terdeteksi data demo basi agar data riil selalu sinkron
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kpspams_customers");
+      if (saved && (saved.includes("SR-LMB-00005") || saved.includes("Baharuddin") || saved.includes("SYAHARUDDIN"))) {
+        localStorage.removeItem("kpspams_customers");
+        setCustomers(DEMO_CUSTOMERS);
+      }
+    }
+  }, []);
 
   // Multi-tenant Isolation: Petugas Lapangan terisolasi secara ketat ke KPSPAMS miliknya
   const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
@@ -286,7 +300,7 @@ function PenagihanLapanganContent() {
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone || "6281234567890"}&text=${getWhatsAppMessage()}`;
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-5 sm:space-y-6 max-w-3xl mx-auto pb-36 md:pb-12">
       {/* Top Banner Mode Lapangan */}
       <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-5 rounded-3xl shadow-xl border border-brand-maroon-800">
         <div className="flex items-center justify-between">
@@ -544,19 +558,20 @@ function PenagihanLapanganContent() {
 
             {/* Selected Customer Preview Card */}
             <div className="p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-gold-400">
                     Rumah Pelanggan Terpilih
                   </span>
                   <Badge
                     variant={selectedCustomer.billingStatus === "PAID" ? "success" : "danger"}
                     size="sm"
+                    className="whitespace-nowrap font-bold"
                   >
-                    {selectedCustomer.billingStatus === "PAID" ? "✓ SUDAH LUNAS" : "● BELUM BAYAR"}
+                    {selectedCustomer.billingStatus === "PAID" ? "✓ Lunas" : "● Belum Bayar"}
                   </Badge>
                 </div>
-                <Badge variant="brand" size="sm">
+                <Badge variant="brand" size="sm" className="whitespace-nowrap font-mono font-bold">
                   {selectedCustomer.connectionNo}
                 </Badge>
               </div>
@@ -608,19 +623,19 @@ function PenagihanLapanganContent() {
               </div>
             </div>
 
-
-
             {/* Proceed to Meter */}
-            <Button
-              type="button"
-              variant="primary"
-              size="lg"
-              className="w-full font-bold shadow-lg"
-              onClick={handleProceedToMeter}
-              icon={<ArrowRight className="w-4 h-4" />}
-            >
-              Lanjut: Catat Meteran Air di Rumah Warga &rarr;
-            </Button>
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="primary"
+                size="lg"
+                className="w-full font-bold shadow-lg py-3.5 text-sm"
+                onClick={handleProceedToMeter}
+                icon={<ArrowRight className="w-4 h-4" />}
+              >
+                Lanjut: Catat Meteran Air di Rumah Warga &rarr;
+              </Button>
+            </div>
           </div>
         </Card>
       )}

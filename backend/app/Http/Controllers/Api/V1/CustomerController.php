@@ -34,7 +34,7 @@ class CustomerController extends BaseApiController
         if ($request->filled('search')) {
             $s = $request->query('search');
             $query->where(function ($q) use ($s) {
-                $q->where('full_name', 'ilike', "%{$s}%")
+                $q->where('full_name', 'like', "%{$s}%")
                   ->orWhere('nik', 'like', "%{$s}%")
                   ->orWhere('code', 'like', "%{$s}%");
             });

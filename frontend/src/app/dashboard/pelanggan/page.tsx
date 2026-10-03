@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardHeader } from "@/components/ui/Card";
@@ -68,7 +68,10 @@ function PelangganContent() {
       const saved = localStorage.getItem("kpspams_customers");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && !parsed.some((c: any) => c.name === "Baharuddin S." || c.connectionNo === "SR-LMB-00005")) {
+            return parsed;
+          }
         } catch {
           // fallback
         }
@@ -76,6 +79,17 @@ function PelangganContent() {
     }
     return DEMO_CUSTOMERS;
   });
+
+  // Hapus cache lama jika terdeteksi data demo basi agar data riil selalu sinkron
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kpspams_customers");
+      if (saved && (saved.includes("SR-LMB-00005") || saved.includes("Baharuddin") || saved.includes("SYAHARUDDIN"))) {
+        localStorage.removeItem("kpspams_customers");
+        setCustomers(DEMO_CUSTOMERS);
+      }
+    }
+  }, []);
 
   const updateCustomers = (newList: DemoCustomer[]) => {
     setCustomers(newList);
