@@ -68,6 +68,7 @@ function DashboardContent() {
       : registeredCustomers.filter((c) => c.kpspamsId === activeKpspamsId);
 
   const realCustomerCount = filteredCustomers.length;
+  const totalCustomers = realCustomerCount;
 
   // Hitung metrik dinamis berdasarkan KPSPAMS yang aktif
   const currentUnits =

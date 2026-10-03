@@ -77,6 +77,10 @@ export function DashboardAnalyticsCharts({
     );
   }
 
+  // Konteks unit & cakupan wilayah
+  const isPhase2Unit = activeKpspamsId === 2 || activeKpspamsId === 3;
+  const isLemoBaruScope = activeKpspamsId === null || activeKpspamsId === 1;
+
   // Pelanggan terdaftar di unit aktif (yang benar-benar sudah diinput di sistem)
   const registeredInUnit = customers.filter((c) =>
     activeKpspamsId === null ? true : c.kpspamsId === activeKpspamsId
@@ -209,15 +213,15 @@ export function DashboardAnalyticsCharts({
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             {isLemoBaruScope
-              ? "Fokus Pilot Project: KPSPAMS Lemo Baru (Mata Air Gravitasi • 185 SR) • Unit Lainnya Tahap 2"
-              : `Statistik Kinerja Khusus ${activeKpspamsName} • Status: Persiapan Tahap 2`}
+              ? "Statistik kinerja operasional, iuran warga, dan kepatuhan pembayaran"
+              : `Statistik Kinerja Khusus ${activeKpspamsName} • Status: Persiapan Operasional`}
           </p>
         </div>
         <div className="flex items-center space-x-2">
           {isLemoBaruScope ? (
             <>
               <Badge variant="brand" size="sm">
-                Pilot: Lemo Baru Live
+                Lemo Baru Aktif
               </Badge>
               <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold hidden sm:inline-flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-emerald-600" /> Penagihan Mulai: 5 Okt 2026
@@ -225,7 +229,7 @@ export function DashboardAnalyticsCharts({
             </>
           ) : (
             <Badge variant="warning" size="sm">
-              Persiapan Tahap 2 (Non-Aktif)
+              Persiapan Operasional
             </Badge>
           )}
         </div>
@@ -237,13 +241,11 @@ export function DashboardAnalyticsCharts({
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" />
             <span>
-              <strong>Perhatian:</strong> Unit {activeKpspamsName} belum beroperasi di lapangan
-              (Persiapan Tahap 2). Sistem saat ini difokuskan penuh untuk Pilot Project{" "}
-              <strong>KPSPAMS Lemo Baru</strong> (185 SR).
+              <strong>Perhatian:</strong> Unit {activeKpspamsName} sedang dalam tahap persiapan pendataan warga & meteran air di sistem.
             </span>
           </div>
           <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg flex-shrink-0">
-            Tahap 2
+            Persiapan
           </span>
         </div>
       )}
