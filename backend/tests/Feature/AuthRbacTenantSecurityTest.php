@@ -667,4 +667,85 @@ class AuthRbacTenantSecurityTest extends TestCase
         ]);
         $this->assertContains($resUpdate->status(), [403, 404]);
     }
+
+    /**
+     * Test 19: User Lemo Tua TIDAK BISA melihat atau mengubah data Lemo Baru (Bidirectional Isolation)
+     */
+    public function test_user_lemo_tua_cannot_access_lemo_baru(): void
+    {
+        $periodLMB = BillingPeriod::create([
+            'kpspams_id' => $this->kpspamsLemoBaru->id,
+            'period_code' => '202610_LMB',
+            'name' => 'Oktober 2026 LMB',
+            'year' => 2026,
+            'month' => 10,
+            'reading_start_date' => '2026-10-01',
+            'reading_end_date' => '2026-10-05',
+            'billing_date' => '2026-10-06',
+            'due_date' => '2026-10-20',
+        ]);
+
+        $meterLMB = Meter::create([
+            'kpspams_id' => $this->kpspamsLemoBaru->id,
+            'serial_number' => 'MTR-LMB-TEST-01',
+            'brand' => 'Onda',
+            'initial_reading' => 0.00,
+        ]);
+
+        $connLMB = Connection::create([
+            'kpspams_id' => $this->kpspamsLemoBaru->id,
+            'customer_id' => $this->customerLemoBaru1->id,
+            'dusun_id' => $this->dusunLemoBaru->id,
+            'meter_id' => $meterLMB->id,
+            'connection_no' => 'SR-KP01-TEST-01',
+            'address_detail' => 'Lemo Baru RT 01',
+        ]);
+
+        $readingLMB = MeterReading::create([
+            'kpspams_id' => $this->kpspamsLemoBaru->id,
+            'billing_period_id' => $periodLMB->id,
+            'connection_id' => $connLMB->id,
+            'meter_id' => $meterLMB->id,
+            'previous_reading' => 0.00,
+            'current_reading' => 15.00,
+            'usage_m3' => 15.00,
+            'meter_photo_path' => 'meter_photos/lmb_test.jpg',
+            'status' => 'VERIFIED',
+        ]);
+
+        $invoiceLMB = Invoice::create([
+            'kpspams_id' => $this->kpspamsLemoBaru->id,
+            'billing_period_id' => $periodLMB->id,
+            'connection_id' => $connLMB->id,
+            'customer_id' => $this->customerLemoBaru1->id,
+            'meter_reading_id' => $readingLMB->id,
+            'invoice_number' => 'INV/202610/KP01/TEST',
+            'invoice_date' => '2026-10-06',
+            'due_date' => '2026-10-20',
+            'usage_m3' => 15.00,
+            'water_amount' => 10000.00,
+            'admin_fee' => 10000.00,
+            'total_amount' => 20000.00,
+            'paid_amount' => 0.00,
+            'balance_due' => 20000.00,
+            'status' => 'UNPAID',
+        ]);
+
+        $this->actingAs($this->adminLemoTua);
+
+        // 1. Lemo Tua mencoba melihat customer Lemo Baru
+        $resCust = $this->getJson("/api/v1/customers/{$this->customerLemoBaru1->id}");
+        $this->assertContains($resCust->status(), [403, 404]);
+
+        // 2. Lemo Tua mencoba melihat invoice Lemo Baru
+        $resInv = $this->getJson("/api/v1/invoices/{$invoiceLMB->id}");
+        $this->assertContains($resInv->status(), [403, 404]);
+
+        // 3. Lemo Tua mencoba update customer Lemo Baru
+        $resUpd = $this->putJson("/api/v1/customers/{$this->customerLemoBaru1->id}", [
+            'full_name' => 'Disabotase oleh Admin Lemo Tua',
+        ]);
+        $this->assertContains($resUpd->status(), [403, 404]);
+        $this->assertDatabaseMissing('customers', ['full_name' => 'Disabotase oleh Admin Lemo Tua']);
+    }
 }
