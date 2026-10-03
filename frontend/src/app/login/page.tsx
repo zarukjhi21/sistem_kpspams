@@ -77,18 +77,18 @@ export default function LoginPage() {
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-maroon-200/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header Navigation */}
-      <header className="max-w-md w-full mx-auto flex items-center justify-between z-10 pb-4">
+      <header className="max-w-md w-full mx-auto flex items-center justify-between z-10 pb-3 sm:pb-4">
         <Link
           href="/"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-brand-maroon-900 transition px-3 py-1.5 rounded-xl hover:bg-white/80 border border-transparent hover:border-slate-200"
+          className="inline-flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-slate-600 hover:text-brand-maroon-900 transition px-2.5 sm:px-3 py-1.5 rounded-xl hover:bg-white/80 border border-transparent hover:border-slate-200"
         >
           <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
-          <span>Kembali ke Beranda</span>
+          <span>Beranda</span>
         </Link>
 
         <Link
           href="/portal"
-          className="inline-flex items-center space-x-2 text-xs font-semibold text-brand-maroon-900 hover:text-brand-maroon-950 transition px-3.5 py-1.5 rounded-xl bg-white/90 backdrop-blur border border-slate-200/90 shadow-xs hover:shadow hover:border-brand-gold-400"
+          className="inline-flex items-center space-x-1.5 sm:space-x-2 text-[11px] sm:text-xs font-semibold text-brand-maroon-900 hover:text-brand-maroon-950 transition px-3 sm:px-3.5 py-1.5 rounded-xl bg-white/90 backdrop-blur border border-slate-200/90 shadow-xs hover:shadow hover:border-brand-gold-400"
         >
           <Globe className="w-3.5 h-3.5 text-brand-gold-600 animate-pulse" />
           <span>Portal Warga</span>
@@ -97,14 +97,14 @@ export default function LoginPage() {
 
       {/* Main Centered Login Card */}
       <main className="max-w-md w-full mx-auto my-auto z-10">
-        <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 p-7 sm:p-9 relative">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 p-5 sm:p-9 relative">
           {/* Institutional Top Accent Ribbon */}
-          <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-700 to-brand-gold-500 rounded-t-3xl absolute top-0 left-0 right-0" />
+          <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-700 to-brand-gold-500 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
 
           {/* Header Branding */}
-          <div className="flex flex-col items-center text-center pt-2 pb-6 border-b border-slate-100">
+          <div className="flex flex-col items-center text-center pt-2 pb-4 sm:pb-6 border-b border-slate-100">
             {/* Centered Logo with Ring */}
-            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-gold-500/70 shadow-lg shadow-brand-maroon-950/10 bg-slate-950 flex items-center justify-center p-0.5 mb-3.5 group hover:scale-105 transition-all duration-300">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-brand-gold-500/70 shadow-lg shadow-brand-maroon-950/10 bg-slate-950 flex items-center justify-center p-0.5 mb-2.5 sm:mb-3.5 group hover:scale-105 transition-all duration-300">
               <Image
                 src="/logo.jpg"
                 alt="Logo Resmi SI-KPSPAMS Kuajang"
@@ -116,7 +116,7 @@ export default function LoginPage() {
             </div>
 
             {/* Region Pill */}
-            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200/70 mb-2">
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200/70 mb-1.5 sm:mb-2">
               <Droplets className="w-3 h-3 text-brand-maroon-700" />
               <span>Desa Kuajang</span>
               <span className="text-slate-300">•</span>
@@ -124,21 +124,21 @@ export default function LoginPage() {
             </div>
 
             {/* System Title */}
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               SI-KPSPAMS KUAJANG
             </h1>
-            <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
               Sistem Informasi Pengelolaan Air Minum & Sanitasi Perdesaan
             </p>
           </div>
 
           {/* Active Scope Notice Banner */}
-          <div className="mt-4 px-3.5 py-2 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between text-[11px] text-amber-900">
+          <div className="mt-3 sm:mt-4 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between text-[10px] sm:text-[11px] text-amber-900">
             <span className="flex items-center space-x-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               <span>Unit Aktif: <strong>KPSPAMS Lemo Baru</strong></span>
             </span>
-            <span className="text-[10px] text-amber-700 font-semibold px-2 py-0.5 bg-amber-100 rounded-md">
+            <span className="text-[9px] sm:text-[10px] text-amber-700 font-semibold px-1.5 py-0.5 bg-amber-100 rounded-md">
               Desa Kuajang
             </span>
           </div>

@@ -20,10 +20,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
       {/* Header Bar */}
-      <header className="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-lg bg-slate-950 flex items-center justify-center">
+      <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-lg bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
               <Image
                 src="/logo.jpg"
                 alt="Logo SI-KPSPAMS Kuajang"
@@ -33,27 +33,29 @@ export default function HomePage() {
                 priority
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center space-x-1.5">
-                <span className="text-base font-extrabold tracking-tight text-white">SI-KPSPAMS</span>
-                <span className="text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40">
+                <span className="text-sm sm:text-base font-extrabold tracking-tight text-white whitespace-nowrap">
+                  SI-KPSPAMS
+                </span>
+                <span className="text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
                   KUAJANG
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400">Desa Kuajang, Kec. Binuang, Polman</p>
+              <p className="text-[10px] text-slate-400 truncate hidden sm:block">Desa Kuajang, Kec. Binuang, Polman</p>
             </div>
-          </div>
+          </Link>
 
-          <div className="flex items-center space-x-1.5 sm:space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <Link
               href="/portal"
-              className="inline-flex px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60"
+              className="inline-flex px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
             >
               Portal Warga
             </Link>
             <Link
               href="/login"
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5"
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
             >
               <span>Masuk</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -63,31 +65,31 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full space-y-10 sm:space-y-14">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-12 w-full space-y-6 sm:space-y-12">
         {/* Hero Card */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-brand-maroon-950/70 to-slate-900 border border-slate-800/90 p-6 sm:p-10 lg:p-12 shadow-2xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-brand-maroon-950/70 to-slate-900 border border-slate-800/90 p-5 sm:p-10 lg:p-12 shadow-2xl">
           {/* Ambient Glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-brand-maroon-600/15 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-maroon-900/80 border border-brand-maroon-700/80 text-brand-gold-400 text-xs font-bold mb-4">
-              <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
+            <div className="inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-brand-maroon-900/80 border border-brand-maroon-700/80 text-brand-gold-400 text-[10px] sm:text-xs font-bold mb-3 sm:mb-4">
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold-400" />
               <span>Multi-Tenant KPSPAMS Terisolasi Mandiri</span>
             </div>
 
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+            <h2 className="text-xl sm:text-3xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight mb-3 sm:mb-4">
               Pengelolaan Transparan & Akuntabel Air Bersih Perdesaan
             </h2>
 
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-8">
+            <p className="text-xs sm:text-base text-slate-300 leading-relaxed mb-6 sm:mb-8">
               Platform modern pencatatan stand meter digital, validasi anomali mundur, billing tarif bertingkat, kwitansi QR kasir, dan integrasi pengaduan warga di seluruh 5 dusun Desa Kuajang.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <Link
                 href="/login"
-                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-sm font-bold shadow-xl shadow-brand-maroon-950/50 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                className="px-5 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-xl shadow-brand-maroon-950/50 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
               >
                 <span>Akses Pengelola KPSPAMS</span>
                 <ArrowRight className="w-4 h-4" />
@@ -95,7 +97,7 @@ export default function HomePage() {
 
               <Link
                 href="/portal"
-                className="px-6 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-white text-sm font-semibold border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                className="px-5 py-3 sm:py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-white text-xs sm:text-sm font-semibold border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
               >
                 <span>Portal Mandiri Cek Tagihan Warga</span>
               </Link>

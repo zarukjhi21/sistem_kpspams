@@ -198,10 +198,10 @@ function CitizenPortalContent() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
       {/* Citizen Header Bar */}
-      <header className="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow bg-slate-950 flex items-center justify-center p-0.5">
+      <header className="bg-slate-950/95 backdrop-blur-md text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
+          <Link href="/portal" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
               <Image
                 src="/logo.jpg"
                 alt="Logo SI-KPSPAMS Kuajang"
@@ -211,71 +211,73 @@ function CitizenPortalContent() {
                 priority
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center space-x-1.5">
-                <span className="text-sm font-extrabold tracking-tight">PORTAL MANDIRI WARGA</span>
-                <span className="text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40">
-                  DESA KUAJANG
+                <span className="text-xs sm:text-sm font-black tracking-tight whitespace-nowrap">
+                  PORTAL WARGA
+                </span>
+                <span className="text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
+                  KUAJANG
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 truncate hidden sm:block">
                 {data
                   ? `${data.connection.kpspams_name} • Dusun ${data.customer.dusun}`
-                  : "Pelayanan Publik Air Minum & Sanitasi Perdesaan"}
+                  : "Pelayanan Publik Air Bersih & Sanitasi"}
               </p>
             </div>
-          </div>
+          </Link>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <Link
               href="/"
-              className="text-xs text-slate-300 hover:text-white px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition"
+              className="text-[11px] sm:text-xs text-slate-300 hover:text-white px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition font-medium"
             >
               Beranda
             </Link>
             <Link
               href="/login"
-              className="text-xs text-brand-gold-300 hover:text-brand-gold-200 px-3 py-1.5 rounded-xl bg-brand-gold-950/40 hover:bg-brand-gold-950/70 border border-brand-gold-500/30 transition font-medium"
+              className="text-[11px] sm:text-xs text-brand-gold-300 hover:text-brand-gold-200 px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-brand-gold-950/40 hover:bg-brand-gold-950/70 border border-brand-gold-500/30 transition font-bold whitespace-nowrap"
             >
-              Login Petugas
+              Login
             </Link>
           </div>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl mx-auto px-4 py-6 sm:py-8 w-full space-y-6">
+      <main className="flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full space-y-4 sm:space-y-6">
         {!data ? (
           /* ========================================================================= */
           /* STATE 1: SEARCH SCREEN (Murni Form Pencarian Riil Tanpa Demo Palsu)       */
           /* ========================================================================= */
-          <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             {/* Hero Card */}
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-              <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-800 via-brand-maroon-600 to-brand-gold-500 rounded-t-3xl absolute top-0 left-0 right-0" />
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-10 border border-slate-200/90 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+              <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-800 via-brand-maroon-600 to-brand-gold-500 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
 
               <div className="max-w-xl mx-auto text-center pt-2">
-                <div className="w-16 h-16 rounded-2xl bg-brand-maroon-50 text-brand-maroon-800 border border-brand-maroon-200/80 mx-auto flex items-center justify-center mb-4 shadow-xs">
-                  <Droplet className="w-8 h-8 text-brand-maroon-800" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-brand-maroon-50 text-brand-maroon-800 border border-brand-maroon-200/80 mx-auto flex items-center justify-center mb-3 sm:mb-4 shadow-xs">
+                  <Droplet className="w-6 h-6 sm:w-8 sm:h-8 text-brand-maroon-800" />
                 </div>
 
-                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-gold-50 text-brand-gold-900 border border-brand-gold-300 mb-3">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-brand-gold-50 text-brand-gold-900 border border-brand-gold-300 mb-2.5 sm:mb-3">
                   <span>Layanan Mandiri Warga Desa Kuajang</span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
                   Cek Rekening & Tagihan Air Bersih
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
-                  Masukkan <strong>Nomor Sambungan Rumah (No. SR)</strong> atau <strong>NIK</strong> Anda untuk memeriksa nominal tagihan resmi, rincian kubikasi meteran, dan riwayat pemakaian air.
+                <p className="text-xs sm:text-sm text-slate-500 mt-1.5 sm:mt-2 leading-relaxed">
+                  Masukkan <strong>Nomor Sambungan Rumah (No. SR)</strong> atau <strong>NIK KTP</strong> Anda untuk memeriksa nominal tagihan resmi dan rincian pemakaian air.
                 </p>
 
                 {/* Form Input No SR */}
-                <form onSubmit={handleSearchSubmit} className="mt-8">
+                <form onSubmit={handleSearchSubmit} className="mt-5 sm:mt-8">
                   <div className="space-y-3">
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                        <Search className="w-5 h-5 text-brand-maroon-800" />
+                      <div className="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400">
+                        <Search className="w-4 h-4 sm:w-5 sm:h-5 text-brand-maroon-800" />
                       </div>
                       <input
                         type="text"
@@ -286,13 +288,13 @@ function CitizenPortalContent() {
                           setSearchSr(e.target.value);
                           if (errorMessage) setErrorMessage(null);
                         }}
-                        placeholder="Masukkan NIK KTP Anda (16 digit) atau No. SR"
-                        className="w-full pl-12 pr-4 py-3.5 text-sm sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 text-slate-900 transition font-mono tracking-wider shadow-inner disabled:opacity-50"
+                        placeholder="Ketik NIK KTP (16 digit) atau No. SR..."
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-xs sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 text-slate-900 transition font-mono tracking-wide shadow-inner disabled:opacity-50"
                       />
                     </div>
 
                     {errorMessage && (
-                      <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold text-left flex items-start space-x-2 animate-in fade-in">
+                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold text-left flex items-start space-x-2 animate-in fade-in">
                         <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
                         <span>{errorMessage}</span>
                       </div>
@@ -301,7 +303,7 @@ function CitizenPortalContent() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3.5 px-6 rounded-2xl text-sm font-bold text-white bg-brand-maroon-800 hover:bg-brand-maroon-900 active:scale-[0.99] transition shadow-lg shadow-brand-maroon-950/20 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                      className="w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-extrabold text-white bg-brand-maroon-800 hover:bg-brand-maroon-900 active:scale-[0.99] transition shadow-lg shadow-brand-maroon-950/20 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (
                         <>
@@ -421,19 +423,19 @@ function CitizenPortalContent() {
 
             {/* Real Hero Active Bill Card */}
             {data.current_bill ? (
-              <div className="bg-gradient-to-br from-brand-maroon-900 via-brand-maroon-800 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-brand-maroon-700 relative overflow-hidden">
+              <div className="bg-gradient-to-br from-brand-maroon-900 via-brand-maroon-800 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl border border-brand-maroon-700 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-gold-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
                   <div>
-                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-xs font-bold mb-2">
+                    <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[10px] sm:text-xs font-bold mb-2">
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>{data.current_bill.period_name.toUpperCase()}</span>
                     </div>
-                    <div className="text-3xl sm:text-5xl font-black font-tabular tracking-tight">
+                    <div className="text-2xl sm:text-4xl lg:text-5xl font-black font-tabular tracking-tight">
                       Rp {data.current_bill.total_amount.toLocaleString("id-ID")},-
                     </div>
-                    <div className="mt-2 flex items-center space-x-2 text-xs">
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
                       <span className="text-amber-100">
                         No. Invoice: <strong className="font-mono text-white">{data.current_bill.invoice_number}</strong>
                       </span>
@@ -445,19 +447,19 @@ function CitizenPortalContent() {
 
                     <div className="mt-3 flex items-center space-x-2">
                       {data.current_bill.is_paid ? (
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-xs font-black inline-flex items-center space-x-1">
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-[11px] sm:text-xs font-black inline-flex items-center space-x-1">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>SUDAH LUNAS</span>
                         </span>
                       ) : (
-                        <span className="px-3 py-1 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/40 text-xs font-black inline-flex items-center space-x-1">
+                        <span className="px-2.5 py-1 rounded-full bg-amber-500/30 text-amber-200 border border-amber-400/40 text-[11px] sm:text-xs font-black inline-flex items-center space-x-1">
                           <AlertCircle className="w-3.5 h-3.5" />
                           <span>BELUM LUNAS (Jatuh tempo: {data.current_bill.due_date})</span>
                         </span>
                       )}
                     </div>
 
-                    <p className="text-[11px] text-amber-200/90 mt-3 flex items-center space-x-1.5">
+                    <p className="text-[10px] sm:text-[11px] text-amber-200/90 mt-2.5 flex items-center space-x-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-brand-gold-400 flex-shrink-0" />
                       <span>
                         Pembayaran tunai diterima saat Petugas berkunjung keliling (Door-to-Door) atau di Kantor KPSPAMS.
@@ -465,7 +467,7 @@ function CitizenPortalContent() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2.5">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <a
                       href={`https://wa.me/6282100000004?text=Halo%20Petugas%20KPSPAMS%20Kuajang,%20saya%20warga%20${encodeURIComponent(
                         data.customer.full_name
@@ -474,7 +476,7 @@ function CitizenPortalContent() {
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-black text-sm shadow-xl transition active:scale-95 flex items-center justify-center space-x-2"
+                      className="px-4 py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-xl transition active:scale-95 flex items-center justify-center space-x-2"
                     >
                       <Phone className="w-4 h-4" />
                       <span>Hubungi Petugas (WA)</span>
@@ -483,7 +485,7 @@ function CitizenPortalContent() {
                     <button
                       type="button"
                       onClick={() => setInvoiceModalOpen(true)}
-                      className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
+                      className="px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
                     >
                       <FileText className="w-4 h-4" />
                       <span>Lihat Rincian Faktur</span>
@@ -492,44 +494,44 @@ function CitizenPortalContent() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-3xl p-6 border border-slate-200 text-center">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border border-slate-200 text-center">
                 <p className="text-slate-500 text-xs">Belum ada tagihan resmi terbit untuk sambungan ini.</p>
               </div>
             )}
 
             {/* Real 6-Month Water Consumption History Chart from Server */}
             {data.consumption_history && data.consumption_history.length > 0 && (
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                    Riwayat Pemakaian Air Bersih (Catatan Meter Riil Server)
+                  <h3 className="text-xs sm:text-base font-bold text-slate-900">
+                    Riwayat Pemakaian Air Bersih
                   </h3>
-                  <span className="text-[11px] text-slate-400 font-medium">Satuan m³</span>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Satuan m³</span>
                 </div>
-                <p className="text-xs text-slate-500 mb-6">
-                  Grafik konsumsi kubikasi meteran terverifikasi pada sambungan {data.customer.full_name}
+                <p className="text-[11px] sm:text-xs text-slate-500 mb-4 sm:mb-6">
+                  Grafik konsumsi kubikasi meteran pada sambungan {data.customer.full_name}
                 </p>
 
-                <div className="grid grid-cols-6 gap-2 pt-8 pb-3 items-end h-44 border-b border-slate-100 text-center">
+                <div className="grid grid-cols-6 gap-1 sm:gap-2 pt-6 pb-2 items-end h-36 sm:h-44 border-b border-slate-100 text-center">
                   {data.consumption_history.map((item, i) => {
                     const isLatest = i === data.consumption_history.length - 1;
                     const heightPercent = Math.max(15, Math.round((item.usage_m3 / maxUsage) * 100));
 
                     return (
                       <div key={i} className="flex flex-col items-center">
-                        <span className="text-[11px] font-black text-slate-800 font-tabular mb-1.5">
+                        <span className="text-[9px] sm:text-[11px] font-black text-slate-800 font-tabular mb-1">
                           {item.usage_m3}m³
                         </span>
                         <div
                           style={{ height: `${heightPercent}%` }}
-                          className={`w-8 sm:w-14 rounded-t-xl transition-all ${
+                          className={`w-6 sm:w-14 rounded-t-md sm:rounded-t-xl transition-all ${
                             isLatest
                               ? "bg-gradient-to-t from-brand-maroon-900 to-brand-maroon-700 shadow-md shadow-brand-maroon-900/30"
                               : "bg-slate-200 hover:bg-slate-300"
                           }`}
                         />
                         <span
-                          className={`text-[11px] mt-2 font-semibold ${
+                          className={`text-[9px] sm:text-[11px] mt-1 sm:mt-2 font-semibold ${
                             isLatest ? "text-brand-maroon-900 font-bold" : "text-slate-500"
                           }`}
                         >

@@ -22,22 +22,22 @@ export function AppHeader({ onOpenMobileDrawer }: AppHeaderProps) {
   const [contextDropdownOpen, setContextDropdownOpen] = useState(false);
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between z-30 sticky top-0 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+    <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-2.5 sm:px-6 flex items-center justify-between z-30 sticky top-0 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
       {/* Left: Mobile Hamburger + Brand & Active Context */}
-      <div className="flex items-center space-x-2 sm:space-x-4">
+      <div className="flex items-center space-x-1.5 sm:space-x-4 min-w-0">
         {/* Mobile Hamburger Button */}
         <button
           type="button"
           onClick={onOpenMobileDrawer}
-          className="md:hidden p-2 rounded-xl text-slate-600 hover:text-brand-maroon-800 hover:bg-slate-100 transition focus:outline-none"
+          className="md:hidden p-1.5 rounded-xl text-slate-600 hover:text-brand-maroon-800 hover:bg-slate-100 transition focus:outline-none"
           aria-label="Buka menu navigasi"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Brand Logo */}
-        <Link href="/dashboard" className="flex items-center space-x-2.5 group">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-md shadow-brand-maroon-900/10 group-hover:scale-105 transition-transform bg-slate-950 flex items-center justify-center">
+        <Link href="/dashboard" className="flex items-center space-x-2 sm:space-x-2.5 group min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-md shadow-brand-maroon-900/10 group-hover:scale-105 transition-transform bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
             <Image
               src="/logo.jpg"
               alt="Logo SI-KPSPAMS Kuajang"
@@ -47,12 +47,12 @@ export function AppHeader({ onOpenMobileDrawer }: AppHeaderProps) {
               priority
             />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-1.5">
-              <span className="text-sm font-extrabold text-brand-maroon-900 tracking-tight leading-none">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center space-x-1 sm:space-x-1.5">
+              <span className="text-xs sm:text-sm font-extrabold text-brand-maroon-900 tracking-tight leading-none whitespace-nowrap">
                 SI-KPSPAMS
               </span>
-              <span className="text-[10px] text-brand-gold-600 font-extrabold px-1.5 py-0.5 rounded-md bg-amber-50 border border-brand-gold-300 leading-none">
+              <span className="text-[9px] sm:text-[10px] text-brand-gold-600 font-extrabold px-1.5 py-0.5 rounded-md bg-amber-50 border border-brand-gold-300 leading-none whitespace-nowrap">
                 KUAJANG
               </span>
             </div>

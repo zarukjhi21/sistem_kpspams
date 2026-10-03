@@ -1360,45 +1360,47 @@ function KeuanganContent() {
               {/* Rincian Transaksi Lengkap */}
               <div>
                 <div className="font-bold text-xs mb-2">Rincian Mutasi Arus Kas Buku Kas:</div>
-                <table className="w-full text-left border-collapse border border-slate-300 text-[11px]">
-                  <thead>
-                    <tr className="bg-slate-100 font-bold border-b border-slate-300 text-slate-700">
-                      <th className="p-2 border border-slate-300">No. Bukti</th>
-                      <th className="p-2 border border-slate-300">Tanggal</th>
-                      <th className="p-2 border border-slate-300">Kategori</th>
-                      <th className="p-2 border border-slate-300">Uraian / Keterangan</th>
-                      <th className="p-2 border border-slate-300 text-right">Pemasukan</th>
-                      <th className="p-2 border border-slate-300 text-right">Pengeluaran</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTx.map((t) => (
-                      <tr key={t.id} className="border-b border-slate-200">
-                        <td className="p-2 font-mono font-semibold border border-slate-300">{t.txNumber}</td>
-                        <td className="p-2 border border-slate-300">{t.date}</td>
-                        <td className="p-2 border border-slate-300">{t.category}</td>
-                        <td className="p-2 border border-slate-300">{t.description}</td>
-                        <td className="p-2 text-right font-tabular border border-slate-300">
-                          {t.type === "INCOME" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse border border-slate-300 text-[11px] min-w-[520px]">
+                    <thead>
+                      <tr className="bg-slate-100 font-bold border-b border-slate-300 text-slate-700">
+                        <th className="p-2 border border-slate-300">No. Bukti</th>
+                        <th className="p-2 border border-slate-300">Tanggal</th>
+                        <th className="p-2 border border-slate-300">Kategori</th>
+                        <th className="p-2 border border-slate-300">Uraian / Keterangan</th>
+                        <th className="p-2 border border-slate-300 text-right">Pemasukan</th>
+                        <th className="p-2 border border-slate-300 text-right">Pengeluaran</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTx.map((t) => (
+                        <tr key={t.id} className="border-b border-slate-200">
+                          <td className="p-2 font-mono font-semibold border border-slate-300">{t.txNumber}</td>
+                          <td className="p-2 border border-slate-300">{t.date}</td>
+                          <td className="p-2 border border-slate-300">{t.category}</td>
+                          <td className="p-2 border border-slate-300">{t.description}</td>
+                          <td className="p-2 text-right font-tabular border border-slate-300">
+                            {t.type === "INCOME" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                          </td>
+                          <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
+                            {t.type === "EXPENSE" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-100 font-bold text-slate-900">
+                        <td colSpan={4} className="p-2 text-right border border-slate-300">Total Akumulasi:</td>
+                        <td className="p-2 text-right font-tabular border border-slate-300 text-emerald-700">
+                          Rp {totalIncome.toLocaleString("id-ID")}
                         </td>
                         <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
-                          {t.type === "EXPENSE" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                          Rp {totalExpense.toLocaleString("id-ID")}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-slate-100 font-bold text-slate-900">
-                      <td colSpan={4} className="p-2 text-right border border-slate-300">Total Akumulasi:</td>
-                      <td className="p-2 text-right font-tabular border border-slate-300 text-emerald-700">
-                        Rp {totalIncome.toLocaleString("id-ID")}
-                      </td>
-                      <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
-                        Rp {totalExpense.toLocaleString("id-ID")}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
 
               {/* Tanda Tangan & Pengesahan Resmi */}
