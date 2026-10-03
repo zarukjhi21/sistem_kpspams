@@ -492,6 +492,100 @@ export async function onRequest(context: any) {
 
     // 12. Meter Readings
     if (path === "meter-readings") {
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const connId = b.connection_id ? b.connection_id.toString() : "1";
+        const billingPeriodId = b.billing_period_id ? b.billing_period_id.toString() : "6";
+        const currentReading = Number(b.current_reading) || 0;
+        const readingDate = b.reading_date || new Date().toISOString().split("T")[0];
+        const notes = b.notes || "Pencatatan meter lapangan";
+
+        const connRows = await sql.query(`
+          SELECT c.*, cust.id as cust_id, cust.kpspams_id as cust_kpspams_id
+          FROM connections c
+          LEFT JOIN customers cust ON CAST(c.customer_id AS integer) = cust.id
+          WHERE c.id = $1 OR CAST(c.customer_id AS text) = $2
+          LIMIT 1
+        `, [Number(connId) || 0, connId]);
+
+        const kId = connRows.length > 0 ? (connRows[0].kpspams_id || "1") : "1";
+        const meterId = connRows.length > 0 ? connRows[0].meter_id : null;
+        const customerId = connRows.length > 0 ? connRows[0].customer_id : connId;
+
+        const lastMr = await sql.query(`
+          SELECT current_reading FROM meter_readings 
+          WHERE connection_id = $1 OR CAST(connection_id AS text) = $2
+          ORDER BY id DESC LIMIT 1
+        `, [connId, connId]);
+
+        const prevReading = lastMr.length > 0 ? Number(lastMr[0].current_reading) : 0;
+        const usageM3 = Math.max(0, currentReading - prevReading);
+
+        // Rumus Tagihan KPSPAMS Lemo Baru: Beban dasar Rp 10.000 (s.d 15 m3), kelebihan > 15 m3 = +Rp 1.000 / m3
+        let totalAmount = 10000;
+        let waterAmount = 0;
+        if (usageM3 > 15) {
+          const excess = usageM3 - 15;
+          waterAmount = excess * 1000;
+          totalAmount = 10000 + waterAmount;
+        }
+
+        const mrRes = await sql.query(`
+          INSERT INTO meter_readings (
+            kpspams_id, billing_period_id, connection_id, meter_id,
+            reading_date, previous_reading, current_reading, usage_m3,
+            status, notes, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, 'VERIFIED', $9, NOW(), NOW()
+          ) RETURNING *
+        `, [
+          kId.toString(), billingPeriodId.toString(), connId.toString(), meterId ? meterId.toString() : null,
+          readingDate, prevReading.toString(), currentReading.toString(), usageM3.toString(), notes
+        ]);
+
+        const newMeterReadingId = mrRes[0]?.id;
+
+        const existingInv = await sql.query(`
+          SELECT * FROM invoices 
+          WHERE (connection_id = $1 OR customer_id = $2) AND billing_period_id = $3
+          LIMIT 1
+        `, [connId.toString(), customerId.toString(), billingPeriodId.toString()]);
+
+        if (existingInv.length > 0) {
+          await sql.query(`
+            UPDATE invoices SET
+              usage_m3 = $1,
+              water_amount = $2,
+              admin_fee = '10000',
+              total_amount = $3,
+              balance_due = CASE WHEN status = 'PAID' THEN '0' ELSE $3 END,
+              meter_reading_id = COALESCE($4, meter_reading_id),
+              updated_at = NOW()
+            WHERE id = $5
+          `, [usageM3.toString(), waterAmount.toString(), totalAmount.toString(), newMeterReadingId ? newMeterReadingId.toString() : null, existingInv[0].id]);
+        } else {
+          const invNum = `INV/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP01/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          await sql.query(`
+            INSERT INTO invoices (
+              kpspams_id, billing_period_id, connection_id, customer_id, meter_reading_id,
+              invoice_number, invoice_date, due_date, usage_m3, water_amount,
+              admin_fee, maintenance_fee, penalty_fee, total_amount, paid_amount, balance_due,
+              status, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5,
+              $6, NOW(), NOW() + INTERVAL '14 days', $7, $8,
+              '10000', '0', '0', $9, '0', $9,
+              'UNPAID', NOW(), NOW()
+            )
+          `, [
+            kId.toString(), billingPeriodId.toString(), connId.toString(), customerId.toString(), newMeterReadingId ? newMeterReadingId.toString() : null,
+            invNum, usageM3.toString(), waterAmount.toString(), totalAmount.toString()
+          ]);
+        }
+
+        return jsonResponse({ status: "success", data: mrRes[0] }, 201);
+      }
+
       const rows = await sql.query(`
         SELECT mr.*, conn.connection_no, c.full_name as customer_name, k.name as kpspams_name
         FROM meter_readings mr
@@ -499,6 +593,76 @@ export async function onRequest(context: any) {
         LEFT JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
         LEFT JOIN kpspams k ON CAST(mr.kpspams_id AS integer) = k.id
         ORDER BY mr.id DESC
+      `);
+      return jsonResponse({ status: "success", data: rows });
+    }
+
+    // Payments (Penagihan Kasir Lapangan)
+    if (path === "payments") {
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const invoiceId = b.invoice_id;
+        const amountPaid = Number(b.amount_paid) || 10000;
+        const cashAccountId = b.cash_account_id ? b.cash_account_id.toString() : "1";
+        const paymentMethod = b.payment_method || "CASH";
+        const referenceNo = b.reference_number || `FIELD-${Date.now().toString().slice(-6)}`;
+        const receiptNo = `KW/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP01/${Math.floor(1000 + Math.random() * 9000)}`;
+
+        let custId = "1";
+        let kpspamsId = "1";
+        if (invoiceId) {
+          const invRows = await sql.query(`SELECT * FROM invoices WHERE id = $1 LIMIT 1`, [invoiceId]);
+          if (invRows.length > 0) {
+            custId = invRows[0].customer_id ? invRows[0].customer_id.toString() : "1";
+            kpspamsId = invRows[0].kpspams_id ? invRows[0].kpspams_id.toString() : "1";
+
+            await sql.query(`
+              UPDATE invoices SET 
+                status = 'PAID',
+                paid_amount = $1,
+                balance_due = '0',
+                paid_at = NOW(),
+                updated_at = NOW()
+              WHERE id = $2
+            `, [amountPaid.toString(), invoiceId]);
+          }
+        }
+
+        const payResult = await sql.query(`
+          INSERT INTO payments (
+            kpspams_id, invoice_id, customer_id, cash_account_id, receipt_number,
+            payment_date, amount_paid, payment_method, reference_number, status, notes, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, NOW(), $6, $7, $8, 'COMPLETED', 'Diterima tunai oleh petugas lapangan', NOW(), NOW()
+          ) RETURNING *
+        `, [kpspamsId, invoiceId ? invoiceId.toString() : null, custId, cashAccountId, receiptNo, amountPaid.toString(), paymentMethod, referenceNo]);
+
+        const txNumber = `TX/IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+        await sql.query(`
+          INSERT INTO financial_transactions (
+            kpspams_id, cash_account_id, transaction_number, transaction_date,
+            transaction_type, category, amount, reference_type, reference_id, description, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, NOW(), 'INCOME', 'WATER_PAYMENT', $4, 'INVOICE', $5,
+            'Penerimaan tunai iuran air warga di lapangan', NOW(), NOW()
+          )
+        `, [kpspamsId, cashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]);
+
+        return jsonResponse({
+          status: "success",
+          data: {
+            receipt_number: receiptNo,
+            payment: payResult[0],
+          },
+        }, 201);
+      }
+
+      const rows = await sql.query(`
+        SELECT p.*, c.full_name as customer_name, inv.invoice_number
+        FROM payments p
+        LEFT JOIN customers c ON CAST(p.customer_id AS integer) = c.id
+        LEFT JOIN invoices inv ON CAST(p.invoice_id AS integer) = inv.id
+        ORDER BY p.id DESC
       `);
       return jsonResponse({ status: "success", data: rows });
     }
