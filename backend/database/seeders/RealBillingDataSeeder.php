@@ -64,9 +64,6 @@ class RealBillingDataSeeder extends Seeder
         // - SR-PKD-00001 (Rustam Effendi): 14.0, 13.5, 15.0, 16.0, 14.0, 15.5
         $connectionProfiles = [
             'SR-LMB-00001' => [12.0, 15.0, 11.5, 13.0, 16.0, 14.5],
-            'SR-LMT-00001' => [10.0, 12.0, 11.0, 14.0, 13.5, 12.5],
-            'SR-SR1-00001' => [18.0, 20.0, 19.5, 22.0, 21.0, 19.0],
-            'SR-PKD-00001' => [14.0, 13.5, 15.0, 16.0, 14.0, 15.5],
         ];
 
         $connections = Connection::with(['customer', 'meter', 'kpspams'])->get();

@@ -24,7 +24,7 @@ class CustomerConnectionSeeder extends Seeder
         $defaultPassword = Hash::make('Kuajang2026!');
 
         $samples = [
-            // Pelanggan 1: Lemo Baru
+            // Pelanggan 1: Lemo Baru (Satu-satunya data operasional aktif)
             [
                 'kpspams_id' => $kpspLemoBaru->id,
                 'dusun_id' => $dusunLemoBaru->id,
@@ -39,54 +39,6 @@ class CustomerConnectionSeeder extends Seeder
                 'meter_serial' => 'MTR-LMB-1001',
                 'brand' => 'Onda',
                 'username' => 'warga.yusuf',
-            ],
-            // Pelanggan 2: Lemo Tua
-            [
-                'kpspams_id' => $kpspLemoTua->id,
-                'dusun_id' => $dusunLemoTua->id,
-                'code' => 'CUST-LMT-0001',
-                'nik' => '7604031206820002',
-                'no_kk' => '7604031206820000',
-                'full_name' => 'Siti Aminah',
-                'phone' => '085242000002',
-                'email' => 'aminah@gmail.com',
-                'identity_address' => 'Dusun Lemo Tua RT 02, Desa Kuajang',
-                'connection_no' => 'SR-LMT-00001',
-                'meter_serial' => 'MTR-LMT-2001',
-                'brand' => 'Barindo',
-                'username' => 'warga.aminah',
-            ],
-            // Pelanggan 3: Sarampu 1
-            [
-                'kpspams_id' => $kpspSarampu1->id,
-                'dusun_id' => $dusunSarampu1->id,
-                'code' => 'CUST-SR1-0001',
-                'nik' => '7604032504780003',
-                'no_kk' => '7604032504780000',
-                'full_name' => 'H. Dahlan Tahir',
-                'phone' => '085242000003',
-                'email' => 'dahlan@gmail.com',
-                'identity_address' => 'Dusun Sarampu 1 RT 01, Desa Kuajang',
-                'connection_no' => 'SR-SR1-00001',
-                'meter_serial' => 'MTR-SR1-3001',
-                'brand' => 'Onda',
-                'username' => 'warga.dahlan',
-            ],
-            // Pelanggan 4: Pakkandoang (Di bawah KPSPAMS Sarampu 1)
-            [
-                'kpspams_id' => $kpspSarampu1->id,
-                'dusun_id' => $dusunPakkandoang->id,
-                'code' => 'CUST-PKD-0001',
-                'nik' => '7604031011900004',
-                'no_kk' => '7604031011900000',
-                'full_name' => 'Rustam Effendi',
-                'phone' => '085242000004',
-                'email' => 'rustam@gmail.com',
-                'identity_address' => 'Dusun Pakkandoang RT 02, Desa Kuajang',
-                'connection_no' => 'SR-PKD-00001',
-                'meter_serial' => 'MTR-PKD-3002',
-                'brand' => 'Barindo',
-                'username' => 'warga.rustam',
             ],
         ];
 
