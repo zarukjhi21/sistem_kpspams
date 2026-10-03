@@ -181,7 +181,7 @@ class ComplaintController extends BaseApiController
         $complaint = Complaint::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:VERIFIED,REJECTED',
+            'status' => 'required|in:VERIFIED,REJECTED,RESOLVED',
             'rejection_reason' => 'required_if:status,REJECTED|nullable|string',
         ]);
 
@@ -192,10 +192,15 @@ class ComplaintController extends BaseApiController
         $user = $request->user();
         $status = $request->input('status');
 
-        $complaint->update([
+        $updateData = [
             'status' => $status,
             'rejection_reason' => ($status === 'REJECTED') ? $request->input('rejection_reason') : null,
-        ]);
+        ];
+        if ($status === 'RESOLVED') {
+            $updateData['resolved_at'] = now();
+        }
+
+        $complaint->update($updateData);
 
         AuditLog::create([
             'user_id' => $user->id,

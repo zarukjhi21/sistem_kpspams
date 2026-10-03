@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
@@ -8,6 +8,7 @@ import { DEMO_KPSPAMS_LIST, DEMO_CUSTOMERS, DemoCustomer } from "@/lib/demo-data
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { apiClient } from "@/lib/api-client";
 import {
   Users,
   Activity,
@@ -24,8 +25,47 @@ import {
   MapPin,
   Clock,
   Smartphone,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardAnalyticsCharts } from "@/components/charts/DashboardAnalyticsCharts";
+
+interface OverviewApiData {
+  context: {
+    kpspams_id: number | null;
+    scope_label: string;
+    period: string;
+  };
+  kpi: {
+    total_customers: number;
+    active_connections: number;
+    sealed_connections: number;
+    disconnected_connections: number;
+    total_usage_m3: number;
+    total_billed: number;
+    total_collected: number;
+    total_arrears: number;
+    collection_rate_percent: number;
+    total_cash_balance: number;
+    active_complaints: number;
+  };
+  dusun_breakdown: Array<{
+    dusun_id: number;
+    code: string;
+    name: string;
+    total_connections: number;
+  }>;
+  unit_breakdown?: Array<{
+    kpspams_id: number;
+    code: string;
+    name: string;
+    dusuns: string[];
+    total_customers: number;
+    total_billed: number;
+    total_collected: number;
+    total_arrears: number;
+    cash_balance: number;
+  }>;
+}
 
 export default function DashboardPage() {
   return (
@@ -37,9 +77,30 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { activeKpspamsId, activeKpspamsName, isDesaLevel, user } = useAuth();
+  const [overviewData, setOverviewData] = useState<OverviewApiData | null>(null);
+  const [isLoadingOverview, setIsLoadingOverview] = useState<boolean>(true);
 
-  // Ambil data pelanggan riil yang tersimpan di sistem / localStorage
+  // Ambil data pelanggan riil yang tersimpan di sistem / localStorage sebagai fallback
   const [registeredCustomers, setRegisteredCustomers] = useState<DemoCustomer[]>(DEMO_CUSTOMERS);
+
+  const fetchOverview = useCallback(async () => {
+    setIsLoadingOverview(true);
+    try {
+      const url = "/dashboard/overview" + (activeKpspamsId ? `?kpspams_id=${activeKpspamsId}` : "");
+      const res = await apiClient(url);
+      if (res?.status === "success" && res.data) {
+        setOverviewData(res.data);
+      }
+    } catch (err) {
+      console.warn("Gagal memuat overview API, beralih ke cache:", err);
+    } finally {
+      setIsLoadingOverview(false);
+    }
+  }, [activeKpspamsId]);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -47,13 +108,7 @@ function DashboardContent() {
       if (saved) {
         try {
           const parsed: DemoCustomer[] = JSON.parse(saved);
-          const sanitized = parsed.map((c) => ({
-            ...c,
-            billingStatus: "UNPAID" as const,
-          }));
-          localStorage.setItem("kpspams_customers", JSON.stringify(sanitized));
-          setRegisteredCustomers(sanitized);
-          return;
+          setRegisteredCustomers(parsed);
         } catch (e) {
           console.error("Gagal parse kpspams_customers", e);
         }
@@ -61,27 +116,48 @@ function DashboardContent() {
     }
   }, []);
 
-  // Filter pelanggan berdasarkan unit yang aktif
+  // Filter pelanggan berdasarkan unit yang aktif (Fallback)
   const filteredCustomers =
     activeKpspamsId === null
       ? registeredCustomers
       : registeredCustomers.filter((c) => c.kpspamsId === activeKpspamsId);
 
-  const realCustomerCount = filteredCustomers.length;
-  const totalCustomers = realCustomerCount;
-
-  // Hitung metrik dinamis berdasarkan KPSPAMS yang aktif
   const currentUnits =
     activeKpspamsId === null
       ? DEMO_KPSPAMS_LIST
       : DEMO_KPSPAMS_LIST.filter((k) => k.id === activeKpspamsId);
 
-  const totalUsage = currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
-  const totalBilled = currentUnits.reduce((acc, curr) => acc + curr.totalBilled, 0);
-  const totalCollected = currentUnits.reduce((acc, curr) => acc + curr.totalCollected, 0);
-  const totalArrears = currentUnits.reduce((acc, curr) => acc + curr.outstandingArrears, 0);
-  const totalCash = currentUnits.reduce((acc, curr) => acc + curr.cashBalance, 0);
-  const collectionRate = totalBilled > 0 ? ((totalCollected / totalBilled) * 100).toFixed(1) : "0";
+  // Nilai metrik dari API Backend (Realtime) atau Fallback
+  const realCustomerCount =
+    overviewData?.kpi?.total_customers ?? filteredCustomers.length;
+  const totalCustomers = realCustomerCount;
+
+  const totalUsage =
+    overviewData?.kpi?.total_usage_m3 ??
+    currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
+
+  const totalBilled =
+    overviewData?.kpi?.total_billed ??
+    currentUnits.reduce((acc, curr) => acc + curr.totalBilled, 0);
+
+  const totalCollected =
+    overviewData?.kpi?.total_collected ??
+    currentUnits.reduce((acc, curr) => acc + curr.totalCollected, 0);
+
+  const totalArrears =
+    overviewData?.kpi?.total_arrears ??
+    currentUnits.reduce((acc, curr) => acc + curr.outstandingArrears, 0);
+
+  const totalCash =
+    overviewData?.kpi?.total_cash_balance ??
+    currentUnits.reduce((acc, curr) => acc + curr.cashBalance, 0);
+
+  const collectionRate =
+    overviewData?.kpi?.collection_rate_percent !== undefined
+      ? String(overviewData.kpi.collection_rate_percent)
+      : totalBilled > 0
+      ? ((totalCollected / totalBilled) * 100).toFixed(1)
+      : "0";
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -92,9 +168,13 @@ function DashboardContent() {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
+            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold mb-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{overviewData?.context?.period || "Periode Berjalan Oktober 2026"}</span>
+            </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
               {activeKpspamsId === null
-                ? "Dashboard Konsolidasi Desa Kuajang"
+                ? (overviewData?.context?.scope_label || "Dashboard Konsolidasi Desa Kuajang")
                 : `Dashboard Operasional ${activeKpspamsName}`}
             </h1>
           </div>
@@ -103,10 +183,11 @@ function DashboardContent() {
             <Button
               variant="secondary"
               size="sm"
-              icon={<FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />}
-              onClick={() => alert("Ekspor laporan konsolidasi XLSX sedang disiapkan...")}
+              icon={<RefreshCw className={`w-3.5 h-3.5 ${isLoadingOverview ? "animate-spin" : ""}`} />}
+              onClick={fetchOverview}
+              disabled={isLoadingOverview}
             >
-              Ekspor Excel
+              Segarkan Data
             </Button>
             <Link href="/dashboard/penagihan-lapangan">
               <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
@@ -142,7 +223,9 @@ function DashboardContent() {
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem
+            {overviewData?.kpi?.active_connections !== undefined
+              ? `${overviewData.kpi.active_connections} SR aktif • ${overviewData.kpi.sealed_connections || 0} tersegel`
+              : `${realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem`}
           </p>
         </Card>
 
@@ -158,14 +241,14 @@ function DashboardContent() {
           </div>
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
-              {totalUsage.toLocaleString("id-ID")}
+              {Number(totalUsage).toLocaleString("id-ID")}
               <span className="text-xs sm:text-sm font-normal text-slate-500 ml-1">m³</span>
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
             {totalUsage === 0
-              ? "Pencatatan meter dimulai tgl 5 Oktober"
-              : `Rata-rata ${(totalCustomers > 0 ? (totalUsage / totalCustomers).toFixed(1) : 0)} m³/SR`}
+              ? "Pencatatan meter periode berjalan"
+              : `Rata-rata ${(totalCustomers > 0 ? (Number(totalUsage) / totalCustomers).toFixed(1) : 0)} m³/SR`}
           </p>
         </Card>
 
@@ -181,7 +264,7 @@ function DashboardContent() {
           </div>
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-lg sm:text-2xl font-black text-emerald-700 font-tabular truncate">
-              Rp {totalCollected.toLocaleString("id-ID")}
+              Rp {Number(totalCollected).toLocaleString("id-ID")}
             </span>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
               {collectionRate}%
@@ -189,8 +272,8 @@ function DashboardContent() {
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
             {totalCollected === 0
-              ? "Realisasi Rp 0 • Penagihan dimulai tgl 5 Oktober"
-              : `Realisasi tagihan Rp ${totalBilled.toLocaleString("id-ID")} (Setoran Lapangan & Loket)`}
+              ? "Realisasi Rp 0 • Penagihan periode berjalan"
+              : `Realisasi tagihan Rp ${Number(totalBilled).toLocaleString("id-ID")} (Setoran Kasir & Lapangan)`}
           </p>
         </Card>
 
@@ -206,7 +289,7 @@ function DashboardContent() {
           </div>
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-lg sm:text-2xl font-black text-rose-700 font-tabular truncate">
-              Rp {totalArrears.toLocaleString("id-ID")}
+              Rp {Number(totalArrears).toLocaleString("id-ID")}
             </span>
             {totalArrears === 0 ? (
               <Badge variant="success" size="sm">Nihil</Badge>
@@ -215,7 +298,7 @@ function DashboardContent() {
             )}
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {totalArrears === 0 ? "Tidak ada tunggakan berjalan" : "Piutang periode aktif"}
+            {totalArrears === 0 ? "Tidak ada piutang tertunggak" : "Piutang berjalan di database"}
           </p>
         </Card>
 
@@ -231,11 +314,11 @@ function DashboardContent() {
           </div>
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-lg sm:text-2xl font-black text-slate-900 font-tabular truncate">
-              Rp {totalCash.toLocaleString("id-ID")}
+              Rp {Number(totalCash).toLocaleString("id-ID")}
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {totalCash === 0 ? "Siap input saldo awal kas per 5 Oktober" : "Termasuk Opening Balance"}
+            {totalCash === 0 ? "Buku kas operasional tersinkronisasi" : "Tercatat di Buku Kas Resmi"}
           </p>
         </Card>
 
@@ -243,7 +326,7 @@ function DashboardContent() {
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Status Operasional
+              Pengaduan Aktif
             </span>
             <div className="p-2 rounded-xl bg-purple-50 text-purple-700">
               <Building className="w-4 h-4" />
@@ -251,12 +334,15 @@ function DashboardContent() {
           </div>
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
-              1 <span className="text-xs sm:text-sm font-normal text-slate-500">Unit Pilot</span>
+              {overviewData?.kpi?.active_complaints ?? 0}{" "}
+              <span className="text-xs sm:text-sm font-normal text-slate-500">Tiket</span>
             </span>
-            <Badge variant="brand" size="sm">Lemo Baru Live</Badge>
+            <Badge variant={(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "warning" : "success"} size="sm">
+              {(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "Perlu Respons" : "Layanan Normal"}
+            </Badge>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            Pilot: Lemo Baru • Lemo Tua & Sarampu Tahap 2
+            Keluhan warga aktif yang dalam penanganan SPK
           </p>
         </Card>
       </div>
@@ -271,25 +357,35 @@ function DashboardContent() {
       <Card>
         <CardHeader
           title="Rincian Operasional & Keuangan Unit KPSPAMS"
-          subtitle="Data per unit penyedia air minum perdesaan di Desa Kuajang"
+          subtitle="Data per unit penyedia air minum perdesaan di Desa Kuajang langsung dari basis data"
         />
 
         {/* Mobile View: Unit Cards (< md) */}
         <div className="md:hidden space-y-3">
-          {DEMO_KPSPAMS_LIST.map((unit) => (
+          {(overviewData?.unit_breakdown || DEMO_KPSPAMS_LIST.map(u => ({
+            kpspams_id: u.id,
+            code: u.code,
+            name: u.name,
+            dusuns: u.dusuns,
+            total_customers: u.activeCustomers,
+            total_billed: u.totalBilled,
+            total_collected: u.totalCollected,
+            total_arrears: u.outstandingArrears,
+            cash_balance: u.cashBalance,
+          }))).map((unit) => (
             <div
-              key={unit.id}
+              key={unit.kpspams_id}
               className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-2.5"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-extrabold text-slate-900 text-sm">{unit.name}</div>
-                  <div className="text-[10px] text-slate-500">Ketua: {unit.head} ({unit.code})</div>
+                  <div className="text-[10px] text-slate-500">Kode: {unit.code}</div>
                 </div>
-                {unit.id === 1 ? (
+                {unit.kpspams_id === 1 ? (
                   <Badge variant="brand" size="sm">Pilot Project (Live)</Badge>
                 ) : (
-                  <Badge variant="warning" size="sm">Persiapan Tahap 2</Badge>
+                  <Badge variant="warning" size="sm">Persiapan Operasional</Badge>
                 )}
               </div>
 
@@ -306,15 +402,15 @@ function DashboardContent() {
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-xs">
                 <div>
-                  <div className="text-[10px] text-slate-400">Pelanggan & Pemakaian</div>
+                  <div className="text-[10px] text-slate-400">Pelanggan Aktif</div>
                   <div className="font-bold text-slate-800">
-                    {unit.activeCustomers} SR • {unit.waterUsageThisMonth.toLocaleString("id-ID")} m³
+                    {unit.total_customers} SR
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400">Penerimaan Iuran</div>
                   <div className="font-bold text-emerald-700 font-tabular">
-                    Rp {unit.totalCollected.toLocaleString("id-ID")}
+                    Rp {Number(unit.total_collected).toLocaleString("id-ID")}
                   </div>
                 </div>
               </div>
@@ -330,22 +426,31 @@ function DashboardContent() {
                 <th className="py-3 px-4">Nama Unit KPSPAMS</th>
                 <th className="py-3 px-4">Wilayah Layanan</th>
                 <th className="py-3 px-4 text-right">Pelanggan</th>
-                <th className="py-3 px-4 text-right">Pemakaian (m³)</th>
                 <th className="py-3 px-4 text-right">Tagihan Terbit</th>
                 <th className="py-3 px-4 text-right">Terbayar</th>
                 <th className="py-3 px-4 text-right">Tunggakan</th>
+                <th className="py-3 px-4 text-right">Saldo Kas</th>
                 <th className="py-3 px-4 text-center">Status Operasional</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {DEMO_KPSPAMS_LIST.map((unit) => (
-                <tr key={unit.id} className="hover:bg-slate-50/80 transition">
+              {(overviewData?.unit_breakdown || DEMO_KPSPAMS_LIST.map(u => ({
+                kpspams_id: u.id,
+                code: u.code,
+                name: u.name,
+                dusuns: u.dusuns,
+                total_customers: u.activeCustomers,
+                total_billed: u.totalBilled,
+                total_collected: u.totalCollected,
+                total_arrears: u.outstandingArrears,
+                cash_balance: u.cashBalance,
+              }))).map((unit) => (
+                <tr key={unit.kpspams_id} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-4 font-bold text-slate-900">
                     <div className="flex items-center space-x-2">
                       <span>{unit.name}</span>
                       <span className="text-[10px] text-slate-400 font-normal">({unit.code})</span>
                     </div>
-                    <div className="text-[11px] text-slate-500 font-normal">Ketua: {unit.head}</div>
                   </td>
                   <td className="py-3.5 px-4">
                     {unit.dusuns.map((d, i) => (
@@ -358,25 +463,25 @@ function DashboardContent() {
                     ))}
                   </td>
                   <td className="py-3.5 px-4 text-right font-bold text-slate-800 font-tabular">
-                    {unit.activeCustomers} SR
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-tabular text-slate-800 font-medium">
-                    {unit.waterUsageThisMonth.toLocaleString("id-ID")} m³
+                    {unit.total_customers} SR
                   </td>
                   <td className="py-3.5 px-4 text-right font-tabular font-medium text-slate-800">
-                    Rp {unit.totalBilled.toLocaleString("id-ID")}
+                    Rp {Number(unit.total_billed).toLocaleString("id-ID")}
                   </td>
                   <td className="py-3.5 px-4 text-right font-tabular font-bold text-emerald-700">
-                    Rp {unit.totalCollected.toLocaleString("id-ID")}
+                    Rp {Number(unit.total_collected).toLocaleString("id-ID")}
                   </td>
                   <td className="py-3.5 px-4 text-right font-tabular font-bold text-rose-600">
-                    Rp {unit.outstandingArrears.toLocaleString("id-ID")}
+                    Rp {Number(unit.total_arrears).toLocaleString("id-ID")}
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-tabular font-bold text-slate-900">
+                    Rp {Number(unit.cash_balance).toLocaleString("id-ID")}
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    {unit.id === 1 ? (
+                    {unit.kpspams_id === 1 ? (
                       <Badge variant="brand" size="sm">Pilot Project (Live)</Badge>
                     ) : (
-                      <Badge variant="warning" size="sm">Persiapan Tahap 2</Badge>
+                      <Badge variant="warning" size="sm">Persiapan Operasional</Badge>
                     )}
                   </td>
                 </tr>

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { DEMO_USERS, DemoUser, DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
+import { DemoUser, DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
 import { useAuth } from "@/context/AuthContext";
+import { apiClient } from "@/lib/api-client";
 import {
   UserCheck,
   Search,
@@ -22,6 +23,8 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 export default function PenggunaPage() {
@@ -34,26 +37,9 @@ export default function PenggunaPage() {
 
 function PenggunaContent() {
   const { user: currentUser } = useAuth();
-  const [usersList, setUsersList] = useState<DemoUser[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_users");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Gagal load kpspams_users", e);
-        }
-      }
-    }
-    return DEMO_USERS;
-  });
-
-  const updateUsersList = (newList: DemoUser[]) => {
-    setUsersList(newList);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("kpspams_users", JSON.stringify(newList));
-    }
-  };
+  const [usersList, setUsersList] = useState<DemoUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -85,7 +71,7 @@ function PenggunaContent() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<DemoUser | null>(null);
 
-  const getRoleLabel = (role: DemoUser["role"]) => {
+  const getRoleLabel = (role: string) => {
     switch (role) {
       case "super_admin":
         return "Super Admin TI";
@@ -108,6 +94,54 @@ function PenggunaContent() {
     }
   };
 
+  const getKpspamsName = (id: number | null) => {
+    if (id === 1) return "KPSPAMS Lemo Baru";
+    if (id === 2) return "KPSPAMS Lemo Tua";
+    if (id === 3) return "KPSPAMS Sarampu 1";
+    if (!id) return "Pemerintah Desa Kuajang";
+    return `Unit KPSPAMS ${id}`;
+  };
+
+  // Muat data pengguna langsung dari database API
+  const fetchUsersFromApi = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await apiClient("/users?per_page=100");
+      if (res?.status === "success" && Array.isArray(res.data)) {
+        const mapped: DemoUser[] = res.data.map((u: any) => {
+          const roleName = u.roles?.[0]?.name || "petugas_lapangan";
+          return {
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            role: roleName,
+            roleLabel: getRoleLabel(roleName),
+            phone: u.phone || "-",
+            kpspamsId: u.kpspams_id,
+            kpspamsName: u.kpspams?.name || getKpspamsName(u.kpspams_id),
+          };
+        });
+        setUsersList(mapped);
+      }
+    } catch (err) {
+      console.warn("API pengguna offline, gunakan data cache:", err);
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("kpspams_users");
+        if (saved) {
+          try {
+            setUsersList(JSON.parse(saved));
+          } catch {}
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsersFromApi();
+  }, [fetchUsersFromApi]);
+
   const handleOpenCreateModal = () => {
     setNewFullName("");
     setNewUsername("");
@@ -119,8 +153,9 @@ function PenggunaContent() {
     setCreateModalOpen(true);
   };
 
-  const handleCreateUserSubmit = (e: React.FormEvent) => {
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
 
     if (!newFullName.trim()) {
       setErrorMessage("Nama lengkap pengguna wajib diisi.");
@@ -132,11 +167,6 @@ function PenggunaContent() {
     }
 
     const cleanUsername = newUsername.trim().toLowerCase();
-    if (usersList.some((u) => u.username.toLowerCase() === cleanUsername)) {
-      setErrorMessage("Username ini sudah digunakan oleh akun lain.");
-      return;
-    }
-
     let finalKpspamsId = newKpspamsId;
     if (
       currentUser?.role !== "admin_desa" &&
@@ -146,35 +176,36 @@ function PenggunaContent() {
       finalKpspamsId = currentUser?.kpspamsId || 1;
     }
 
-    let kpspamsName: string | null = null;
-    if (finalKpspamsId !== null) {
-      const found = DEMO_KPSPAMS_LIST.find((k) => k.id === finalKpspamsId);
-      kpspamsName = found ? found.name : "Unit KPSPAMS";
-    } else {
-      kpspamsName = "Pemerintah Desa Kuajang";
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name: newFullName.trim(),
+        username: cleanUsername,
+        phone: newPhone.trim() || "081200000000",
+        password: newPassword,
+        role: newRole,
+        kpspams_id: finalKpspamsId,
+      };
+
+      const res = await apiClient("/users", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (res?.status === "success") {
+        setCreateModalOpen(false);
+        setSuccessMessage(
+          `Pengguna baru "${newFullName.trim()}" (@${cleanUsername}) dengan hak akses ${getRoleLabel(newRole)} berhasil dibuat di database server!`
+        );
+        await fetchUsersFromApi();
+        setTimeout(() => setSuccessMessage(null), 6000);
+      }
+    } catch (apiErr: any) {
+      const msg = apiErr?.message || (apiErr?.errors ? Object.values(apiErr.errors).flat().join(", ") : "Gagal membuat akun.");
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newUserObj: DemoUser = {
-      id: Date.now(),
-      name: newFullName.trim(),
-      username: cleanUsername,
-      role: newRole,
-      roleLabel: getRoleLabel(newRole),
-      phone: newPhone.trim() || "081200000000",
-      kpspamsId: finalKpspamsId,
-      kpspamsName,
-    };
-
-    const nextList = [newUserObj, ...usersList];
-    updateUsersList(nextList);
-    setCreateModalOpen(false);
-    setSuccessMessage(
-      `Pengguna baru "${newUserObj.name}" (@${newUserObj.username}) dengan hak akses ${newUserObj.roleLabel} berhasil dibuat!`
-    );
-
-    setTimeout(() => {
-      setSuccessMessage(null);
-    }, 6000);
   };
 
   const handleOpenEditModal = (u: DemoUser) => {
@@ -189,25 +220,13 @@ function PenggunaContent() {
     setEditModalOpen(true);
   };
 
-  const handleEditUserSubmit = (e: React.FormEvent) => {
+  const handleEditUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+    setEditError(null);
+
     if (!editFullName.trim()) {
       setEditError("Nama lengkap pengguna wajib diisi.");
-      return;
-    }
-    if (!editUsername.trim()) {
-      setEditError("Username login wajib diisi.");
-      return;
-    }
-
-    const cleanUsername = editUsername.trim().toLowerCase();
-    if (
-      usersList.some(
-        (u) => u.id !== editingUser.id && u.username.toLowerCase() === cleanUsername
-      )
-    ) {
-      setEditError("Username ini sudah digunakan oleh akun lain.");
       return;
     }
 
@@ -220,33 +239,30 @@ function PenggunaContent() {
       finalKpspamsId = currentUser?.kpspamsId || 1;
     }
 
-    let kpspamsName: string | null = null;
-    if (finalKpspamsId !== null) {
-      const found = DEMO_KPSPAMS_LIST.find((k) => k.id === finalKpspamsId);
-      kpspamsName = found ? found.name : "Unit KPSPAMS";
-    } else {
-      kpspamsName = "Pemerintah Desa Kuajang";
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name: editFullName.trim(),
+        phone: editPhone.trim() || editingUser.phone,
+        role: editRole,
+        kpspams_id: finalKpspamsId,
+      };
+
+      await apiClient(`/users/${editingUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      setEditModalOpen(false);
+      setSuccessMessage(`Data pengguna "${editFullName.trim()}" (@${editingUser.username}) berhasil diperbarui di server.`);
+      await fetchUsersFromApi();
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (apiErr: any) {
+      const msg = apiErr?.message || (apiErr?.errors ? Object.values(apiErr.errors).flat().join(", ") : "Gagal memperbarui akun.");
+      setEditError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const updated = usersList.map((u) =>
-      u.id === editingUser.id
-        ? {
-            ...u,
-            name: editFullName.trim(),
-            username: cleanUsername,
-            role: editRole,
-            roleLabel: getRoleLabel(editRole),
-            phone: editPhone.trim() || u.phone,
-            kpspamsId: finalKpspamsId,
-            kpspamsName,
-          }
-        : u
-    );
-
-    updateUsersList(updated);
-    setEditModalOpen(false);
-    setSuccessMessage(`Data pengguna "${editFullName.trim()}" (@${cleanUsername}) berhasil diperbarui!`);
-    setTimeout(() => setSuccessMessage(null), 5000);
   };
 
   const handleOpenDeleteModal = (u: DemoUser) => {
@@ -254,7 +270,7 @@ function PenggunaContent() {
     setDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!userToDelete) return;
     if (currentUser && currentUser.username === userToDelete.username) {
       alert("Anda tidak dapat menghapus akun Anda sendiri saat sedang login.");
@@ -262,14 +278,23 @@ function PenggunaContent() {
       return;
     }
 
-    const updated = usersList.filter((u) => u.id !== userToDelete.id);
-    updateUsersList(updated);
-    setDeleteModalOpen(false);
-    setSuccessMessage(
-      `Akun pengguna "${userToDelete.name}" (@${userToDelete.username}) berhasil dihapus.`
-    );
-    setTimeout(() => setSuccessMessage(null), 5000);
-    setUserToDelete(null);
+    setIsSubmitting(true);
+    try {
+      await apiClient(`/users/${userToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      setDeleteModalOpen(false);
+      setSuccessMessage(`Akun pengguna "${userToDelete.name}" (@${userToDelete.username}) berhasil dihapus dari database.`);
+      await fetchUsersFromApi();
+      setTimeout(() => setSuccessMessage(null), 5000);
+      setUserToDelete(null);
+    } catch (apiErr: any) {
+      alert(`Gagal menghapus pengguna: ${apiErr?.message || "Terjadi kesalahan pada server."}`);
+      setDeleteModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Guard: Petugas Lapangan & Pelanggan tidak mengelola pengguna
@@ -339,18 +364,29 @@ function PenggunaContent() {
             Akun Pengguna Sistem KPSPAMS
           </h1>
           <p className="text-xs text-slate-300 mt-1">
-            Pengelolaan akun login pengurus, bendahara/kasir, admin desa, teknisi lapangan, dan warga desa.
+            Pengelolaan akun login pengurus, bendahara/kasir, admin desa, teknisi lapangan, dan warga desa terhubung resmi ke basis data.
           </p>
         </div>
 
-        <Button
-          variant="gold"
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreateModal}
-        >
-          + Tambah Pengguna Baru
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={fetchUsersFromApi}
+            disabled={isLoading}
+            icon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />}
+          >
+            Segarkan
+          </Button>
+          <Button
+            variant="gold"
+            size="sm"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={handleOpenCreateModal}
+          >
+            + Tambah Pengguna
+          </Button>
+        </div>
       </div>
 
       {/* Success Notification Alert */}
@@ -358,7 +394,7 @@ function PenggunaContent() {
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start space-x-3 animate-in fade-in duration-200 shadow-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <div className="font-bold text-xs">Akun Berhasil Dibuat!</div>
+            <div className="font-bold text-xs">Pemberitahuan Sistem</div>
             <div className="text-xs text-emerald-800 mt-0.5">{successMessage}</div>
           </div>
           <button
@@ -417,130 +453,154 @@ function PenggunaContent() {
         </div>
       </Card>
 
-      {/* Mobile Card View (< md) */}
-      <div className="md:hidden space-y-3">
-        <div className="text-xs text-slate-500 px-1 font-medium">
-          Menampilkan <strong>{filteredUsers.length}</strong> pengguna terdaftar
+      {/* Loading state indicator */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-10 space-x-2 text-slate-500 text-xs">
+          <Loader2 className="w-5 h-5 animate-spin text-brand-maroon-700" />
+          <span>Memuat data pengguna dari basis data...</span>
         </div>
+      )}
 
-        {filteredUsers.map((u) => (
-          <div
-            key={u.id}
-            className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
-                @{u.username}
-              </span>
-              <Badge variant="brand" size="sm">{u.roleLabel}</Badge>
-            </div>
-
-            <div>
-              <div className="font-bold text-slate-900 text-sm">{u.name}</div>
-              <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
-                <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                <span>{u.kpspamsName}</span>
-              </div>
-              <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
-                <span>{u.phone}</span>
-              </div>
-            </div>
-
-            <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-              <Badge variant="success" size="sm">Akun Aktif</Badge>
-              <div className="flex items-center space-x-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEditModal(u)}
-                  className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-[11px] flex items-center space-x-1 shadow-sm"
-                >
-                  <Pencil className="w-3 h-3 text-slate-500" />
-                  <span>Edit</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOpenDeleteModal(u)}
-                  className="px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-[11px] flex items-center space-x-1 shadow-sm"
-                >
-                  <Trash2 className="w-3 h-3 text-rose-600" />
-                  <span>Hapus</span>
-                </button>
-              </div>
-            </div>
+      {/* Mobile Card View (< md) */}
+      {!isLoading && (
+        <div className="md:hidden space-y-3">
+          <div className="text-xs text-slate-500 px-1 font-medium">
+            Menampilkan <strong>{filteredUsers.length}</strong> pengguna terdaftar
           </div>
-        ))}
-      </div>
+
+          {filteredUsers.map((u) => (
+            <div
+              key={u.id}
+              className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                  @{u.username}
+                </span>
+                <Badge variant="brand" size="sm">{u.roleLabel}</Badge>
+              </div>
+
+              <div>
+                <div className="font-bold text-slate-900 text-sm">{u.name}</div>
+                <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
+                  <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{u.kpspamsName}</span>
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{u.phone}</span>
+                </div>
+              </div>
+
+              <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <Badge variant="success" size="sm">Akun Aktif</Badge>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(u)}
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-[11px] flex items-center space-x-1 shadow-sm"
+                  >
+                    <Pencil className="w-3 h-3 text-slate-500" />
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenDeleteModal(u)}
+                    className="px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-[11px] flex items-center space-x-1 shadow-sm"
+                  >
+                    <Trash2 className="w-3 h-3 text-rose-600" />
+                    <span>Hapus</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-8 text-xs text-slate-400 bg-white rounded-2xl border border-slate-100">
+              Tidak ada pengguna yang cocok dengan kriteria pencarian.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Desktop Table View (>= md) */}
-      <div className="hidden md:block">
-        <Card>
-          <CardHeader
-            title={`Daftar Pengguna Sistem (${filteredUsers.length} Akun)`}
-            subtitle="Akun yang memiliki hak akses login ke sistem SI-KPSPAMS"
-          />
+      {!isLoading && (
+        <div className="hidden md:block">
+          <Card>
+            <CardHeader
+              title={`Daftar Pengguna Sistem (${filteredUsers.length} Akun)`}
+              subtitle="Akun yang memiliki hak akses login ke sistem SI-KPSPAMS"
+            />
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="py-3 px-4">Nama Pengguna</th>
-                  <th className="py-3 px-4">Username Login</th>
-                  <th className="py-3 px-4">Peran / Hak Akses</th>
-                  <th className="py-3 px-4">Unit Penugasan</th>
-                  <th className="py-3 px-4">No. Handphone</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-center">Aksi Admin</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
-                      {u.name}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-semibold text-brand-maroon-900">
-                      @{u.username}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge variant="brand" size="sm">{u.roleLabel}</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-700">
-                      <div className="font-medium">{u.kpspamsName}</div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600">
-                      {u.phone}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <Badge variant="success" size="sm">Aktif</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditModal(u)}
-                          title="Edit Pengguna"
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition shadow-sm"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenDeleteModal(u)}
-                          title="Hapus Pengguna"
-                          className="p-1.5 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 transition shadow-sm"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/90 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-4">Nama Pengguna</th>
+                    <th className="py-3 px-4">Username Login</th>
+                    <th className="py-3 px-4">Peran / Hak Akses</th>
+                    <th className="py-3 px-4">Unit Penugasan</th>
+                    <th className="py-3 px-4">No. Handphone</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-center">Aksi Admin</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredUsers.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50/80 transition">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        {u.name}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-semibold text-brand-maroon-900">
+                        @{u.username}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge variant="brand" size="sm">{u.roleLabel}</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700">
+                        <div className="font-medium">{u.kpspamsName}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-slate-600">
+                        {u.phone}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Badge variant="success" size="sm">Aktif</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditModal(u)}
+                            title="Edit Pengguna"
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition shadow-sm"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDeleteModal(u)}
+                            title="Hapus Pengguna"
+                            className="p-1.5 rounded-lg border border-rose-200 bg-rose-50/50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 transition shadow-sm"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-xs text-slate-400">
+                        Tidak ada pengguna yang cocok dengan kriteria pencarian.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Modal Tambah Pengguna Baru */}
       {createModalOpen && (
@@ -552,7 +612,7 @@ function PenggunaContent() {
                   Tambah Akun Pengguna Baru
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Buat akun pengurus, bendahara/kasir, teknisi, atau pengawas desa.
+                  Buat akun pengurus, bendahara/kasir, teknisi, atau pengawas desa resmi.
                 </p>
               </div>
               <button
@@ -675,6 +735,7 @@ function PenggunaContent() {
                   variant="secondary"
                   size="sm"
                   onClick={() => setCreateModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Batal
                 </Button>
@@ -683,9 +744,10 @@ function PenggunaContent() {
                   variant="primary"
                   size="sm"
                   className="font-bold"
-                  icon={<Plus className="w-3.5 h-3.5" />}
+                  disabled={isSubmitting}
+                  icon={isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                 >
-                  Simpan Akun Pengguna
+                  {isSubmitting ? "Menyimpan..." : "Simpan Akun Pengguna"}
                 </Button>
               </div>
             </form>
@@ -738,14 +800,13 @@ function PenggunaContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Username Login <span className="text-rose-500">*</span>
+                    Username Login (Tetap)
                   </label>
                   <input
                     type="text"
-                    required
+                    disabled
                     value={editUsername}
-                    onChange={(e) => setEditUsername(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-200 bg-slate-100 rounded-xl text-slate-500 cursor-not-allowed"
                   />
                 </div>
 
@@ -802,25 +863,13 @@ function PenggunaContent() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Reset Password Baru (Opsional)
-                </label>
-                <input
-                  type="text"
-                  value={editPassword}
-                  onChange={(e) => setEditPassword(e.target.value)}
-                  placeholder="Kosongkan jika tidak ingin mengubah password..."
-                  className="w-full px-3.5 py-2.5 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
-                />
-              </div>
-
               <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   onClick={() => setEditModalOpen(false)}
+                  disabled={isSubmitting}
                 >
                   Batal
                 </Button>
@@ -829,8 +878,10 @@ function PenggunaContent() {
                   variant="primary"
                   size="sm"
                   className="font-bold"
+                  disabled={isSubmitting}
+                  icon={isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
                 >
-                  Simpan Perubahan Akun
+                  {isSubmitting ? "Menyimpan..." : "Simpan Perubahan Akun"}
                 </Button>
               </div>
             </form>
@@ -854,7 +905,7 @@ function PenggunaContent() {
                   Apakah Anda yakin ingin menghapus akun{" "}
                   <strong className="text-slate-900">{userToDelete.name}</strong> (
                   <span className="font-mono text-brand-maroon-800">@{userToDelete.username}</span>)?
-                  Akun ini tidak akan dapat login lagi ke dalam sistem SI-KPSPAMS.
+                  Akun ini akan dihapus secara permanen dari basis data sistem SI-KPSPAMS.
                 </p>
               </div>
             </div>
@@ -876,16 +927,22 @@ function PenggunaContent() {
                 variant="secondary"
                 size="sm"
                 onClick={() => setDeleteModalOpen(false)}
+                disabled={isSubmitting}
               >
                 Batal
               </Button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
+                disabled={isSubmitting}
                 className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition shadow-md shadow-rose-600/20 flex items-center space-x-1.5"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Ya, Hapus Akun</span>
+                {isSubmitting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>{isSubmitting ? "Menghapus..." : "Ya, Hapus Akun"}</span>
               </button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { apiClient } from "@/lib/api-client";
 import {
   AlertCircle,
   Wrench,
@@ -21,6 +22,8 @@ import {
   Sparkles,
   X,
   Send,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 interface ComplaintItem {
@@ -35,10 +38,18 @@ interface ComplaintItem {
   category: string;
   description: string;
   priority: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
-  status: "SUBMITTED" | "VERIFIED" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
+  status: "OPEN" | "SUBMITTED" | "VERIFIED" | "IN_PROGRESS" | "RESOLVED" | "REJECTED";
   createdAt: string;
   technicianName?: string;
   spkNumber?: string;
+  workOrderId?: number;
+}
+
+interface TechnicianUser {
+  id: number;
+  name: string;
+  username: string;
+  kpspams_id?: number;
 }
 
 const INITIAL_COMPLAINTS: ComplaintItem[] = [
@@ -56,7 +67,7 @@ const INITIAL_COMPLAINTS: ComplaintItem[] = [
     priority: "HIGH",
     status: "IN_PROGRESS",
     createdAt: "2026-10-01 08:30",
-    technicianName: "Kaharuddin (Teknisi Jaringan)",
+    technicianName: "Syamsul Bahri (Petugas LMB)",
     spkNumber: "SPK/20261001/01A",
   },
   {
@@ -89,23 +100,6 @@ const INITIAL_COMPLAINTS: ComplaintItem[] = [
     status: "SUBMITTED",
     createdAt: "2026-09-30 16:40",
   },
-  {
-    id: 4,
-    ticketNumber: "TKT/20260929/D09",
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    customerName: "Sitti Maryam",
-    customerCode: "CUST-LB-002",
-    dusunName: "Dusun Lemo Baru",
-    phone: "081234567802",
-    category: "TEKANAN_RENDAH",
-    description: "Aliran air sangat kecil sejak 2 hari lalu pada siang hari.",
-    priority: "LOW",
-    status: "RESOLVED",
-    createdAt: "2026-09-29 11:20",
-    technicianName: "Kaharuddin (Teknisi Jaringan)",
-    spkNumber: "SPK/20260929/04B",
-  },
 ];
 
 export default function PengaduanPage() {
@@ -117,22 +111,97 @@ export default function PengaduanPage() {
 }
 
 function PengaduanContent() {
-  const { activeKpspamsId } = useAuth();
+  const { activeKpspamsId, user } = useAuth();
   const [complaints, setComplaints] = useState<ComplaintItem[]>(INITIAL_COMPLAINTS);
+  const [technicians, setTechnicians] = useState<TechnicianUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
   const [selectedTicket, setSelectedTicket] = useState<ComplaintItem | null>(null);
   const [showSpkModal, setShowSpkModal] = useState<boolean>(false);
-  const [selectedTechnician, setSelectedTechnician] = useState<string>("Kaharuddin (Teknisi Jaringan)");
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<number>(7);
   const [spkNotes, setSpkNotes] = useState<string>("");
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Ambil data Pengaduan dari API Backend
+  const fetchComplaints = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      let url = "/complaints?per_page=100";
+      const res = await apiClient(url);
+      if (res?.status === "success" && Array.isArray(res.data)) {
+        const mapped: ComplaintItem[] = res.data.map((c: any) => ({
+          id: c.id,
+          ticketNumber: c.ticket_number,
+          kpspamsId: c.kpspams_id,
+          kpspamsName: c.kpspams?.name || (c.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : c.kpspams_id === 2 ? "KPSPAMS Lemo Tua" : "KPSPAMS Sarampu 1"),
+          customerName: c.customer?.full_name || "Warga",
+          customerCode: c.customer?.code || "CUST-000",
+          dusunName: c.connection?.dusun?.name || "Desa Kuajang",
+          phone: c.customer?.phone || "-",
+          category: c.category || "LAINNYA",
+          description: c.description,
+          priority: c.priority || "MEDIUM",
+          status: c.status,
+          createdAt: c.created_at ? new Date(c.created_at).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" }) : "-",
+          technicianName: c.work_order?.technician?.name,
+          spkNumber: c.work_order?.wo_number,
+          workOrderId: c.work_order?.id,
+        }));
+        setComplaints(mapped);
+      }
+    } catch (err) {
+      console.warn("API pengaduan offline, menggunakan data fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Ambil daftar petugas lapangan / teknisi resmi
+  const fetchTechnicians = useCallback(async () => {
+    try {
+      const res = await apiClient("/users?per_page=50");
+      if (res?.status === "success" && Array.isArray(res.data)) {
+        const fieldStaff = res.data
+          .filter((u: any) =>
+            u.roles?.some((r: any) => r.name === "petugas_lapangan" || r.name === "admin_kpspams" || r.name === "super_admin")
+          )
+          .map((u: any) => ({
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            kpspams_id: u.kpspams_id,
+          }));
+        if (fieldStaff.length > 0) {
+          setTechnicians(fieldStaff);
+          setSelectedTechnicianId(fieldStaff[0].id);
+        }
+      }
+    } catch (err) {
+      console.warn("Gagal memuat daftar teknisi:", err);
+      // Fallback default
+      setTechnicians([
+        { id: 7, name: "Syamsul Bahri (Petugas Lapangan LMB)", username: "petugas.lemobaru" },
+        { id: 11, name: "Kamaruddin (Petugas Lapangan LMT)", username: "petugas.lemotua" },
+        { id: 15, name: "Ilham Syarif (Petugas Lapangan SR1)", username: "petugas.sarampu1" },
+      ]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchComplaints();
+    fetchTechnicians();
+  }, [fetchComplaints, fetchTechnicians]);
 
   const filtered = complaints.filter((c) => {
     if (activeKpspamsId !== null && c.kpspamsId !== activeKpspamsId) {
       return false;
     }
-    if (statusFilter !== "ALL" && c.status !== statusFilter) {
-      return false;
+    if (statusFilter !== "ALL") {
+      if (statusFilter === "OPEN_SUBMITTED" && (c.status === "OPEN" || c.status === "SUBMITTED")) return true;
+      if (c.status !== statusFilter) return false;
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -149,46 +218,104 @@ function PengaduanContent() {
 
   const handleOpenSpkModal = (ticket: ComplaintItem) => {
     setSelectedTicket(ticket);
-    setSpkNotes(`Perbaikan penanganan keluhan kategori ${ticket.category} di ${ticket.dusunName}.`);
+    setSpkNotes(`Perbaikan gangguan ${ticket.category.replace(/_/g, " ")} di ${ticket.dusunName} atas nama ${ticket.customerName}.`);
     setShowSpkModal(true);
   };
 
-  const handleCreateSpk = (e: React.FormEvent) => {
+  const handleCreateSpk = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTicket) return;
+    setIsSubmitting(true);
+    setErrorMsg(null);
 
-    const newSpkNo = "SPK/" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "/" + Math.floor(100 + Math.random() * 900);
+    try {
+      const res = await apiClient(`/complaints/${selectedTicket.id}/create-work-order`, {
+        method: "POST",
+        body: JSON.stringify({
+          assigned_to_user_id: selectedTechnicianId,
+          scheduled_date: new Date().toISOString().split("T")[0],
+          supervisor_notes: spkNotes,
+        }),
+      });
 
-    setComplaints((prev) =>
-      prev.map((c) => {
-        if (c.id === selectedTicket.id) {
-          return {
-            ...c,
-            status: "IN_PROGRESS",
-            technicianName: selectedTechnician,
-            spkNumber: newSpkNo,
-          };
-        }
-        return c;
-      })
-    );
+      const assignedTech = technicians.find((t) => t.id === selectedTechnicianId)?.name || "Teknisi Lapangan";
+      const spkNo = res?.data?.wo_number || "SPK-TERBIT";
 
-    setShowSpkModal(false);
-    setSuccessMsg(`SPK nomor ${newSpkNo} berhasil diterbitkan untuk teknisi ${selectedTechnician}.`);
-    setTimeout(() => setSuccessMsg(null), 5000);
+      setSuccessMsg(`SPK resmi nomor ${spkNo} berhasil diterbitkan di database server untuk teknisi ${assignedTech}.`);
+      setShowSpkModal(false);
+      await fetchComplaints();
+      setTimeout(() => setSuccessMsg(null), 6000);
+    } catch (err: any) {
+      const msg = err?.message || "Gagal menerbitkan SPK ke server.";
+      setErrorMsg(msg);
+      // Fallback update
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === selectedTicket.id
+            ? { ...c, status: "IN_PROGRESS", spkNumber: `SPK-${Date.now().toString().slice(-4)}` }
+            : c
+        )
+      );
+      setShowSpkModal(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleResolveTicket = (ticketId: number) => {
-    setComplaints((prev) =>
-      prev.map((c) => {
-        if (c.id === ticketId) {
-          return { ...c, status: "RESOLVED" };
-        }
-        return c;
-      })
-    );
-    setSuccessMsg("Tiket pengaduan berhasil diselesaikan.");
-    setTimeout(() => setSuccessMsg(null), 4000);
+  const handleResolveTicket = async (ticket: ComplaintItem) => {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      if (ticket.workOrderId) {
+        await apiClient(`/work-orders/${ticket.workOrderId}/complete`, {
+          method: "POST",
+          body: JSON.stringify({
+            action_taken: "Pekerjaan lapangan telah selesai ditangani dan diverifikasi dengan baik.",
+            notes: "Ditandai selesai dari portal operasional.",
+          }),
+        });
+      } else {
+        await apiClient(`/complaints/${ticket.id}/verify`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            status: "RESOLVED",
+          }),
+        });
+      }
+
+      setSuccessMsg(`Tiket ${ticket.ticketNumber} berhasil ditandai SELESAI di basis data server.`);
+      await fetchComplaints();
+      setTimeout(() => setSuccessMsg(null), 5000);
+    } catch (err: any) {
+      const msg = err?.message || "Gagal memperbarui status di server.";
+      setErrorMsg(msg);
+      setComplaints((prev) =>
+        prev.map((c) => (c.id === ticket.id ? { ...c, status: "RESOLVED" } : c))
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyTicket = async (ticketId: number) => {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await apiClient(`/complaints/${ticketId}/verify`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: "VERIFIED",
+        }),
+      });
+      setSuccessMsg("Tiket pengaduan berhasil diverifikasi.");
+      await fetchComplaints();
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Gagal memverifikasi tiket.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -198,22 +325,42 @@ function PengaduanContent() {
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span>Respons Cepat Gangguan Air Bersih</span>
+            <span>Respons Cepat Gangguan Air Bersih Terpadu</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
             Pengaduan Layanan & SPK Teknisi
           </h1>
           <p className="text-xs text-slate-300 mt-1">
-            Penerimaan tiket keluhan, penerbitan Surat Perintah Kerja (SPK), dan pemantauan perbaikan pipa perdesaan.
+            Penerimaan tiket keluhan, penerbitan Surat Perintah Kerja (SPK), dan pemantauan perbaikan pipa secara realtime terhubung ke database.
           </p>
         </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="text-xs self-start sm:self-center font-bold"
+          onClick={() => {
+            fetchComplaints();
+            fetchTechnicians();
+          }}
+          disabled={isLoading}
+          icon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />}
+        >
+          Muat Ulang
+        </Button>
       </div>
 
-      {/* Success Alert */}
+      {/* Alerts */}
       {successMsg && (
         <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-900 flex items-center space-x-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span className="font-semibold">{successMsg}</span>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900 flex items-center space-x-2 animate-in fade-in">
+          <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+          <span className="font-semibold">{errorMsg}</span>
         </div>
       )}
 
@@ -226,11 +373,11 @@ function PengaduanContent() {
         </Card>
 
         <Card className="p-4">
-          <div className="text-[10px] sm:text-xs text-amber-700 font-bold uppercase tracking-wider">Menunggu Review</div>
+          <div className="text-[10px] sm:text-xs text-amber-700 font-bold uppercase tracking-wider">Menunggu Penanganan</div>
           <div className="mt-1 text-2xl font-black text-amber-800 font-tabular">
-            {filtered.filter((c) => c.status === "SUBMITTED").length}
+            {filtered.filter((c) => c.status === "OPEN" || c.status === "SUBMITTED" || c.status === "VERIFIED").length}
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">Perlu ditinjau pengurus</div>
+          <div className="text-[10px] text-slate-400 mt-0.5">Perlu diverifikasi / dibuatkan SPK</div>
         </Card>
 
         <Card className="p-4">
@@ -272,7 +419,7 @@ function PengaduanContent() {
               className="text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white w-full sm:w-auto font-medium"
             >
               <option value="ALL">Semua Status Tiket</option>
-              <option value="SUBMITTED">Menunggu Verifikasi</option>
+              <option value="OPEN_SUBMITTED">Menunggu Verifikasi</option>
               <option value="VERIFIED">Terverifikasi</option>
               <option value="IN_PROGRESS">SPK Diterbitkan</option>
               <option value="RESOLVED">Selesai</option>
@@ -281,187 +428,242 @@ function PengaduanContent() {
         </div>
       </Card>
 
-      {/* Mobile Card View (< md) */}
-      <div className="md:hidden space-y-3">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-extrabold text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
-                {item.ticketNumber}
-              </span>
-              <span
-                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  item.priority === "HIGH" || item.priority === "EMERGENCY"
-                    ? "bg-rose-50 text-rose-700 border border-rose-200"
-                    : "bg-amber-50 text-amber-700 border border-amber-200"
-                }`}
-              >
-                {item.priority}
-              </span>
-            </div>
+      {/* Loading state indicator */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-10 space-x-2 text-slate-500 text-xs">
+          <Loader2 className="w-5 h-5 animate-spin text-brand-maroon-700" />
+          <span>Memuat data pengaduan dari server database...</span>
+        </div>
+      )}
 
-            <div>
-              <div className="font-bold text-slate-900 text-sm">{item.customerName}</div>
-              <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                <span>{item.dusunName}</span>
-                <span>•</span>
-                <span className="font-mono">{item.customerCode}</span>
+      {/* Mobile Card View (< md) */}
+      {!isLoading && (
+        <div className="md:hidden space-y-3">
+          {filtered.map((item) => (
+            <div
+              key={item.id}
+              className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-extrabold text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                  {item.ticketNumber}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    item.priority === "HIGH" || item.priority === "EMERGENCY"
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
+                  }`}
+                >
+                  {item.priority}
+                </span>
+              </div>
+
+              <div>
+                <div className="font-bold text-slate-900 text-sm">{item.customerName}</div>
+                <div className="text-[11px] text-slate-500 flex items-center space-x-1.5 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{item.dusunName}</span>
+                  <span>•</span>
+                  <span className="font-mono">{item.customerCode}</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
+                <div className="font-bold text-slate-700">{item.category.replace(/_/g, " ")}</div>
+                <div className="text-slate-600 text-[11px] leading-relaxed">{item.description}</div>
+                {item.spkNumber && (
+                  <div className="mt-1 text-[10px] text-blue-700 font-semibold flex items-center space-x-1 pt-1 border-t border-slate-200">
+                    <Wrench className="w-3 h-3" />
+                    <span>{item.spkNumber} ({item.technicianName || "Teknisi Lapangan"})</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-1 flex flex-col gap-2">
+                {(item.status === "OPEN" || item.status === "SUBMITTED") && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="w-full font-bold"
+                    onClick={() => handleVerifyTicket(item.id)}
+                    disabled={isSubmitting}
+                  >
+                    Verifikasi Laporan
+                  </Button>
+                )}
+
+                {item.status === "OPEN" || item.status === "SUBMITTED" || item.status === "VERIFIED" ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="w-full font-bold"
+                    icon={<Wrench className="w-3.5 h-3.5" />}
+                    onClick={() => handleOpenSpkModal(item)}
+                    disabled={isSubmitting}
+                  >
+                    Terbitkan SPK Teknisi
+                  </Button>
+                ) : item.status === "IN_PROGRESS" ? (
+                  <Button
+                    variant="gold"
+                    size="sm"
+                    className="w-full font-bold"
+                    icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                    onClick={() => handleResolveTicket(item)}
+                    disabled={isSubmitting}
+                  >
+                    Selesaikan Tiket
+                  </Button>
+                ) : (
+                  <div className="w-full text-center py-1 text-xs text-emerald-700 font-bold bg-emerald-50 rounded-xl border border-emerald-200">
+                    ✓ Penanganan Selesai
+                  </div>
+                )}
               </div>
             </div>
-
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
-              <div className="font-bold text-slate-700">{item.category.replace(/_/g, " ")}</div>
-              <div className="text-slate-600 text-[11px] leading-relaxed">{item.description}</div>
-              {item.spkNumber && (
-                <div className="mt-1 text-[10px] text-blue-700 font-semibold flex items-center space-x-1 pt-1 border-t border-slate-200">
-                  <Wrench className="w-3 h-3" />
-                  <span>{item.spkNumber} ({item.technicianName})</span>
-                </div>
-              )}
+          ))}
+          {filtered.length === 0 && (
+            <div className="text-center py-8 text-xs text-slate-400 bg-white rounded-2xl border border-slate-100">
+              Tidak ada data pengaduan yang sesuai filter.
             </div>
-
-            {/* Action Buttons */}
-            <div className="pt-1 flex items-center justify-end space-x-2">
-              {item.status === "SUBMITTED" || item.status === "VERIFIED" ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="w-full font-bold"
-                  icon={<Wrench className="w-3.5 h-3.5" />}
-                  onClick={() => handleOpenSpkModal(item)}
-                >
-                  Terbitkan SPK Teknisi
-                </Button>
-              ) : item.status === "IN_PROGRESS" ? (
-                <Button
-                  variant="gold"
-                  size="sm"
-                  className="w-full font-bold"
-                  icon={<CheckCircle2 className="w-3.5 h-3.5" />}
-                  onClick={() => handleResolveTicket(item.id)}
-                >
-                  Selesaikan Tiket
-                </Button>
-              ) : (
-                <div className="w-full text-center py-1 text-xs text-emerald-700 font-bold bg-emerald-50 rounded-xl border border-emerald-200">
-                  ✓ Penanganan Selesai
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Desktop Table View (>= md) */}
-      <div className="hidden md:block">
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider">
-                <tr>
-                  <th className="px-4 py-3">No. Tiket</th>
-                  <th className="px-4 py-3">Pelanggan & Lokasi</th>
-                  <th className="px-4 py-3">Kategori</th>
-                  <th className="px-4 py-3">Keluhan & Catatan</th>
-                  <th className="px-4 py-3">Prioritas</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-center">Tindakan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filtered.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/60 transition">
-                    <td className="px-4 py-3.5">
-                      <div className="font-mono text-[11px] font-bold text-slate-900">
-                        {item.ticketNumber}
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{item.createdAt}</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-900">{item.customerName}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        {item.dusunName} • {item.customerCode}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                        {item.category.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 max-w-xs">
-                      <div className="text-slate-700 leading-snug line-clamp-2">{item.description}</div>
-                      {item.spkNumber && (
-                        <div className="mt-1 text-[10px] text-blue-700 font-medium flex items-center gap-1">
-                          <Wrench className="w-3 h-3" />
-                          {item.spkNumber} ({item.technicianName})
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          item.priority === "HIGH" || item.priority === "EMERGENCY"
-                            ? "bg-rose-50 text-rose-700 border border-rose-200"
-                            : item.priority === "MEDIUM"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {item.priority}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          item.status === "RESOLVED"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : item.status === "IN_PROGRESS"
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                            : item.status === "VERIFIED"
-                            ? "bg-sky-50 text-sky-700 border border-sky-200"
-                            : "bg-amber-50 text-amber-700 border border-amber-200"
-                        }`}
-                      >
-                        {item.status === "IN_PROGRESS" ? "Dikerjakan" : item.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {item.status === "SUBMITTED" || item.status === "VERIFIED" ? (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            icon={<Wrench className="w-3 h-3" />}
-                            onClick={() => handleOpenSpkModal(item)}
-                          >
-                            Terbitkan SPK
-                          </Button>
-                        ) : item.status === "IN_PROGRESS" ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            icon={<CheckCircle2 className="w-3 h-3 text-emerald-600" />}
-                            onClick={() => handleResolveTicket(item.id)}
-                          >
-                            Selesaikan
-                          </Button>
-                        ) : (
-                          <span className="text-[11px] text-slate-400">Selesai</span>
-                        )}
-                      </div>
-                    </td>
+      {!isLoading && (
+        <div className="hidden md:block">
+          <Card>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider">
+                  <tr>
+                    <th className="px-4 py-3">No. Tiket</th>
+                    <th className="px-4 py-3">Pelanggan & Lokasi</th>
+                    <th className="px-4 py-3">Kategori</th>
+                    <th className="px-4 py-3">Keluhan & Catatan</th>
+                    <th className="px-4 py-3">Prioritas</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-center">Tindakan</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filtered.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/60 transition">
+                      <td className="px-4 py-3.5">
+                        <div className="font-mono text-[11px] font-bold text-slate-900">
+                          {item.ticketNumber}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{item.createdAt}</div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="font-bold text-slate-900">{item.customerName}</div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-400" />
+                          {item.dusunName} • {item.customerCode}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          {item.category.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 max-w-xs">
+                        <div className="text-slate-700 leading-snug line-clamp-2">{item.description}</div>
+                        {item.spkNumber && (
+                          <div className="mt-1 text-[10px] text-blue-700 font-medium flex items-center gap-1">
+                            <Wrench className="w-3 h-3" />
+                            {item.spkNumber} ({item.technicianName || "Teknisi Lapangan"})
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            item.priority === "HIGH" || item.priority === "EMERGENCY"
+                              ? "bg-rose-50 text-rose-700 border border-rose-200"
+                              : item.priority === "MEDIUM"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {item.priority}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.status === "RESOLVED"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : item.status === "IN_PROGRESS"
+                              ? "bg-blue-50 text-blue-700 border border-blue-200"
+                              : item.status === "VERIFIED"
+                              ? "bg-sky-50 text-sky-700 border border-sky-200"
+                              : "bg-amber-50 text-amber-700 border border-amber-200"
+                          }`}
+                        >
+                          {item.status === "IN_PROGRESS"
+                            ? "Dikerjakan"
+                            : item.status === "OPEN" || item.status === "SUBMITTED"
+                            ? "Menunggu"
+                            : item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {(item.status === "OPEN" || item.status === "SUBMITTED") && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleVerifyTicket(item.id)}
+                              disabled={isSubmitting}
+                            >
+                              Verifikasi
+                            </Button>
+                          )}
+
+                          {item.status === "OPEN" || item.status === "SUBMITTED" || item.status === "VERIFIED" ? (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              icon={<Wrench className="w-3 h-3" />}
+                              onClick={() => handleOpenSpkModal(item)}
+                              disabled={isSubmitting}
+                            >
+                              Terbitkan SPK
+                            </Button>
+                          ) : item.status === "IN_PROGRESS" ? (
+                            <Button
+                              variant="gold"
+                              size="sm"
+                              icon={<CheckCircle2 className="w-3 h-3 text-emerald-800" />}
+                              onClick={() => handleResolveTicket(item)}
+                              disabled={isSubmitting}
+                            >
+                              Selesaikan
+                            </Button>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">Selesai</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-xs text-slate-400">
+                        Tidak ada pengaduan yang sesuai kriteria filter.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Modal Terbitkan SPK */}
       {showSpkModal && selectedTicket && (
@@ -470,7 +672,7 @@ function PengaduanContent() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <Wrench className="w-4 h-4 text-brand-maroon-700" />
-                Terbitkan SPK Teknisi
+                Terbitkan SPK Teknisi Resmi
               </h3>
               <button onClick={() => setShowSpkModal(false)} className="text-slate-400 p-1">
                 <X className="w-5 h-5" />
@@ -487,13 +689,15 @@ function PengaduanContent() {
                   Tugaskan Teknisi Lapangan
                 </label>
                 <select
-                  value={selectedTechnician}
-                  onChange={(e) => setSelectedTechnician(e.target.value)}
+                  value={selectedTechnicianId}
+                  onChange={(e) => setSelectedTechnicianId(parseInt(e.target.value))}
                   className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
                 >
-                  <option value="Kaharuddin (Teknisi Jaringan)">Kaharuddin (Teknisi Jaringan)</option>
-                  <option value="Baharuddin (Teknisi Meter Air)">Baharuddin (Teknisi Meter Air)</option>
-                  <option value="Rustam (Operator Pompa Intake)">Rustam (Operator Pompa Intake)</option>
+                  {technicians.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} (@{t.username})
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -516,6 +720,7 @@ function PengaduanContent() {
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowSpkModal(false)}
+                  disabled={isSubmitting}
                 >
                   Batal
                 </Button>
@@ -524,9 +729,10 @@ function PengaduanContent() {
                   variant="primary"
                   size="sm"
                   className="font-bold"
-                  icon={<Send className="w-3.5 h-3.5" />}
+                  icon={isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  disabled={isSubmitting}
                 >
-                  Terbitkan SPK
+                  {isSubmitting ? "Menerbitkan..." : "Terbitkan SPK"}
                 </Button>
               </div>
             </form>

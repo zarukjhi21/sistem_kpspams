@@ -166,6 +166,7 @@ class UserController extends BaseApiController
             'email' => "nullable|email|max:100|unique:users,email,{$id}",
             'is_active' => 'sometimes|boolean',
             'role' => 'sometimes|string|exists:roles,name',
+            'kpspams_id' => 'nullable|exists:kpspams,id',
         ]);
 
         if ($validator->fails()) {
@@ -182,7 +183,7 @@ class UserController extends BaseApiController
             }
         }
 
-        $user->update($request->only(['name', 'phone', 'email', 'is_active']));
+        $user->update($request->only(['name', 'phone', 'email', 'is_active', 'kpspams_id']));
 
         if ($request->filled('role')) {
             $role = Role::where('name', $request->input('role'))->first();
