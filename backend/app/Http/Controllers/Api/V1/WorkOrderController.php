@@ -33,7 +33,7 @@ class WorkOrderController extends BaseApiController
             $s = $request->query('search');
             $query->where(function ($q) use ($s) {
                 $q->where('wo_number', 'like', "%{$s}%")
-                  ->orWhere('action_taken', 'ilike', "%{$s}%");
+                  ->orWhere('action_taken', 'like', "%{$s}%");
             });
         }
 

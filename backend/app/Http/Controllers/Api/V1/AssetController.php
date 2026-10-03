@@ -34,9 +34,9 @@ class AssetController extends BaseApiController
         if ($request->filled('search')) {
             $s = $request->query('search');
             $query->where(function ($q) use ($s) {
-                $q->where('name', 'ilike', "%{$s}%")
+                $q->where('name', 'like', "%{$s}%")
                   ->orWhere('asset_code', 'like', "%{$s}%")
-                  ->orWhere('location_description', 'ilike', "%{$s}%");
+                  ->orWhere('location_description', 'like', "%{$s}%");
             });
         }
 

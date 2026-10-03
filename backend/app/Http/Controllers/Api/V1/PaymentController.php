@@ -48,7 +48,7 @@ class PaymentController extends BaseApiController
             $query->where(function ($q) use ($s) {
                 $q->where('receipt_number', 'like', "%{$s}%")
                   ->orWhereHas('customer', function ($sq) use ($s) {
-                      $sq->where('full_name', 'ilike', "%{$s}%")
+                      $sq->where('full_name', 'like', "%{$s}%")
                         ->orWhere('code', 'like', "%{$s}%");
                   });
             });

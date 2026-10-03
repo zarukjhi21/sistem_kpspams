@@ -97,16 +97,6 @@ function DashboardContent() {
                 ? "Dashboard Konsolidasi Desa Kuajang"
                 : `Dashboard Operasional ${activeKpspamsName}`}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-700/80 text-slate-200">
-                <Clock className="w-3.5 h-3.5 text-brand-gold-400" />
-                <span>Siklus Penagihan: <strong>Tgl 5 Setiap Bulan</strong></span>
-              </span>
-              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-brand-gold-500/15 border border-brand-gold-500/40 text-brand-gold-300 font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-brand-gold-400" />
-                <span>Go-Live Lapangan: <strong>Mulai 5 Oktober 2026</strong></span>
-              </span>
-            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

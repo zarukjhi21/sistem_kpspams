@@ -44,7 +44,7 @@ class MeterReadingController extends BaseApiController
             $query->whereHas('connection', function ($q) use ($s) {
                 $q->where('connection_no', 'like', "%{$s}%")
                   ->orWhereHas('customer', function ($sq) use ($s) {
-                      $sq->where('full_name', 'ilike', "%{$s}%")
+                      $sq->where('full_name', 'like', "%{$s}%")
                         ->orWhere('code', 'like', "%{$s}%");
                   });
             });

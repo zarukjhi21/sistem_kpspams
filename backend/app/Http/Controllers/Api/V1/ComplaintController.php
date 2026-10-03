@@ -35,8 +35,8 @@ class ComplaintController extends BaseApiController
             $s = $request->query('search');
             $query->where(function ($q) use ($s) {
                 $q->where('ticket_number', 'like', "%{$s}%")
-                  ->orWhere('description', 'ilike', "%{$s}%")
-                  ->orWhereHas('customer', fn($sq) => $sq->where('full_name', 'ilike', "%{$s}%"));
+                  ->orWhere('description', 'like', "%{$s}%")
+                  ->orWhereHas('customer', fn($sq) => $sq->where('full_name', 'like', "%{$s}%"));
             });
         }
 

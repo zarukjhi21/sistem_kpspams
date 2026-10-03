@@ -31,7 +31,7 @@ class MeterController extends BaseApiController
             $s = $request->query('search');
             $query->where(function ($q) use ($s) {
                 $q->where('serial_number', 'like', "%{$s}%")
-                  ->orWhere('brand', 'ilike', "%{$s}%");
+                  ->orWhere('brand', 'like', "%{$s}%");
             });
         }
 

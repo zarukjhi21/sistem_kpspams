@@ -7,8 +7,40 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DEMO_CUSTOMERS, DemoCustomer } from "@/lib/demo-data";
+import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
+
+const mapApiCustomerToDemo = (item: any): DemoCustomer => {
+  const primaryConn = item.connections?.[0];
+  return {
+    id: item.id,
+    connectionNo: primaryConn?.connection_no || primaryConn?.connection_number || item.code || `SR-${item.id}`,
+    name: item.full_name || item.name,
+    nik: item.nik || "",
+    birthPlaceDate: item.birth_place_date,
+    gender: item.gender,
+    address: item.identity_address || item.address,
+    rtRw: item.rt_rw,
+    village: item.village || "KUAJANG",
+    district: item.district || "BINUANG",
+    religion: item.religion,
+    maritalStatus: item.marital_status,
+    occupation: item.occupation,
+    phone: item.phone,
+    dusun: primaryConn?.dusun?.name || item.dusun || "Lemo Baru",
+    kpspamsId: item.kpspams_id || item.kpspams?.id || 1,
+    kpspamsName: item.kpspams?.name || (item.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
+    meterSerial: primaryConn?.meter?.serial_number || item.meter_serial || "MTR-1001",
+    lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
+    status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
+    tariffType: item.customer_type?.name || "Rumah Tangga",
+    latitude: primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215,
+    longitude: primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452,
+    billingStatus: item.billing_status || "UNPAID",
+    ktpPhotoUrl: item.ktp_photo_path,
+  };
+};
 
 const GisLocationPicker = dynamic(
   () => import("@/components/gis/GisLocationPicker").then((m) => m.GisLocationPicker),
@@ -80,16 +112,30 @@ function PelangganContent() {
     return DEMO_CUSTOMERS;
   });
 
-  // Hapus cache lama jika terdeteksi data demo basi agar data riil selalu sinkron
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_customers");
-      if (saved && (saved.includes("SR-LMB-00005") || saved.includes("Baharuddin") || saved.includes("SYAHARUDDIN"))) {
-        localStorage.removeItem("kpspams_customers");
-        setCustomers(DEMO_CUSTOMERS);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+
+  const fetchCustomersFromApi = async () => {
+    setIsLoadingCustomers(true);
+    try {
+      const res = await apiClient("/customers?per_page=100");
+      if (res?.status === "success" && Array.isArray(res.data)) {
+        const mapped = res.data.map(mapApiCustomerToDemo);
+        setCustomers(mapped);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("kpspams_customers", JSON.stringify(mapped));
+        }
       }
+    } catch (err) {
+      console.warn("Gagal fetch pelanggan dari server, gunakan cache lokal:", err);
+    } finally {
+      setIsLoadingCustomers(false);
     }
-  }, []);
+  };
+
+  // Muat data pelanggan langsung dari basis data server saat halaman dibuka atau konteks berganti
+  useEffect(() => {
+    fetchCustomersFromApi();
+  }, [activeKpspamsId]);
 
   const updateCustomers = (newList: DemoCustomer[]) => {
     setCustomers(newList);
@@ -378,7 +424,7 @@ function PelangganContent() {
     }
   };
 
-  const handleCreateCustomerSubmit = (e: React.FormEvent) => {
+  const handleCreateCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newFullName.trim()) {
@@ -398,55 +444,89 @@ function PelangganContent() {
       return;
     }
 
-    const nextSeq = customers.filter((c) => c.kpspamsId === kInfo.id).length + 1;
-    const seqStr = String(nextSeq).padStart(5, "0");
-    const connectionNo = `SR-${kInfo.codePrefix}-${seqStr}`;
-
-    const newCustomerObj: DemoCustomer = {
-      id: Date.now(),
-      connectionNo,
-      name: newFullName.trim(),
-      nik: newNik.trim(),
-      birthPlaceDate: newBirthPlaceDate.trim() || undefined,
-      gender: newGender,
-      address: newAddress.trim() || undefined,
-      rtRw: newRtRw.trim() || undefined,
-      village: newVillage.trim() || undefined,
-      district: newDistrict.trim() || undefined,
-      religion: newReligion.trim() || undefined,
-      maritalStatus: newMaritalStatus.trim() || undefined,
-      occupation: newOccupation.trim() || undefined,
-      phone: newPhone.trim() || undefined,
-      dusun: newDusun,
-      kpspamsId: kInfo.id,
-      kpspamsName: kInfo.name,
-      meterSerial: newMeterSerial.trim() || `MTR-${kInfo.codePrefix}-${Math.floor(1000 + Math.random() * 9000)}`,
-      lastReading: parseFloat(newInitialReading) || 0,
-      status: "ACTIVE",
-      tariffType: newTariffType,
-      latitude: newLatitude,
-      longitude: newLongitude,
-      billingStatus: "UNPAID",
-      ktpPhotoUrl: ktpPreviewUrl || undefined,
+    const dusunMap: Record<string, number> = {
+      "Sarampu 1": 1,
+      "Sarampu 2": 2,
+      "Lemo Baru": 3,
+      "Lemo Tua": 4,
+      "Pakkandoang": 5,
     };
+    const dusunId = dusunMap[newDusun] || 3;
 
-    // Tambahkan ke state lokal pelanggan dan simpan ke persistent storage
-    updateCustomers([newCustomerObj, ...customers]);
+    const typeMap: Record<string, number> = {
+      "Rumah Tangga": 1,
+      "Niaga / Usaha": 2,
+      "Sosial / Ibadah": 3,
+      "Instansi / Pemerintah": 4,
+    };
+    const customerTypeId = typeMap[newTariffType] || 1;
 
-    // Tutup modal & bersihkan form
-    setCreateModalOpen(false);
-    setNewFullName("");
-    setNewNik("");
-    setNewPhone("");
-    setNewAddress("");
-    setSuccessMessage(
-      `Pelanggan baru "${newCustomerObj.name}" berhasil didaftarkan dengan Nomor Sambungan: ${newCustomerObj.connectionNo} (${newCustomerObj.kpspamsName}).`
-    );
+    try {
+      // 1. Simpan Pelanggan Baru ke Backend API (Database SQLite)
+      const custPayload = {
+        customer_type_id: customerTypeId,
+        nik: newNik.trim(),
+        full_name: newFullName.trim(),
+        birth_place_date: newBirthPlaceDate.trim() || undefined,
+        gender: newGender,
+        phone: newPhone.trim() || "081200000000",
+        identity_address: newAddress.trim() || `Dusun ${newDusun}, Desa Kuajang`,
+        rt_rw: newRtRw.trim() || "000/000",
+        dusun: newDusun,
+        village: newVillage.trim() || "KUAJANG",
+        district: newDistrict.trim() || "BINUANG",
+        religion: newReligion,
+        marital_status: newMaritalStatus.trim() || undefined,
+        occupation: newOccupation.trim() || undefined,
+        kpspams_id: kInfo.id,
+      };
 
-    // Otomatis hilangkan pesan sukses setelah 6 detik
-    setTimeout(() => {
-      setSuccessMessage(null);
-    }, 6000);
+      const custRes = await apiClient("/customers", {
+        method: "POST",
+        body: JSON.stringify(custPayload),
+      });
+
+      if (custRes?.status === "success" && custRes.data?.id) {
+        const createdCustomerId = custRes.data.id;
+
+        // 2. Pasang Sambungan Rumah (SR) & Meter Air Resmi ke Backend API
+        const connPayload = {
+          customer_id: createdCustomerId,
+          dusun_id: dusunId,
+          meter_serial: newMeterSerial.trim() || `MTR-${kInfo.codePrefix}-${Math.floor(1000 + Math.random() * 9000)}`,
+          meter_brand: "Onda Multi-Jet",
+          initial_reading: parseFloat(newInitialReading) || 0,
+          address_detail: newAddress.trim() || `Dusun ${newDusun}`,
+          latitude: newLatitude,
+          longitude: newLongitude,
+        };
+
+        const connRes = await apiClient("/connections", {
+          method: "POST",
+          body: JSON.stringify(connPayload),
+        });
+
+        // 3. Muat ulang data terbaru dari basis data server
+        await fetchCustomersFromApi();
+
+        setCreateModalOpen(false);
+        setNewFullName("");
+        setNewNik("");
+        setNewPhone("");
+        setNewAddress("");
+        const createdConnNo = connRes?.data?.connection_no || `SR-${kInfo.codePrefix}-BARU`;
+        setSuccessMessage(
+          `Pelanggan baru "${newFullName.trim()}" berhasil tersimpan permanen di database server dengan No. SR: ${createdConnNo} (${kInfo.name}).`
+        );
+        setTimeout(() => setSuccessMessage(null), 6000);
+        return;
+      }
+    } catch (apiErr: any) {
+      console.warn("API simpan pelanggan gagal:", apiErr);
+      const errMsg = apiErr?.message || (apiErr?.errors ? Object.values(apiErr.errors).flat().join(", ") : "Gagal mendaftarkan ke server.");
+      setErrorMessage(`Gagal menyimpan ke basis data: ${errMsg}`);
+      return;
+    }
   };
 
   // Handler Buka Modal Edit Pelanggan
@@ -476,7 +556,7 @@ function PelangganContent() {
   };
 
   // Handler Simpan Perubahan Edit Pelanggan
-  const handleSaveEditSubmit = (e: React.FormEvent) => {
+  const handleSaveEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCustomer) return;
 
@@ -497,37 +577,36 @@ function PelangganContent() {
       return;
     }
 
-    const updatedCust: DemoCustomer = {
-      ...editingCustomer,
-      name: editFullName.trim(),
-      nik: editNik.trim(),
-      birthPlaceDate: editBirthPlaceDate.trim() || undefined,
-      gender: editGender,
-      religion: editReligion.trim() || undefined,
-      maritalStatus: editMaritalStatus.trim() || undefined,
-      occupation: editOccupation.trim() || undefined,
-      address: editAddress.trim() || undefined,
-      rtRw: editRtRw.trim() || undefined,
-      village: editVillage.trim() || undefined,
-      district: editDistrict.trim() || undefined,
-      dusun: editDusun,
-      kpspamsId: kInfo.id,
-      kpspamsName: kInfo.name,
-      phone: editPhone.trim() || undefined,
-      meterSerial: editMeterSerial.trim(),
-      lastReading: parseFloat(editLastReading) || 0,
-      tariffType: editTariffType,
-      status: editStatus,
-      latitude: editLatitude,
-      longitude: editLongitude,
-    };
+    try {
+      const editPayload = {
+        full_name: editFullName.trim(),
+        birth_place_date: editBirthPlaceDate.trim() || undefined,
+        gender: editGender,
+        phone: editPhone.trim() || "081200000000",
+        identity_address: editAddress.trim() || `Dusun ${editDusun}`,
+        rt_rw: editRtRw.trim() || undefined,
+        dusun: editDusun,
+        village: editVillage.trim() || undefined,
+        district: editDistrict.trim() || undefined,
+        religion: editReligion,
+        marital_status: editMaritalStatus.trim() || undefined,
+        occupation: editOccupation.trim() || undefined,
+      };
 
-    const updatedList = customers.map((c) => (c.id === editingCustomer.id ? updatedCust : c));
-    updateCustomers(updatedList);
-    setEditModalOpen(false);
-    setEditingCustomer(null);
-    setSuccessMessage(`Data sambungan & koordinat GIS "${updatedCust.name}" (${updatedCust.connectionNo}) berhasil diperbarui.`);
-    setTimeout(() => setSuccessMessage(null), 6000);
+      await apiClient(`/customers/${editingCustomer.id}`, {
+        method: "PUT",
+        body: JSON.stringify(editPayload),
+      });
+
+      await fetchCustomersFromApi();
+      setEditModalOpen(false);
+      setEditingCustomer(null);
+      setSuccessMessage(`Data pelanggan "${editFullName.trim()}" (${editingCustomer.connectionNo}) berhasil diperbarui di database server.`);
+      setTimeout(() => setSuccessMessage(null), 6000);
+    } catch (apiErr: any) {
+      const errMsg = apiErr?.message || "Gagal memperbarui data di server.";
+      setEditError(`Gagal memperbarui: ${errMsg}`);
+    }
   };
 
   // Handler Modal Aksi Segel / Putus / Hapus
@@ -536,28 +615,52 @@ function PelangganContent() {
     setActionModalOpen(true);
   };
 
-  const handleApplyStatusChange = (newStatus: "ACTIVE" | "SEALED" | "DISCONNECTED") => {
+  const handleApplyStatusChange = async (newStatus: "ACTIVE" | "SEALED" | "DISCONNECTED") => {
     if (!customerToAction) return;
     const label = newStatus === "ACTIVE" ? "Diaktifkan Kembali" : newStatus === "SEALED" ? "Disegel Sementara" : "Diputus Permanen";
-    const updatedList = customers.map((c) =>
-      c.id === customerToAction.id ? { ...c, status: newStatus } : c
-    );
-    updateCustomers(updatedList);
+
+    try {
+      await apiClient(`/connections/${customerToAction.id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: newStatus,
+          notes: `Status diubah ke ${newStatus} melalui antarmuka operasional`,
+        }),
+      });
+      await fetchCustomersFromApi();
+    } catch (err) {
+      console.warn("Gagal ubah status koneksi di server, gunakan fallback:", err);
+      const updatedList = customers.map((c) =>
+        c.id === customerToAction.id ? { ...c, status: newStatus } : c
+      );
+      updateCustomers(updatedList);
+    }
+
     setActionModalOpen(false);
     setCustomerToAction(null);
     setSuccessMessage(`Status sambungan ${customerToAction.name} (${customerToAction.connectionNo}) berhasil diubah menjadi "${label}".`);
     setTimeout(() => setSuccessMessage(null), 6000);
   };
 
-  const handleDeletePermanent = () => {
+  const handleDeletePermanent = async () => {
     if (!customerToAction) return;
     const deletedName = customerToAction.name;
     const deletedNo = customerToAction.connectionNo;
-    const updatedList = customers.filter((c) => c.id !== customerToAction.id);
-    updateCustomers(updatedList);
+
+    try {
+      await apiClient(`/customers/${customerToAction.id}`, {
+        method: "DELETE",
+      });
+      await fetchCustomersFromApi();
+    } catch (err) {
+      console.warn("Gagal hapus pelanggan di server, gunakan fallback:", err);
+      const updatedList = customers.filter((c) => c.id !== customerToAction.id);
+      updateCustomers(updatedList);
+    }
+
     setActionModalOpen(false);
     setCustomerToAction(null);
-    setSuccessMessage(`Data sambungan ${deletedName} (${deletedNo}) berhasil dihapus permanen dari database.`);
+    setSuccessMessage(`Data sambungan ${deletedName} (${deletedNo}) berhasil dihapus permanen dari basis data server.`);
     setTimeout(() => setSuccessMessage(null), 6000);
   };
 

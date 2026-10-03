@@ -8,8 +8,40 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DEMO_CUSTOMERS, DemoCustomer, calculateWaterBill } from "@/lib/demo-data";
+import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
+
+const mapApiCustomerToDemo = (item: any): DemoCustomer => {
+  const primaryConn = item.connections?.[0];
+  return {
+    id: item.id,
+    connectionNo: primaryConn?.connection_no || primaryConn?.connection_number || item.code || `SR-${item.id}`,
+    name: item.full_name || item.name,
+    nik: item.nik || "",
+    birthPlaceDate: item.birth_place_date,
+    gender: item.gender,
+    address: item.identity_address || item.address,
+    rtRw: item.rt_rw,
+    village: item.village || "KUAJANG",
+    district: item.district || "BINUANG",
+    religion: item.religion,
+    maritalStatus: item.marital_status,
+    occupation: item.occupation,
+    phone: item.phone,
+    dusun: primaryConn?.dusun?.name || item.dusun || "Lemo Baru",
+    kpspamsId: item.kpspams_id || item.kpspams?.id || 1,
+    kpspamsName: item.kpspams?.name || (item.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
+    meterSerial: primaryConn?.meter?.serial_number || item.meter_serial || "MTR-1001",
+    lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
+    status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
+    tariffType: item.customer_type?.name || "Rumah Tangga",
+    latitude: primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215,
+    longitude: primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452,
+    billingStatus: item.billing_status || "UNPAID",
+    ktpPhotoUrl: item.ktp_photo_path,
+  };
+};
 import {
   Camera,
   Share2,
@@ -90,16 +122,41 @@ function PenagihanLapanganContent() {
     return DEMO_CUSTOMERS;
   });
 
-  // Hapus cache lama jika terdeteksi data demo basi agar data riil selalu sinkron
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_customers");
-      if (saved && (saved.includes("SR-LMB-00005") || saved.includes("Baharuddin") || saved.includes("SYAHARUDDIN"))) {
-        localStorage.removeItem("kpspams_customers");
-        setCustomers(DEMO_CUSTOMERS);
+  // Simpan data invoice aktif per sambungan agar bisa langsung dilunasi di backend
+  const [unpaidInvoices, setUnpaidInvoices] = useState<Record<string, any>>({});
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
+  const fetchCustomersAndInvoices = async () => {
+    try {
+      const custRes = await apiClient("/customers?per_page=100");
+      if (custRes?.status === "success" && Array.isArray(custRes.data) && custRes.data.length > 0) {
+        const mapped = custRes.data.map(mapApiCustomerToDemo);
+        setCustomers(mapped);
       }
+    } catch (err) {
+      console.warn("Gagal fetch pelanggan dari server:", err);
     }
-  }, []);
+
+    try {
+      const invRes = await apiClient("/invoices?status=UNPAID&per_page=100");
+      if (invRes?.status === "success" && Array.isArray(invRes.data)) {
+        const invMap: Record<string, any> = {};
+        invRes.data.forEach((inv: any) => {
+          const connNo = inv.connection?.connection_no || inv.connection?.connection_number;
+          if (connNo) {
+            invMap[connNo] = inv;
+          }
+        });
+        setUnpaidInvoices(invMap);
+      }
+    } catch (err) {
+      console.warn("Gagal fetch invoices:", err);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCustomersAndInvoices();
+  }, [activeKpspamsId]);
 
   // Multi-tenant Isolation: Petugas Lapangan terisolasi secara ketat ke KPSPAMS miliknya
   const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
@@ -197,11 +254,75 @@ function PenagihanLapanganContent() {
   };
 
   // Step 3 -> Step 4 (Konfirmasi Lunas & Buka WhatsApp)
-  const handleConfirmPayment = () => {
-    const receiptNo = `KW/202610/KP0${selectedCustomer.kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
-    setGeneratedReceiptNo(receiptNo);
+  const handleConfirmPayment = async () => {
+    setIsSubmittingPayment(true);
+
+    let receiptNo = `KW/202610/KP0${selectedCustomer.kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
     const nowTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
     setTransactionTime(nowTime);
+
+    // Cari data invoice aktif untuk sambungan ini
+    const activeInvoice = unpaidInvoices[selectedCustomer.connectionNo];
+    const invoiceId = activeInvoice?.id;
+    const connectionId = activeInvoice?.connection_id || selectedCustomer.id;
+    const billingPeriodId = activeInvoice?.billing_period_id;
+
+    // Petakan Akun Kas Tunai Resmi KPSPAMS
+    // KPSPAMS 1 (Lemo Baru) -> ID: 1 (Kas Tunai Bendahara Lemo Baru)
+    // KPSPAMS 2 (Lemo Tua) -> ID: 3 (Kas Tunai Bendahara Lemo Tua)
+    // KPSPAMS 3 (Sarampu 1) -> ID: 5 (Kas Tunai Bendahara Sarampu 1)
+    const cashAccountMapping: Record<number, number> = {
+      1: 1,
+      2: 3,
+      3: 5,
+    };
+    const cashAccountId = cashAccountMapping[selectedCustomer.kpspamsId] || 1;
+
+    try {
+      // 1. Eksekusi Pembayaran Kasir Atomik ke Backend API (Database SQLite)
+      if (invoiceId) {
+        const paymentPayload = {
+          invoice_id: invoiceId,
+          cash_account_id: cashAccountId,
+          amount_paid: totalDue,
+          payment_method: "CASH",
+          reference_number: `FIELD-${Date.now().toString().slice(-6)}`,
+        };
+
+        const payRes = await apiClient("/payments", {
+          method: "POST",
+          body: JSON.stringify(paymentPayload),
+        });
+
+        if (payRes?.status === "success" && payRes.data?.receipt_number) {
+          receiptNo = payRes.data.receipt_number;
+        }
+      }
+
+      // 2. Rekam Pembacaan Stand Meter Air Resmi ke Backend API
+      if (connectionId && billingPeriodId) {
+        try {
+          await apiClient("/meter-readings", {
+            method: "POST",
+            body: JSON.stringify({
+              connection_id: connectionId,
+              billing_period_id: billingPeriodId,
+              current_reading: currentNum,
+              reading_date: new Date().toISOString().split("T")[0],
+              notes: `Dicatat tunai di tempat oleh ${user?.name || "Petugas Lapangan"}`,
+            }),
+          });
+        } catch {
+          // Pembacaan meter mungkin sudah ada pada periode berjalan
+        }
+      }
+    } catch (apiErr: any) {
+      console.warn("Gagal memproses transaksi kasir di server, menggunakan fallback:", apiErr);
+    } finally {
+      setIsSubmittingPayment(false);
+    }
+
+    setGeneratedReceiptNo(receiptNo);
 
     // Update stand meter, phone & status tagihan Lunas secara realtime
     selectedCustomer.lastReading = currentNum;

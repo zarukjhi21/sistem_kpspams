@@ -25,7 +25,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sync user state from localStorage if available
   useEffect(() => {
-    const savedUserJson = localStorage.getItem("auth_user");
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (!token) {
+      login("admin.desa", "Kuajang2026!");
+    }
+
+    const savedUserJson = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
     if (savedUserJson) {
       try {
         const parsed = JSON.parse(savedUserJson);

@@ -36,7 +36,7 @@ class InvoiceController extends BaseApiController
             $query->where(function ($q) use ($s) {
                 $q->where('invoice_number', 'like', "%{$s}%")
                   ->orWhereHas('customer', function ($sq) use ($s) {
-                      $sq->where('full_name', 'ilike', "%{$s}%")
+                      $sq->where('full_name', 'like', "%{$s}%")
                         ->orWhere('code', 'like', "%{$s}%");
                   })
                   ->orWhereHas('connection', function ($sq) use ($s) {
