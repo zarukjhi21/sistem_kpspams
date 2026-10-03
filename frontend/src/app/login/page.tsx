@@ -60,20 +60,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickSelect = (demoUsername: string) => {
-    setUsername(demoUsername);
-    setPassword("Kuajang2026!");
-    setError(null);
-  };
-
-  const demoRoles = [
-    { username: "admin.desa", label: "Admin Desa", roleName: "Operator TI" },
-    { username: "ketua.lemobaru", label: "Ketua LMB", roleName: "KPSPAMS" },
-    { username: "bendahara.lemobaru", label: "Bendahara", roleName: "Buku Kas" },
-    { username: "petugas.lemobaru", label: "Petugas", roleName: "Catat Meter" },
-    { username: "warga.yusuf", label: "Pelanggan", roleName: "M. Yusuf" },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-100/80 flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-x-hidden selection:bg-brand-maroon-800 selection:text-white">
       {/* Background Soft Glow */}
@@ -222,42 +208,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Persona Section (Discreet, Neat & Professional) */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2">
-              <span className="font-medium text-slate-600">Pilih Cepat Akun Demo (Evaluasi):</span>
-              <span className="text-[10px] text-slate-400">1-Klik Isi</span>
-            </div>
-
-            <div className="grid grid-cols-5 gap-1.5">
-              {demoRoles.map((r) => {
-                const isActive = username === r.username;
-                return (
-                  <button
-                    key={r.username}
-                    type="button"
-                    onClick={() => handleQuickSelect(r.username)}
-                    className={`p-1.5 rounded-lg border text-center transition flex flex-col items-center justify-center ${
-                      isActive
-                        ? "bg-brand-maroon-800 text-white border-brand-maroon-800 shadow-xs"
-                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
-                    }`}
-                    title={`${r.label} (${r.roleName})`}
-                  >
-                    <span className="text-[11px] font-bold truncate w-full">{r.label}</span>
-                    <span
-                      className={`text-[9px] truncate w-full ${
-                        isActive ? "text-brand-gold-300" : "text-slate-400"
-                      }`}
-                    >
-                      {r.roleName}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Institutional Trust Notice */}
           <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">

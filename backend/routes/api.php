@@ -24,12 +24,19 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\CitizenPortalController;
 
 Route::prefix('v1')->group(function () {
 
     // Public / Authentication routes
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    });
+
+    // Public Portal Mandiri Warga (Cek Tagihan & Pengaduan Warga)
+    Route::prefix('portal')->middleware('throttle:60,1')->group(function () {
+        Route::get('check-sr', [CitizenPortalController::class, 'checkSr']);
+        Route::post('complaint', [CitizenPortalController::class, 'submitComplaint']);
     });
 
     // Health check endpoint
