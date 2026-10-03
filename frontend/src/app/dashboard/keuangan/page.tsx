@@ -213,6 +213,18 @@ function KeuanganContent() {
   );
   const [expenseError, setExpenseError] = useState<string | null>(null);
 
+  // State Modal Pemindahan Dana (Transfer Antar Rekening)
+  const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
+  const [transferFromId, setTransferFromId] = useState<number>(1);
+  const [transferToId, setTransferToId] = useState<number>(2);
+  const [transferAmount, setTransferAmount] = useState<string>("");
+  const [transferNotes, setTransferNotes] = useState<string>("");
+  const [transferDate, setTransferDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
+  const [transferError, setTransferError] = useState<string | null>(null);
+  const [isSubmittingTransfer, setIsSubmittingTransfer] = useState<boolean>(false);
+
   // State Modal Cetak Laporan Keuangan Bulanan
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [reportCopied, setReportCopied] = useState<boolean>(false);
@@ -361,6 +373,71 @@ function KeuanganContent() {
     }
   };
 
+  // Handler Buka Modal Transfer Antar Rekening
+  const handleOpenTransferModal = () => {
+    const targetKpspamsId = effectiveKpspamsId || 1;
+    const unitAccs = accounts.filter((a) => a.kpspamsId === targetKpspamsId);
+    if (unitAccs.length >= 2) {
+      setTransferFromId(unitAccs[0].id);
+      setTransferToId(unitAccs[1].id);
+    } else if (accounts.length >= 2) {
+      setTransferFromId(accounts[0].id);
+      setTransferToId(accounts[1].id);
+    }
+    setTransferAmount("");
+    setTransferNotes("Penyetoran kas tunai hasil penagihan warga ke rekening bank BRI KPSPAMS");
+    setTransferDate(new Date().toISOString().split("T")[0]);
+    setTransferError(null);
+    setShowTransferModal(true);
+  };
+
+  // Handler Simpan Transfer Antar Rekening
+  const handleSaveTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountNum = parseFloat(transferAmount) || 0;
+    if (amountNum <= 0) {
+      setTransferError("Nominal pemindahan harus lebih besar dari Rp 0.");
+      return;
+    }
+    if (transferFromId === transferToId) {
+      setTransferError("Rekening asal dan rekening tujuan tidak boleh sama.");
+      return;
+    }
+    const fromAcc = accounts.find((a) => a.id === transferFromId);
+    if (!fromAcc) {
+      setTransferError("Pilih rekening sumber dana yang valid.");
+      return;
+    }
+    if (amountNum > fromAcc.currentBalance) {
+      setTransferError(`Saldo rekening asal tidak mencukupi (Tersedia: Rp ${fromAcc.currentBalance.toLocaleString("id-ID")}).`);
+      return;
+    }
+
+    setIsSubmittingTransfer(true);
+    setTransferError(null);
+    try {
+      await apiClient("/finance/transfer", {
+        method: "POST",
+        body: JSON.stringify({
+          from_account_id: transferFromId,
+          to_account_id: transferToId,
+          amount: amountNum,
+          transfer_date: transferDate,
+          notes: transferNotes.trim() || "Pemindahan dana kas internal",
+        }),
+      });
+
+      setShowTransferModal(false);
+      setSuccessMsg(`Pemindahan dana sebesar Rp ${amountNum.toLocaleString("id-ID")} berhasil diselesaikan di server.`);
+      setTimeout(() => setSuccessMsg(null), 6000);
+      await fetchRealFinanceData();
+    } catch (err: any) {
+      setTransferError(err?.message || "Gagal memproses pemindahan kas di server.");
+    } finally {
+      setIsSubmittingTransfer(false);
+    }
+  };
+
   // Handler Salin Laporan Format WhatsApp
   const handleCopyReportWa = () => {
     const kpspamsName =
@@ -414,14 +491,25 @@ function KeuanganContent() {
         {/* Action Buttons in Banner */}
         <div className="flex flex-wrap items-center gap-2">
           {!isPetugasLapangan && (
-            <Button
-              variant="gold"
-              size="sm"
-              icon={<PlusCircle className="w-4 h-4" />}
-              onClick={handleOpenExpenseModal}
-            >
-              + Catat Pengeluaran Kas
-            </Button>
+            <>
+              <Button
+                variant="gold"
+                size="sm"
+                icon={<PlusCircle className="w-4 h-4" />}
+                onClick={handleOpenExpenseModal}
+              >
+                + Catat Pengeluaran
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold"
+                icon={<ArrowUpRight className="w-4 h-4 text-brand-gold-400" />}
+                onClick={handleOpenTransferModal}
+              >
+                Pindah Dana Kas
+              </Button>
+            </>
           )}
 
           <Button
@@ -1036,6 +1124,141 @@ function KeuanganContent() {
                   icon={<Check className="w-3.5 h-3.5" />}
                 >
                   Simpan Pengeluaran Kas
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pemindahan Dana (Transfer Antar Rekening Kas & Bank) */}
+      {showTransferModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+                  <ArrowUpRight className="w-5 h-5 text-brand-maroon-700" />
+                  <span>Pemindahan Kas & Bank (Transfer Internal)</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Setoran tunai kasir ke bank atau pemindahan antar rekening resmi unit.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowTransferModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {transferError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                {transferError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveTransfer} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Rekening Asal (Sumber Dana) <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={transferFromId}
+                    onChange={(e) => setTransferFromId(parseInt(e.target.value))}
+                    className="w-full px-3 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  >
+                    {accounts.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name} (Rp {a.currentBalance.toLocaleString("id-ID")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Rekening Tujuan <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={transferToId}
+                    onChange={(e) => setTransferToId(parseInt(e.target.value))}
+                    className="w-full px-3 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  >
+                    {accounts.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name} (Rp {a.currentBalance.toLocaleString("id-ID")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Nominal Transfer (Rp) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={transferAmount}
+                    onChange={(e) => setTransferAmount(e.target.value)}
+                    placeholder="Contoh: 150000"
+                    className="w-full px-3.5 py-2.5 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Tanggal Transaksi <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={transferDate}
+                    onChange={(e) => setTransferDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Uraian / Berita Acara Transfer <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={2}
+                  value={transferNotes}
+                  onChange={(e) => setTransferNotes(e.target.value)}
+                  placeholder="Contoh: Penyetoran uang tunai kasir lapangan ke rekening bank BRI KPSPAMS"
+                  className="w-full p-3 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowTransferModal(false)}
+                  disabled={isSubmittingTransfer}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  className="font-bold"
+                  disabled={isSubmittingTransfer}
+                  icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+                >
+                  {isSubmittingTransfer ? "Memproses..." : "Selesaikan Transfer"}
                 </Button>
               </div>
             </form>
