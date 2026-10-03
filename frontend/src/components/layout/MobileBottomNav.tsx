@@ -100,7 +100,7 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
                 : "bg-brand-maroon-800 text-white shadow-brand-maroon-900/20 group-hover:scale-105"
             }`}
           >
-            <Activity className="w-6 h-6 stroke-[2.2]" />
+            <Smartphone className="w-6 h-6 stroke-[2.2]" />
           </div>
           <span
             className={`text-[10px] mt-1 font-semibold ${
@@ -111,7 +111,7 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           </span>
         </Link>
 
-        {/* Item 4: Kasir */}
+        {/* Item 4: Buku Kas */}
         <Link
           href={navItems[3].href}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition min-w-[56px] min-h-[48px] ${
@@ -125,7 +125,7 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
               navItems[3].isActive ? "bg-brand-maroon-50 text-brand-maroon-800" : ""
             }`}
           >
-            <Receipt className="w-5 h-5" />
+            <Wallet className="w-5 h-5" />
           </div>
           <span className="text-[10px] mt-0.5 tracking-tight">{navItems[3].label}</span>
         </Link>

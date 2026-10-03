@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { DEMO_KPSPAMS_LIST, DEMO_USERS } from "@/lib/demo-data";
+import { DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
 import {
   X,
   Droplet,
@@ -33,8 +33,7 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
   const pathname = usePathname();
-  const { user, activeKpspamsId, isDesaLevel, switchKpspamsContext, switchUserPersona, logout } = useAuth();
-  const [showPersonaList, setShowPersonaList] = React.useState(false);
+  const { user, activeKpspamsId, isDesaLevel, switchKpspamsContext, logout } = useAuth();
   const [showKpspamsList, setShowKpspamsList] = React.useState(false);
 
   if (!isOpen) return null;
@@ -187,59 +186,20 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
           {/* Active User Persona Banner */}
           <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/80">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-full bg-brand-maroon-800 text-white font-bold text-xs flex items-center justify-center border border-brand-gold-500/50">
-                  {user?.name.charAt(0) || "U"}
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-white leading-tight">{user?.name}</div>
-                  <div className="text-[11px] text-amber-300 font-medium">{user?.roleLabel}</div>
-                </div>
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-full bg-brand-maroon-800 text-white font-bold text-xs flex items-center justify-center border border-brand-gold-500/50">
+                {user?.name.charAt(0) || "U"}
               </div>
-              <button
-                onClick={() => setShowPersonaList(!showPersonaList)}
-                className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-amber-400 text-xs transition"
-                title="Ganti Persona"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-xs text-white leading-tight truncate">{user?.name}</div>
+                <div className="text-[11px] text-amber-300 font-medium">{user?.roleLabel}</div>
+              </div>
             </div>
 
             <div className="mt-2 text-[10px] text-slate-400 flex items-center space-x-1">
               <Building2 className="w-3 h-3 text-brand-gold-500" />
-              <span className="truncate">{user?.kpspamsName}</span>
+              <span className="truncate">{user?.kpspamsName || "Unit KPSPAMS"}</span>
             </div>
-
-            {/* Persona Switcher Accordion inside drawer */}
-            {showPersonaList && (
-              <div className="mt-3 pt-3 border-t border-slate-700/70 space-y-1.5">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Uji Coba Hak Akses:
-                </div>
-                {DEMO_USERS.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => {
-                      switchUserPersona(u.id);
-                      setShowPersonaList(false);
-                      onClose();
-                    }}
-                    className={`w-full text-left p-2 rounded-lg text-xs flex items-center justify-between transition ${
-                      user?.id === u.id
-                        ? "bg-brand-maroon-800 text-white font-bold"
-                        : "text-slate-300 hover:bg-slate-700/60"
-                    }`}
-                  >
-                    <div>
-                      <div>{u.name}</div>
-                      <div className="text-[10px] text-slate-400">{u.roleLabel} • {u.kpspamsName}</div>
-                    </div>
-                    {user?.id === u.id && <Check className="w-3.5 h-3.5 text-brand-gold-400" />}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* KPSPAMS Scope Selector (For Desa Level) */}

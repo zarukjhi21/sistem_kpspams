@@ -89,6 +89,10 @@ function CitizenPortalContent() {
   const [complaintDesc, setComplaintDesc] = useState("");
   const [isSubmittingComplaint, setIsSubmittingComplaint] = useState(false);
   const [ticketGenerated, setTicketGenerated] = useState<string | null>(null);
+  const [complaintError, setComplaintError] = useState<string | null>(null);
+
+  // Invoice modal state
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
 
   // Auto-search if ?sr= parameter is provided in URL
   useEffect(() => {
@@ -154,6 +158,7 @@ function CitizenPortalContent() {
     if (!data) return;
 
     setIsSubmittingComplaint(true);
+    setComplaintError(null);
     try {
       const res = await fetch(`${API_BASE_URL}/portal/complaint`, {
         method: "POST",
@@ -173,10 +178,10 @@ function CitizenPortalContent() {
         setTicketGenerated(resJson.data.ticket_number);
         setComplaintDesc("");
       } else {
-        alert(resJson.message || "Gagal mengirim pengaduan. Silakan periksa formulir.");
+        setComplaintError(resJson.message || "Gagal mengirim pengaduan. Silakan periksa formulir.");
       }
     } catch {
-      alert("Terjadi kesalahan jaringan saat mengirim laporan pengaduan.");
+      setComplaintError("Terjadi kesalahan jaringan saat mengirim laporan pengaduan.");
     } finally {
       setIsSubmittingComplaint(false);
     }
@@ -474,11 +479,7 @@ function CitizenPortalContent() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        alert(
-                          `Rincian Invoice Resmi Server:\n\nNomor: ${data.current_bill?.invoice_number}\nPelanggan: ${data.customer.full_name}\nNo. SR: ${data.connection.connection_no}\nPeriode: ${data.current_bill?.period_name}\nVolume Air: ${data.current_bill?.usage_m3} m3\nBiaya Air: Rp ${data.current_bill?.water_amount.toLocaleString("id-ID")}\nBiaya Admin: Rp ${data.current_bill?.admin_fee.toLocaleString("id-ID")}\nTotal: Rp ${data.current_bill?.total_amount.toLocaleString("id-ID")}\nStatus: ${data.current_bill?.status}`
-                        )
-                      }
+                      onClick={() => setInvoiceModalOpen(true)}
                       className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
                     >
                       <FileText className="w-4 h-4" />
@@ -612,6 +613,12 @@ function CitizenPortalContent() {
                   </button>
                 </div>
 
+                {complaintError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl font-medium">
+                    {complaintError}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
                     Kategori Masalah:
@@ -661,6 +668,91 @@ function CitizenPortalContent() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Rincian Faktur Resmi */}
+      {invoiceModalOpen && data?.current_bill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-100 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-5 h-5 text-brand-maroon-700" />
+                <h4 className="text-base font-extrabold text-slate-900">Rincian Faktur Resmi</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInvoiceModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Nomor Faktur:</span>
+                  <span className="font-mono font-bold text-slate-900">{data.current_bill.invoice_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Pelanggan:</span>
+                  <span className="font-bold text-slate-900">{data.customer.full_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">No. Sambungan (SR):</span>
+                  <span className="font-mono font-bold text-brand-maroon-800">{data.connection.connection_no}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Periode Tagihan:</span>
+                  <span className="font-medium text-slate-700">{data.current_bill.period_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Jatuh Tempo:</span>
+                  <span className="font-medium text-slate-700">{data.current_bill.due_date}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <div className="flex justify-between text-slate-600">
+                  <span>Pemakaian Air ({data.current_bill.usage_m3} m³):</span>
+                  <span className="font-tabular font-medium">Rp {data.current_bill.water_amount.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Biaya Administrasi & Operasional:</span>
+                  <span className="font-tabular font-medium">Rp {data.current_bill.admin_fee.toLocaleString("id-ID")}</span>
+                </div>
+                {data.current_bill.maintenance_fee > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Biaya Pemeliharaan Meter:</span>
+                    <span className="font-tabular font-medium">Rp {data.current_bill.maintenance_fee.toLocaleString("id-ID")}</span>
+                  </div>
+                )}
+                {data.current_bill.penalty_fee > 0 && (
+                  <div className="flex justify-between text-rose-600">
+                    <span>Denda Keterlambatan:</span>
+                    <span className="font-tabular font-medium">Rp {data.current_bill.penalty_fee.toLocaleString("id-ID")}</span>
+                  </div>
+                )}
+                <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
+                  <span>Total Tagihan:</span>
+                  <span className="font-tabular text-brand-maroon-900">Rp {data.current_bill.total_amount.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-xs pt-1">
+                  <span>Status Pembayaran:</span>
+                  <Badge variant={data.current_bill.is_paid ? "success" : "danger"} size="sm">
+                    {data.current_bill.is_paid ? "LUNAS" : "BELUM LUNAS"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-3 border-t border-slate-100 flex justify-end">
+              <Button variant="primary" size="sm" onClick={() => setInvoiceModalOpen(false)}>
+                Tutup
+              </Button>
+            </div>
           </div>
         </div>
       )}
