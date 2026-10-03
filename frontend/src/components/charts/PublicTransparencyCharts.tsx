@@ -83,7 +83,9 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: "KPSPAMS Lemo Baru (Aktif)",
       subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi",
       totalMonthly: lmbCash,
-      note: `Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Seluruh dana iuran warga terhimpun (Rp ${lmbCash.toLocaleString("id-ID")}) dialokasikan murni untuk perawatan pipa transmisi hulu, filter/kaporit, dan kas simpanan warga.`,
+      note: lmbCash > 0
+        ? `Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Seluruh dana iuran warga terhimpun (Rp ${lmbCash.toLocaleString("id-ID")}) dialokasikan murni untuk perawatan pipa transmisi hulu, filter/kaporit, dan kas simpanan warga.`
+        : "Keunggulan Alami Lemo Baru: 100% menggunakan sistem gravitasi alami pegunungan (0% biaya listrik PLN). Saldo kas awal saat ini Rp 0 (bersih). Seluruh penerimaan iuran warga yang masuk nantinya akan dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
       allocations: [
         {
           name: "Pemeliharaan Pipa Transmisi Gravitasi",
@@ -118,7 +120,9 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: "Konsolidasi Unit Desa Kuajang",
       subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang",
       totalMonthly: totalVillageCash,
-      note: `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS Lemo Baru dengan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")}. Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`,
+      note: totalVillageCash > 0
+        ? `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS Lemo Baru dengan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")}. Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`
+        : "Laporan Konsolidasi: Seluruh kas unit KPSPAMS berstatus Rp 0 (bersih). Unit Lemo Baru siap beroperasi dengan sistem gravitasi murni (0% listrik), unit Lemo Tua dan Sarampu 1 dalam tahap persiapan.",
       allocations: [
         {
           name: "Pemeliharaan Pipa Transmisi",
@@ -214,7 +218,7 @@ export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
-    buildSystemAllocation(51000, 0, 0)
+    buildSystemAllocation(0, 0, 0)
   );
 
   useEffect(() => {
@@ -226,14 +230,14 @@ export function PublicTransparencyCharts() {
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (json?.data?.units) {
-          const lmb = json.data.units.LMB?.cash ?? 51000;
+          const lmb = json.data.units.LMB?.cash ?? 0;
           const lmt = json.data.units.LMT?.cash ?? 0;
           const sr1 = json.data.units.SR1?.cash ?? 0;
           setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1));
         }
       })
       .catch((err) => {
-        console.warn("PublicTransparencyCharts: fallback to baseline LMB cash", err);
+        console.warn("PublicTransparencyCharts: fallback to baseline zero cash", err);
       });
   }, []);
 

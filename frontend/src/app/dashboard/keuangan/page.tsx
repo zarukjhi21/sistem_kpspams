@@ -68,7 +68,7 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
     bankName: "Kasir Tunai",
     accountNumber: "-",
     openingBalance: 0,
-    currentBalance: 51000,
+    currentBalance: 0,
   },
   {
     id: 2,
@@ -122,68 +122,7 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
   },
 ];
 
-const INITIAL_TX: FinancialTx[] = [
-  {
-    id: 5,
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-3F07E23E",
-    date: "2026-09-20",
-    type: "INCOME",
-    category: "AIR_PAYMENT",
-    amount: 11000,
-    description: "Penerimaan pembayaran air tagihan Periode September 2026",
-    accountName: "Kas Tunai Bendahara Lemo Baru",
-  },
-  {
-    id: 4,
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-0DD194FB",
-    date: "2026-08-20",
-    type: "INCOME",
-    category: "AIR_PAYMENT",
-    amount: 10000,
-    description: "Penerimaan pembayaran air tagihan Periode Agustus 2026",
-    accountName: "Kas Tunai Bendahara Lemo Baru",
-  },
-  {
-    id: 3,
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-5080CC11",
-    date: "2026-07-20",
-    type: "INCOME",
-    category: "AIR_PAYMENT",
-    amount: 10000,
-    description: "Penerimaan pembayaran air tagihan Periode Juli 2026",
-    accountName: "Kas Tunai Bendahara Lemo Baru",
-  },
-  {
-    id: 2,
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-CC6C90FF",
-    date: "2026-06-20",
-    type: "INCOME",
-    category: "AIR_PAYMENT",
-    amount: 10000,
-    description: "Penerimaan pembayaran air tagihan Periode Juni 2026",
-    accountName: "Kas Tunai Bendahara Lemo Baru",
-  },
-  {
-    id: 1,
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-C5EE8109",
-    date: "2026-05-20",
-    type: "INCOME",
-    category: "AIR_PAYMENT",
-    amount: 10000,
-    description: "Penerimaan pembayaran air tagihan Periode Mei 2026",
-    accountName: "Kas Tunai Bendahara Lemo Baru",
-  },
-];
+const INITIAL_TX: FinancialTx[] = [];
 
 export default function KeuanganPage() {
   return (
