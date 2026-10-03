@@ -17,10 +17,12 @@ php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# Jalankan migrasi database otomatis saat deploy
+# Jalankan migrasi dan seeding database otomatis saat deploy
 if [ -n "$DB_HOST" ] || [ "$DB_CONNECTION" = "sqlite" ]; then
     echo "Running database migrations..."
     php artisan migrate --force || echo "Migration skipped or failed"
+    echo "Ensuring initial master data and admin accounts are seeded..."
+    php artisan db:seed --force || echo "Seeder completed or skipped"
 fi
 
 echo "Starting Apache web server..."
