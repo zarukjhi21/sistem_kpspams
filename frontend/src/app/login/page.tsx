@@ -93,12 +93,12 @@ export default function LoginPage() {
           {/* Header Branding - Strict Vertical Flex Alignment */}
           <div className="flex flex-col items-center text-center pt-2 pb-6 border-b border-slate-100">
             {/* Centered Logo */}
-            <div className="w-18 h-18 rounded-2xl overflow-hidden border-2 border-brand-gold-500/60 shadow-md bg-slate-950 flex items-center justify-center p-0.5 mb-3 group hover:scale-105 transition-transform">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-brand-gold-500/60 shadow-md bg-slate-950 flex items-center justify-center p-0.5 mb-3 group hover:scale-105 transition-transform">
               <Image
                 src="/logo.jpg"
                 alt="Logo Resmi SI-KPSPAMS Kuajang"
-                width={72}
-                height={72}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
                 priority
               />

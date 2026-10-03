@@ -467,7 +467,7 @@ function KeuanganContent() {
       )}
 
       {/* Financial Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
             <span>Total Saldo Kas Likuid</span>

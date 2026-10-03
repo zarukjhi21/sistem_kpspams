@@ -44,19 +44,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
             <Link
               href="/portal"
-              className="hidden sm:inline-flex px-3.5 py-2 text-xs font-bold text-amber-300 hover:text-white transition"
+              className="inline-flex px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60"
             >
               Portal Warga
             </Link>
             <Link
               href="/login"
-              className="px-4 py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1.5"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5"
             >
-              <span>Masuk Sistem</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Masuk</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
           </div>
         </div>

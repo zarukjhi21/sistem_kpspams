@@ -309,46 +309,46 @@ function PenagihanLapanganContent() {
         </p>
 
         {/* Stepper Progress */}
-        <div className="grid grid-cols-4 gap-2 pt-4 mt-2 border-t border-slate-800 text-center text-xs">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-4 mt-2 border-t border-slate-800 text-center text-xs">
           <div
-            className={`p-2 rounded-xl border ${
+            className={`p-1.5 sm:p-2 rounded-xl border ${
               currentStep >= 1
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[10px] opacity-75">1. Rumah</span>
-            <span className="truncate">Pilih Warga</span>
+            <span className="block text-[9px] sm:text-[10px] opacity-75">1. Rumah</span>
+            <span className="truncate block text-[11px] sm:text-xs">Pilih Warga</span>
           </div>
           <div
-            className={`p-2 rounded-xl border ${
+            className={`p-1.5 sm:p-2 rounded-xl border ${
               currentStep >= 2
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[10px] opacity-75">2. Meter</span>
-            <span className="truncate">Catat & Tarif</span>
+            <span className="block text-[9px] sm:text-[10px] opacity-75">2. Meter</span>
+            <span className="truncate block text-[11px] sm:text-xs">Catat & Tarif</span>
           </div>
           <div
-            className={`p-2 rounded-xl border ${
+            className={`p-1.5 sm:p-2 rounded-xl border ${
               currentStep >= 3
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[10px] opacity-75">3. Bayar</span>
-            <span className="truncate">Terima Tunai</span>
+            <span className="block text-[9px] sm:text-[10px] opacity-75">3. Bayar</span>
+            <span className="truncate block text-[11px] sm:text-xs">Terima Tunai</span>
           </div>
           <div
-            className={`p-2 rounded-xl border ${
+            className={`p-1.5 sm:p-2 rounded-xl border ${
               currentStep >= 4
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[10px] opacity-75">4. Struk WA</span>
-            <span className="truncate">Kirim Struk</span>
+            <span className="block text-[9px] sm:text-[10px] opacity-75">4. Struk WA</span>
+            <span className="truncate block text-[11px] sm:text-xs">Kirim Struk</span>
           </div>
         </div>
       </div>

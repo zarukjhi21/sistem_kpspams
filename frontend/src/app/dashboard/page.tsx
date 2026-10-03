@@ -127,8 +127,8 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* KPI Cards Grid (Responsive 2 cols on mobile, 3 cols on desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+      {/* KPI Cards Grid (Responsive 1 col on mobile, 2 cols on tablet, 3 cols on desktop) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
         {/* Metric 1 */}
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between">

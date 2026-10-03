@@ -280,21 +280,21 @@ export function PublicTransparencyCharts() {
       {/* Grid: 2 Visual Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Card 1: Grafik Debit Air Harian (7 Kolom di Desktop) */}
-        <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-4 sm:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden">
           {/* Subtle Ambient Backlight */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-sky-500/15 to-blue-600/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/10">
-                  <Droplets className="w-6 h-6 stroke-[2.2] drop-shadow-[0_2px_8px_rgba(6,182,212,0.4)]" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-sky-500/15 to-blue-600/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/10 flex-shrink-0">
+                  <Droplets className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2] drop-shadow-[0_2px_8px_rgba(6,182,212,0.4)]" />
                 </div>
                 <div>
-                  <h4 className="text-base font-extrabold text-white">
+                  <h4 className="text-sm sm:text-base font-extrabold text-white">
                     Debit Air Bersih Tersalurkan (7 Hari Terakhir)
                   </h4>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[11px] sm:text-xs text-slate-400">
                     Volume distribusi air bersih mata air pegunungan Dusun Lemo Baru
                   </p>
                 </div>
@@ -370,23 +370,23 @@ export function PublicTransparencyCharts() {
 
           {/* Bottom Highlight Stats */}
           <div className="pt-4 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs mt-2">
-            <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-medium">Akumulasi Minggu Ini</span>
-              <strong className="text-white font-black text-sm">103.100 L</strong>
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Minggu Ini</span>
+              <strong className="text-white font-black text-xs sm:text-sm">103.100 L</strong>
             </div>
-            <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-medium">Puncak Distribusi</span>
-              <strong className="text-cyan-300 font-black text-sm">Sabtu (15.600 L)</strong>
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Puncak Hari</span>
+              <strong className="text-cyan-300 font-black text-xs sm:text-sm truncate block">Sabtu (15.6k L)</strong>
             </div>
-            <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block font-medium">Kualitas Air PH</span>
-              <strong className="text-emerald-400 font-black text-sm">7.4 (Standar Baku)</strong>
+            <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Kualitas Air</span>
+              <strong className="text-emerald-400 font-black text-xs sm:text-sm">pH 7.4 (Baku)</strong>
             </div>
           </div>
         </div>
 
         {/* Card 2: Transparansi Penggunaan Dana Kas (5 Kolom di Desktop) */}
-        <div className="lg:col-span-5 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-5 rounded-3xl bg-slate-900/90 border border-slate-800 p-4 sm:p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden">
           {/* Ambient Amber Glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] pointer-events-none" />
 
@@ -502,11 +502,11 @@ export function PublicTransparencyCharts() {
               return (
                 <div
                   key={idx}
-                  className="p-2.5 rounded-2xl bg-slate-800/30 hover:bg-slate-800/60 border border-slate-800/80 transition-all flex items-center justify-between group"
+                  className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/30 hover:bg-slate-800/60 border border-slate-800/80 transition-all flex items-center justify-between group"
                 >
-                  <div className="flex items-center space-x-3 truncate">
+                  <div className="flex items-center space-x-2.5 sm:space-x-3 truncate">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
+                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
                       style={{
                         background: `linear-gradient(135deg, ${item.color}28 0%, ${item.color}10 100%)`,
                         color: item.color,
@@ -515,7 +515,7 @@ export function PublicTransparencyCharts() {
                       }}
                     >
                       <IconComponent
-                        className="w-5 h-5 stroke-[2.3]"
+                        className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.3]"
                         style={{ filter: `drop-shadow(0 2px 4px ${item.color}40)` }}
                       />
                     </div>
@@ -528,7 +528,7 @@ export function PublicTransparencyCharts() {
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
                     <span
-                      className="font-bold font-mono text-xs px-2.5 py-0.5 rounded-lg inline-block border"
+                      className="font-bold font-mono text-[11px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-lg inline-block border"
                       style={{
                         backgroundColor: `${item.color}20`,
                         color: item.color,
