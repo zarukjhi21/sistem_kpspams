@@ -133,10 +133,10 @@ function PengaduanContent() {
       const res = await apiClient(url);
       if (res?.status === "success" && Array.isArray(res.data)) {
         const mapped: ComplaintItem[] = res.data.map((c: any) => ({
-          id: c.id,
+          id: Number(c.id),
           ticketNumber: c.ticket_number,
-          kpspamsId: c.kpspams_id,
-          kpspamsName: c.kpspams?.name || (c.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : c.kpspams_id === 2 ? "KPSPAMS Lemo Tua" : "KPSPAMS Sarampu 1"),
+          kpspamsId: Number(c.kpspams_id || 1),
+          kpspamsName: c.kpspams?.name || (Number(c.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : c.kpspams_id === 2 ? "KPSPAMS Lemo Tua" : "KPSPAMS Sarampu 1"),
           customerName: c.customer?.full_name || "Warga",
           customerCode: c.customer?.code || "CUST-000",
           dusunName: c.connection?.dusun?.name || "Desa Kuajang",
@@ -196,7 +196,7 @@ function PengaduanContent() {
   }, [fetchComplaints, fetchTechnicians]);
 
   const filtered = complaints.filter((c) => {
-    if (activeKpspamsId !== null && c.kpspamsId !== activeKpspamsId) {
+    if (activeKpspamsId !== null && Number(c.kpspamsId) !== Number(activeKpspamsId)) {
       return false;
     }
     if (statusFilter !== "ALL") {

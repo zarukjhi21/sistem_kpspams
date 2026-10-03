@@ -30,8 +30,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     occupation: item.occupation,
     phone: item.phone,
     dusun: primaryConn?.dusun?.name || item.dusun || "Lemo Baru",
-    kpspamsId: item.kpspams_id || item.kpspams?.id || 1,
-    kpspamsName: item.kpspams?.name || (item.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
+    kpspamsId: Number(item.kpspams_id || item.kpspams?.id || 1),
+    kpspamsName: item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
     meterSerial: primaryConn?.meter?.serial_number || item.meter_serial || "MTR-1001",
     lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
     status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
@@ -151,7 +151,7 @@ function PelangganContent() {
   const [selectedCustomer, setSelectedCustomer] = useState<DemoCustomer | null>(null);
 
   // Kunci scope KPSPAMS untuk petugas lapangan / non-desa
-  const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
+  const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? Number(user.kpspamsId) : (activeKpspamsId !== null && activeKpspamsId !== undefined ? Number(activeKpspamsId) : 1);
 
   // Dusun yang berhak diakses oleh petugas yang sedang login
   const getAllowedDusuns = () => {
@@ -704,7 +704,7 @@ function PelangganContent() {
   // Filter customers based on search, active KPSPAMS context, dusun, and status
   const filteredCustomers = customers.filter((c) => {
     // Multi-tenant isolation: Petugas hanya melihat pelanggan di unitnya
-    if (effectiveKpspamsId !== null && c.kpspamsId !== effectiveKpspamsId) {
+    if (effectiveKpspamsId !== null && Number(c.kpspamsId) !== Number(effectiveKpspamsId)) {
       return false;
     }
     if (

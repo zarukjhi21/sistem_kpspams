@@ -149,8 +149,8 @@ function KeuanganContent() {
       const accRes = await apiClient<{ total_balance: number; accounts: any[] }>("/finance/cash-accounts");
       if (accRes?.status === "success" && accRes.data?.accounts) {
         const mappedAcc: CashAccountState[] = accRes.data.accounts.map((a: any) => ({
-          id: a.id,
-          kpspamsId: a.kpspams_id,
+          id: Number(a.id),
+          kpspamsId: Number(a.kpspams_id || 1),
           code: a.account_code,
           name: a.account_name,
           bankName: a.bank_name || (a.account_number ? "Bank Operasional" : "Kasir Tunai"),
@@ -165,9 +165,9 @@ function KeuanganContent() {
       const txRes = await apiClient<any>("/finance/transactions?per_page=50");
       if (txRes?.status === "success" && Array.isArray(txRes.data)) {
         const mappedTx: FinancialTx[] = txRes.data.map((t: any) => ({
-          id: t.id,
-          kpspamsId: t.kpspams_id,
-          kpspamsName: t.cash_account?.kpspams?.name || (t.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${t.kpspams_id}`),
+          id: Number(t.id),
+          kpspamsId: Number(t.kpspams_id || 1),
+          kpspamsName: t.cash_account?.kpspams?.name || (Number(t.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${t.kpspams_id}`),
           txNumber: t.transaction_number,
           date: t.transaction_date,
           type: t.transaction_type,
@@ -238,12 +238,12 @@ function KeuanganContent() {
   // Filter akun kas berdasarkan konteks KPSPAMS
   const filteredAccounts = accounts.filter((acc) => {
     if (effectiveKpspamsId === null) return true;
-    return acc.kpspamsId === effectiveKpspamsId;
+    return Number(acc.kpspamsId) === Number(effectiveKpspamsId);
   });
 
   // Filter mutasi transaksi berdasarkan unit, pencarian, dan tipe
   const filteredTx = transactions.filter((tx) => {
-    if (effectiveKpspamsId !== null && tx.kpspamsId !== effectiveKpspamsId) {
+    if (effectiveKpspamsId !== null && Number(tx.kpspamsId) !== Number(effectiveKpspamsId)) {
       return false;
     }
     if (typeFilter !== "ALL" && tx.type !== typeFilter) {

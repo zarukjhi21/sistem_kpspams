@@ -30,8 +30,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     occupation: item.occupation,
     phone: item.phone,
     dusun: primaryConn?.dusun?.name || item.dusun || "Lemo Baru",
-    kpspamsId: item.kpspams_id || item.kpspams?.id || 1,
-    kpspamsName: item.kpspams?.name || (item.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
+    kpspamsId: Number(item.kpspams_id || item.kpspams?.id || 1),
+    kpspamsName: item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
     meterSerial: primaryConn?.meter?.serial_number || item.meter_serial || "MTR-1001",
     lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
     status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
@@ -162,13 +162,13 @@ function PenagihanLapanganContent() {
   }, [activeKpspamsId]);
 
   // Multi-tenant Isolation: Petugas Lapangan terisolasi secara ketat ke KPSPAMS miliknya
-  const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
+  const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? Number(user.kpspamsId) : (activeKpspamsId !== null && activeKpspamsId !== undefined ? Number(activeKpspamsId) : 1);
 
   // Filter pelanggan berdasarkan KPSPAMS efektif (Petugas dusun lain tidak bisa diakses)
   const availableCustomers =
     effectiveKpspamsId === null
       ? customers
-      : customers.filter((c) => c.kpspamsId === effectiveKpspamsId);
+      : customers.filter((c) => Number(c.kpspamsId) === Number(effectiveKpspamsId));
 
   // Step 1: Pemilihan Pelanggan
   const [searchQuery, setSearchQuery] = useState("");

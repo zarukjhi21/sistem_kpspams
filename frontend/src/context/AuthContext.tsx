@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { DemoUser, DEMO_USERS, DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
+import { getApiBaseUrl } from "@/lib/api-client";
 
 interface AuthContextType {
   user: DemoUser | null;
@@ -16,27 +17,24 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Default logged in user: Operator TI Desa Kuajang (Admin Desa)
+  // Default logged in user: null atau load dari session
   const [user, setUser] = useState<DemoUser | null>(DEMO_USERS[1]);
   const [activeKpspamsId, setActiveKpspamsId] = useState<number | null>(1);
 
   // Sync user state from localStorage if available
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (!token) {
-      login("admin.desa", "Kuajang2026!");
-    }
-
     const savedUserJson = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
     if (savedUserJson) {
       try {
         const parsed = JSON.parse(savedUserJson);
+        const kId = parsed.kpspamsId !== null && parsed.kpspamsId !== undefined ? Number(parsed.kpspamsId) : null;
+        parsed.kpspamsId = kId;
         setUser(parsed);
-        if (parsed.kpspamsId !== null && parsed.kpspamsId !== undefined) {
-          setActiveKpspamsId(parsed.kpspamsId);
+        if (kId !== null) {
+          setActiveKpspamsId(kId);
+        } else {
+          setActiveKpspamsId(1); // default Lemo Baru
         }
         return;
       } catch {
@@ -50,7 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (found) {
         setUser(found);
         if (found.kpspamsId !== null) {
-          setActiveKpspamsId(found.kpspamsId);
+          setActiveKpspamsId(Number(found.kpspamsId));
+        } else {
+          setActiveKpspamsId(1);
         }
       }
     }
@@ -67,9 +67,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (username: string, password: string = "Kuajang2026!"): Promise<boolean> => {
+    const baseUrl = getApiBaseUrl();
     // 1. Coba otentikasi utama melalui REST API Backend resmi
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      const res = await fetch(`${baseUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ username, password }),
@@ -77,10 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (res.ok) {
         const json = await res.json();
-        if (json.data?.access_token && json.data?.user) {
+        const token = json.data?.token || json.data?.access_token;
+        if (token && json.data?.user) {
           const apiUser = json.data.user;
-          const roleName = (apiUser.roles?.[0] as DemoUser['role']) || "admin_desa";
-          const roleLabel = apiUser.role_labels?.[0] || "Operator SI-KPSPAMS";
+          const roleName = (apiUser.role || apiUser.roles?.[0] || "admin_desa") as DemoUser['role'];
+          const roleLabel = apiUser.role_display || apiUser.role_labels?.[0] || "Petugas";
+          const kId = apiUser.kpspams_id !== null && apiUser.kpspams_id !== undefined ? Number(apiUser.kpspams_id) : null;
 
           const mappedUser: DemoUser = {
             id: apiUser.id,
@@ -88,16 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name: apiUser.name,
             role: roleName,
             roleLabel: roleLabel,
-            kpspamsId: apiUser.kpspams_id ?? null,
-            kpspamsName: apiUser.kpspams_name ?? null,
+            kpspamsId: kId,
+            kpspamsName: apiUser.kpspams_name ?? (kId === 1 ? "KPSPAMS Lemo Baru" : null),
             phone: apiUser.phone || "",
           };
 
           setUser(mappedUser);
-          setActiveKpspamsId(mappedUser.kpspamsId);
-          localStorage.setItem("auth_token", json.data.access_token);
+          setActiveKpspamsId(mappedUser.kpspamsId ?? 1);
+          localStorage.setItem("auth_token", token);
           localStorage.setItem("auth_user", JSON.stringify(mappedUser));
           localStorage.setItem("demo_user_id", String(mappedUser.id));
+          if (mappedUser.kpspamsId) {
+            localStorage.setItem("kpspams_context_id", String(mappedUser.kpspamsId));
+          }
           return true;
         }
       }
@@ -112,9 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("demo_user_id", String(found.id));
       localStorage.setItem("auth_user", JSON.stringify(found));
       if (found.kpspamsId !== null) {
-        setActiveKpspamsId(found.kpspamsId);
+        setActiveKpspamsId(Number(found.kpspamsId));
+        localStorage.setItem("kpspams_context_id", String(found.kpspamsId));
       } else {
-        setActiveKpspamsId(null);
+        setActiveKpspamsId(1);
       }
       return true;
     }

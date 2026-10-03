@@ -120,32 +120,38 @@ function DashboardContent() {
   const filteredCustomers =
     activeKpspamsId === null
       ? registeredCustomers
-      : registeredCustomers.filter((c) => c.kpspamsId === activeKpspamsId);
+      : registeredCustomers.filter((c) => Number(c.kpspamsId) === Number(activeKpspamsId));
 
   const currentUnits =
     activeKpspamsId === null
       ? DEMO_KPSPAMS_LIST
-      : DEMO_KPSPAMS_LIST.filter((k) => k.id === activeKpspamsId);
+      : DEMO_KPSPAMS_LIST.filter((k) => Number(k.id) === Number(activeKpspamsId));
 
   // Nilai metrik dari API Backend (Realtime) atau Fallback
   const realCustomerCount =
-    overviewData?.kpi?.total_customers ?? filteredCustomers.length;
+    overviewData?.kpi?.total_customers ??
+    (overviewData as any)?.active_customers ??
+    filteredCustomers.length;
   const totalCustomers = realCustomerCount;
 
   const totalUsage =
     overviewData?.kpi?.total_usage_m3 ??
+    (overviewData as any)?.total_consumption_m3 ??
     currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
 
   const totalBilled =
     overviewData?.kpi?.total_billed ??
+    (overviewData as any)?.total_billed ??
     currentUnits.reduce((acc, curr) => acc + curr.totalBilled, 0);
 
   const totalCollected =
     overviewData?.kpi?.total_collected ??
+    (overviewData as any)?.total_collected ??
     currentUnits.reduce((acc, curr) => acc + curr.totalCollected, 0);
 
   const totalArrears =
     overviewData?.kpi?.total_arrears ??
+    (overviewData as any)?.total_unpaid ??
     currentUnits.reduce((acc, curr) => acc + curr.outstandingArrears, 0);
 
   const totalCash =
@@ -155,6 +161,8 @@ function DashboardContent() {
   const collectionRate =
     overviewData?.kpi?.collection_rate_percent !== undefined
       ? String(overviewData.kpi.collection_rate_percent)
+      : (overviewData as any)?.collection_rate !== undefined
+      ? String((overviewData as any).collection_rate)
       : totalBilled > 0
       ? ((totalCollected / totalBilled) * 100).toFixed(1)
       : "0";

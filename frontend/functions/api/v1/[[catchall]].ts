@@ -237,6 +237,7 @@ export async function onRequest(context: any) {
       if (method === "GET") {
         const rows = await sql.query(`
           SELECT c.*, 
+            CAST(c.kpspams_id AS integer) as kpspams_id,
             conn.id as connection_id, conn.connection_no, conn.status as connection_status, conn.installed_date as installed_at,
             conn.latitude, conn.longitude, conn.dusun_id, conn.address_detail,
             m.serial_number as meter_serial,
@@ -528,8 +529,11 @@ export async function onRequest(context: any) {
 
     // 15. Dashboard Overview Metrics
     if (path === "dashboard" || path === "dashboard/overview") {
-      const custCount = await sql`SELECT count(*)::int as count FROM customers WHERE status = 'ACTIVE' OR status = 'active'`;
-      const invStats = await sql`
+      const kIdParam = url.searchParams.get("kpspams_id");
+      const kId = kIdParam ? parseInt(kIdParam, 10) : null;
+
+      let custQuery = "SELECT count(*)::int as count FROM customers WHERE (status = 'ACTIVE' OR status = 'active') AND deleted_at IS NULL";
+      let invQuery = `
         SELECT 
           COALESCE(sum(CAST(total_amount AS numeric)), 0)::numeric as total_billed,
           COALESCE(sum(CASE WHEN status ILIKE 'paid' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_collected,
@@ -537,23 +541,53 @@ export async function onRequest(context: any) {
           count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count
         FROM invoices
       `;
+      const queryParams: any[] = [];
+      if (kId) {
+        custQuery += " AND CAST(kpspams_id AS integer) = $1";
+        invQuery += " WHERE CAST(kpspams_id AS integer) = $1";
+        queryParams.push(kId);
+      }
+
+      const custCount = await sql.query(custQuery, queryParams);
+      const invStats = await sql.query(invQuery, queryParams);
       const kpspamsCount = await sql`SELECT count(*)::int as count FROM kpspams`;
       const meterUsage = await sql`SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings`;
+      const complaintsCount = await sql`SELECT count(*)::int as count FROM complaints WHERE status IN ('SUBMITTED', 'VERIFIED', 'IN_PROGRESS')`;
 
-      const billed = Number(invStats[0].total_billed) || 1;
-      const collected = Number(invStats[0].total_collected) || 0;
-      const rate = billed > 0 ? ((collected / billed) * 100).toFixed(1) : "95.0";
+      const billed = Number(invStats[0]?.total_billed) || 0;
+      const collected = Number(invStats[0]?.total_collected) || 0;
+      const arrears = Number(invStats[0]?.total_unpaid) || 0;
+      const rate = billed > 0 ? Number(((collected / billed) * 100).toFixed(1)) : 100;
+      const activeCust = Number(custCount[0]?.count) || 0;
 
       return jsonResponse({
         status: "success",
         data: {
-          active_customers: custCount[0].count,
-          total_kpspams: kpspamsCount[0].count,
-          total_billed: Number(invStats[0].total_billed),
-          total_collected: Number(invStats[0].total_collected),
-          total_unpaid: Number(invStats[0].total_unpaid),
-          unpaid_invoices: invStats[0].unpaid_count,
-          total_consumption_m3: Number(meterUsage[0].total_usage),
+          context: {
+            kpspams_id: kId,
+            scope_label: kId === 1 ? "KPSPAMS Lemo Baru" : "Konsolidasi Seluruh Desa Kuajang",
+            period: "Periode Berjalan Oktober 2026",
+          },
+          kpi: {
+            total_customers: activeCust,
+            active_connections: activeCust,
+            sealed_connections: 0,
+            disconnected_connections: 0,
+            total_usage_m3: Number(meterUsage[0]?.total_usage) || 0,
+            total_billed: billed,
+            total_collected: collected,
+            total_arrears: arrears,
+            collection_rate_percent: rate,
+            total_cash_balance: 0,
+            active_complaints: Number(complaintsCount[0]?.count) || 0,
+          },
+          active_customers: activeCust,
+          total_kpspams: kpspamsCount[0]?.count || 1,
+          total_billed: billed,
+          total_collected: collected,
+          total_unpaid: arrears,
+          unpaid_invoices: Number(invStats[0]?.unpaid_count) || 0,
+          total_consumption_m3: Number(meterUsage[0]?.total_usage) || 0,
           collection_rate: rate,
         },
       });
