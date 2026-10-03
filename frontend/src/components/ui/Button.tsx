@@ -37,7 +37,7 @@ export function Button({
 
   return (
     <button
-      className={`inline-flex items-center justify-center space-x-2 rounded-xl transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none ${sizeClasses} ${variantClasses} ${className}`}
+      className={`inline-flex items-center justify-center space-x-2 rounded-xl transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800 ${sizeClasses} ${variantClasses} ${className}`}
       {...props}
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}

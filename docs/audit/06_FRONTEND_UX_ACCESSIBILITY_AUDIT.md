@@ -1,186 +1,238 @@
-# LAPORAN AUDIT TAHAP 06: FRONTEND UX, ACCESSIBILITY & CLIENT-SIDE AUDIT
-**Sistem Informasi KPSPAMS Desa Kuajang**
-*Tanggal Audit: 2 Oktober 2026*
-*Auditor: Tim Lead Auditor SI-KPSPAMS (Pre-Deployment Audit Team)*
-*Status Kesiapan: PASSED (Semua Temuan Terselesaikan & Build Lolos 100%)*
+# LAPORAN AUDIT TAHAP 06: FRONTEND UX, ACCESSIBILITY, RESPONSIVENESS & CLIENT-SIDE SECURITY
+**Sistem Informasi KPSPAMS Desa Kuajang**  
+*Tanggal Audit: 3 Oktober 2026*  
+*Auditor: Tim Lead Auditor SI-KPSPAMS (Pre-Deployment Audit Team)*  
+*Status Kesiapan: PASSED WITH REMEDIATION & ACTIONABLE FINDINGS*
 
 ---
 
 ## 1. Ringkasan Eksekutif
 
-Audit Tahap 06 mengevaluasi secara ketat kualitas antarmuka pengguna (*Frontend UI/UX*), kepatuhan aksesibilitas (*WCAG 2.1 AA Accessibility*), responsivitas mobile bagi petugas lapangan di pedesaan, integritas pemetaan GIS (*Leaflet / Map Tiles*), optimasi bundel produksi Next.js 14, serta ketahanan offline (*offline resilience*) pada alur OCR KTP dan penagihan lapangan.
+Audit Tahap 06 mengevaluasi secara ketat dan mendalam lapisan antarmuka pengguna (*Frontend UI/UX*), arsitektur komponen Next.js 14 (App Router), kepatuhan aksesibilitas (*WCAG 2.1 AA Accessibility*), keramahan gawai seluler (*mobile-first*) bagi petugas lapangan di pelosok pedesaan, ketahanan terhadap kegagalan jaringan (*offline resilience*), penegakan batas keamanan (*client-side security boundaries*), isolasi visual multi-KPSPAMS, serta konsistensi identitas visual resmi Desa Kuajang.
 
-Seluruh pengujian dijalankan langsung melalui TypeScript compiler (`tsc --noEmit`), Next.js ESLint (`next lint`), dan kompilasi produksi penuh (`next build`).
-
----
-
-## 2. Metodologi & Parameter Audit
-
-Audit mencakup 6 domain utama antarmuka pengguna:
-1. **Validitas Tipe & Kode Statis**:
-   - Eksekusi TypeScript compiler (`tsc --noEmit`) tanpa pengecualian (*zero-error policy*).
-   - Eksekusi linter Next.js (`next lint`) memastikan nol error dan nol peringatan.
-2. **Kompilasi Produksi & Bundling**:
-   - Pembuatan bundel produksi (`npm run build`) untuk 13 rute aplikasi.
-   - Evaluasi ukuran muatan awal (*First Load JS*) terhadap batas performa jaringan seluler 3G/4G pedesaan.
-3. **Pencegahan Error SSR pada Komponen GIS**:
-   - Verifikasi komponen peta Leaflet diimpor secara dinamis (`dynamic(..., { ssr: false })`) guna mencegah tabrakan objek `window` / `document` pada server-side rendering.
-4. **Aksesibilitas & Standar WCAG 2.1 AA**:
-   - Struktur semantik HTML (`<html lang="id">`, `<nav>`, `<main>`, `<dialog>`).
-   - Penandaan ARIA (`role="dialog"`, `aria-modal="true"`, `aria-label`).
-   - Standar ukuran sentuh (*Touch Target Size*) minimal 44x44px pada navigasi mobile (`min-h-[48px]`).
-5. **Responsivitas Perangkat Seluler (Mobile-First)**:
-   - Navigasi bawah seluler (*MobileBottomNav*) dengan Floating Action Button (FAB) khusus penagihan lapangan.
-   - Drawer geser (*MobileDrawer*) dengan pemisahan persona dinamis.
-   - Konfigurasi `viewport` resmi Next.js 14.
-6. **Ketahanan Offline & AI Multi-Modal Fallback**:
-   - Arsitektur OCR KTP cerdas: Google Gemini 1.5 Flash sebagai pemindai primer dengan failover otomatis ke worker lokal Tesseract.js saat jaringan internet blank spot.
+Pengujian dilakukan melalui analisis statis kode (*static code audit*), pemeriksaan pohon DOM semantik, pengujian interaksi keyboard/aksesibilitas, audit kontras warna, verifikasi kompilasi bundel produksi (`npm run build`), dan penelusuran alur autentikasi/otorisasi di sisi peramban.
 
 ---
 
-## 3. Daftar Temuan Audit (Audit Findings)
+## 2. Metodologi & Lingkup Pemeriksaan 26 Parameter
 
-### FINDING-FE-001 (SEVERITY: LOW)
-- **ID**: `FINDING-FE-001`
-- **Kategori**: Mobile Viewport Configuration
-- **Lokasi**: `frontend/src/app/layout.tsx`
-- **Deskripsi**: File root layout belum mendefinisikan objek konfigurasi resmi `viewport` Next.js 14.
-- **Bukti (Evidence)**:
-  Tanpa deklarasi `viewport` eksplisit, peramban seluler tertentu dapat melakukan zoom otomatis yang mengacaukan antarmuka peta GIS dan kanvas kamera saat petugas mengetuk input form.
-- **Dampak (Impact)**: Ketidaknyamanan visual pada smartphone petugas lapangan.
-- **Rekomendasi**: Ekspor objek `viewport: Viewport` resmi dari Next.js 14.
-- **Tindakan Perbaikan (Remediation)**:
-  Menambahkan konfigurasi viewport pada `frontend/src/app/layout.tsx`:
-  ```tsx
-  export const viewport: Viewport = {
-    width: "device-width",
-    initialScale: 1,
-    themeColor: "#0284c7",
-  };
-  ```
-- **Status Verifikasi**: **CLOSED (FIXED & VERIFIED)**
+Audit mencakup 26 parameter inti yang disyaratkan:
+
+### 2.1. Responsivitas, Mobile & Desktop (Fokus 1–3)
+- **Mobile-First Layout**:
+  - `MobileBottomNav.tsx` ditambatkan secara tetap (*docked*) di bagian bawah layar gawai dengan area sentuh minimum $\ge 48 \times 48\text{ px}$, melebihi ambang batas WCAG 2.5.5 ($44 \times 44\text{ px}$).
+  - Tombol aksi utama *"Catat & Tagih"* dirancang sebagai Floating Action Button (FAB) menonjol (`-mt-5`, ukuran $48 \times 48\text{ px}$, warna marun beraksen emas) untuk kemudahan penekanan satu tangan oleh petugas di lapangan.
+  - Kompatibel dengan area takik (*notch / safe area insets*) iOS dan bilah navigasi Android melalui utilitas CSS `.safe-area-inset-bottom`.
+  - Kontainer utama `DashboardLayout` memiliki bantalan bawah `pb-28 md:pb-8` agar elemen konten tidak tertutup bilah navigasi bawah.
+- **Tablet & Layar Sedang**:
+  - Bilah sisi (*AppSidebar*) otomatis tersembunyi pada breakpoint `< 768px` (`hidden md:flex`).
+  - Menu hamburger pada `AppHeader` membuka laci navigasi geser seluler (`MobileDrawer`).
+- **Desktop**:
+  - Sidebar tetap (*fixed sidebar*) selebar 256px (`w-64`) dengan pengelompokan menu kontekstual berbasis peran pengguna.
+  - Kontainer kerja utama dibatasi pada lebar maksimum `max-w-7xl mx-auto` dengan padding responsif `p-3.5 sm:p-6 lg:p-8`.
+
+### 2.2. Navigasi & Hirarki Tampilan (Fokus 4)
+- **Menu Berbasis Peran (*Role-Adaptive Navigation*)**:
+  - **Pelanggan**: Hanya melihat menu *"Portal Warga Mandiri"* dan *"Pengaduan Layanan Air"*.
+  - **Petugas Lapangan**: Berfokus pada *"Pelanggan & SR"*, *"Catat & Tagih di Tempat"*, *"Buku Kas Setoran"*, dan *"Pengaduan/SPK"*.
+  - **Pengurus KPSPAMS**: Mengakses dashboard unit, pelanggan, operasional lapangan, buku kas unit, dan pengaduan.
+  - **Admin Desa / Super Admin**: Memiliki akses penuh termasuk menu *"Pengguna & Hak Akses"*.
+- **Indikator Aktif**:
+  - Tautan aktif pada sidebar ditandai secara visual dengan gradien marun, teks tebal, dan aksen garis tepi emas (`border-l-4 border-brand-gold-500`).
+
+### 2.3. Loading, Empty & Error States (Fokus 5–7, 22–24)
+- **Loading State**:
+  - Komponen peta Leaflet GIS (`GisBillingRouteMap` & `GisLocationPicker`) diimpor secara dinamis (`dynamic()`) dengan *fallback skeleton loader* beranimasi pulsa (`animate-pulse`) guna mencegah layar kosong saat memuat tile satelit.
+  - Tombol-tombol formulir memiliki status `disabled:opacity-50 disabled:cursor-not-allowed` saat proses pengiriman berlangsung.
+- **Empty State**:
+  - Pada halaman `pelanggan/page.tsx`, ketika pencarian atau filter dusun tidak menghasilkan rekaman, sistem menampilkan kartu/baris *empty state* yang informatif:
+    - Mobile: `<div className="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">Tidak ada pelanggan yang sesuai dengan filter.</div>`
+    - Desktop: `<tr><td colSpan={7} className="py-8 text-center text-slate-400">Tidak ada data pelanggan yang sesuai dengan filter.</td></tr>`
+- **Error State & Fallback Rute (404 & 500)**:
+  - **Error 404 (Not Found)**: Halaman khusus `src/app/not-found.tsx` telah diimplementasikan dengan identitas visual resmi Desa Kuajang, tombol kembali ke Beranda/Portal, dan penjelasan ramah pengguna.
+  - **Error 500 / Runtime Exception**: Komponen boundary `src/app/error.tsx` telah diimplementasikan untuk menangkap error tidak tertangani (*unhandled runtime exception*) dengan tombol *"Coba Muat Ulang"* (`reset()`) dan pencatatan log.
+
+### 2.4. Validasi Form & Kegunaan Tabel (Fokus 8–12)
+- **Form Validation**:
+  - Form pendaftaran pelanggan, catat meter, dan transaksi keuangan menerapkan validasi bawaan HTML5 (`required`, tipe numerik, panjang minimum).
+  - Khusus NIK pelanggan, format 16 digit angka divalidasi dan dipermudah melalui integrasi OCR Vision e-KTP.
+- **Table Usability**:
+  - Seluruh tabel data dibungkus dalam kontainer `overflow-x-auto` dengan scrollbar kustom ramping (`::-webkit-scrollbar` 6px).
+  - Angka stand meter dan nominal rupiah diformat menggunakan kelas `.font-tabular` (`font-variant-numeric: tabular-nums`) untuk perataan vertikal yang rapi dan mudah dibaca.
+- **Search & Filtering**:
+  - Pencarian langsung (*realtime filter*) mendukung pencarian multi-atribut: Nama Warga, NIK, Nomor Sambungan Rumah (SR), dan Nomor Seri Meter.
+  - Filter drop-down mendukung penyaringan berdasarkan Dusun dan Status Sambungan (`ACTIVE`, `SEALED`, `DISCONNECTED`).
+- **Pagination (Temuan)**:
+  - Seluruh daftar saat ini dirender dalam memori secara penuh tanpa pembagian halaman (*unpaginated list*). Walaupun cepat untuk data pengujian (~10-20 rekaman), sistem memerlukan komponen paginasi klien/server untuk ribuan pelanggan skala riil desa (Lihat `FINDING-FE-010`).
+
+### 2.5. Dialog Konfirmasi & Aksi Destruktif (Fokus 13–14)
+- **Modal Konfirmasi Pengguna**:
+  - Penghapusan akun pengguna pada `pengguna/page.tsx` telah menerapkan modal dialog konfirmasi eksplisit dengan ikon peringatan, rincian identitas akun yang akan dihapus, tombol batal, dan tombol eksekusi *"Ya, Hapus Akun"*.
+- **Penyegelan & Pemutusan Pelanggan**:
+  - Tersedia modal aksi untuk mengubah status menjadi *"Disegel Sementara"* atau *"Rekomendasi Putus Fisik"*.
+  - **Temuan**: Aksi *"Hapus Permanen dari Database"* pada pelanggan langsung mengeksekusi penghapusan dari daftar tanpa dialog konfirmasi tahap kedua (Lihat `FINDING-FE-013`).
+
+### 2.6. Aksesibilitas, Keyboard & Semantik (Fokus 15–19)
+- **Keyboard Navigation**:
+  - Elemen tombol utama (`Button.tsx`) dan tombol submit formulir login telah dilengkapi kelas `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800` untuk penandaan fokus keyboard (*Tab navigation*).
+- **Semantik Pembaca Layar (Screen Reader)**:
+  - Root layout memiliki atribut bahasa resmi `<html lang="id">`.
+  - Drawer navigasi memiliki atribut modal `role="dialog"`, `aria-modal="true"`, dan `aria-label="Menu Navigasi Seluler"`.
+  - Navigasi bawah memiliki atribut semantik `<nav aria-label="Navigasi Bawah Seluler">`.
+- **Asosiasi Label & Form Control**:
+  - Form login telah diperbaiki dengan mengaitkan `<label htmlFor="username">` ke `<input id="username">` dan `<label htmlFor="password">` ke `<input id="password">` beserta atribut `autoComplete`.
+- **Kontras Warna (Color Contrast)**:
+  - Teks Marun Brand (`#7B1113`) pada latar putih memiliki rasio kontras tinggi **10.6:1** (melampaui standar WCAG AAA 7:1).
+  - Teks Gelap (`#0F172A`) pada latar abu-abu terang (`#F8FAFC`) memiliki rasio kontras **15.8:1**.
+  - **Catatan**: Elemen berteks emas/amber (`#D4AF37`) diwajibkan selalu berada di atas latar gelap (marun tua atau slate 900) karena kontrasnya tidak memadai jika diletakkan langsung di atas latar putih murni.
+
+### 2.7. Sesi, Batas Keamanan & Ketahanan Jaringan (Fokus 20–21, 24–26)
+- **Session Expiry**:
+  - Modul `api-client.ts` menangkap status HTTP `401 Unauthorized`. Jika token kedaluwarsa, token dihapus dari `localStorage` dan peramban diarahkan kembali ke `/login`.
+- **Batas Keamanan Sisi Klien**:
+  - Antarmuka mengunci pilihan unit KPSPAMS bagi pengguna non-desa sehingga kasir/petugas unit Lemo Baru tidak dapat mengubah dropdown konteks ke Lemo Tua atau Sarampu 1.
+  - Namun, keamanan sejati tetap ditegakkan oleh backend Laravel (RBAC & `MultiTenantScope`).
+- **Offline & Ketahanan Lapangan**:
+  - Fitur penagihan lapangan menyimpan data sementara di `localStorage` peramban. Jika petugas berada di lokasi *blank spot* (tanpa sinyal internet), data pencatatan stand meter tidak hilang dan dapat disinkronkan saat kembali mendapat jaringan.
+  - Alur AI OCR KTP memiliki fallback bertingkat dari Google Gemini 1.5 Flash ke mesin OCR lokal Tesseract.js di server.
 
 ---
 
-### FINDING-FE-002 (SEVERITY: LOW)
-- **ID**: `FINDING-FE-002`
+## 3. Audit Batas Keamanan & Multi-Tenant (Security & Confidentiality)
+
+| Parameter Keamanan | Status Implementasi | Hasil Audit |
+| :--- | :--- | :--- |
+| **Penyimpanan Secret API Key** | `GEMINI_API_KEY` disimpan di `.env.local` tanpa prefix `NEXT_PUBLIC_`. | **AMAN (Server-Side Only)**. Kunci API hanya dipanggil oleh Next.js API Route (`/api/ai/ocr-ktp/route.ts`) dan tidak pernah bocor ke bundel JavaScript peramban. |
+| **Penyimpanan Kredensial Pengguna** | Token sesi disimpan di `localStorage` via key `auth_token`. | **CUKUP UNTUK MVP**. Rekomendasi produksi jangka panjang adalah migrasi ke `httpOnly secure cookie` guna mitigasi risiko XSS. |
+| **Isolasi Tampilan Multi-KPSPAMS** | Pengguna non-desa hanya melihat nama unitnya sendiri pada header; filter pelanggan terkunci ke `user.kpspamsId`. | **TERISOLASI**. Petugas tidak dapat memilih atau melihat daftar pelanggan unit KPSPAMS lain pada tampilan normal. |
+| **Persona Switcher Dropdown** | Menu simulasi pergantian akun (*Persona Switcher*) aktif di `AppHeader.tsx`. | **TEMUAN (HIGH)**. Fitur ini sangat bermanfaat saat pengujian/audit lokal, namun **WAJIB DINONAKTIFKAN** atau dibatasi pada environment produksi agar pengguna biasa tidak dapat beralih peran ke Super Admin (Lihat `FINDING-FE-011`). |
+| **Kata Sandi Default Hardcoded** | Nilai `"Kuajang2026!"` tertulis sebagai nilai awal form login dan fungsi pembantu. | **TEMUAN (MEDIUM)**. Harus dihapus dari nilai awal (*default state*) form login sebelum rilis produksi publik. |
+
+---
+
+## 4. Evaluasi Konsistensi Identitas Visual
+
+Prinsip desain visual yang telah ditetapkan terbukti diterapkan secara konsisten pada seluruh komponen:
+1. **Latar Belakang (*White/Light Background*)**: Menggunakan `#F8FAFC` (Slate-50) untuk area kanvas kerja dan `#FFFFFF` untuk kartu data, memberikan kesan bersih, lega, dan profesional.
+2. **Warna Marun Utama (*Brand Maroon*)**: Menggunakan variasi `#8B0000`, `#7B1113`, dan gradien `#52090B` pada header, kartu ringkasan, tombol primer, dan badge aktif.
+3. **Aksen Emas (*Brand Gold/Yellow*)**: Menggunakan `#D4AF37` dan amber cerah pada ikon, border aksen, dan teks sorotan di atas latar gelap.
+4. **Warna Gelap/Hitam (*Slate/Black*)**: Menggunakan `#0F172A` dan `#020617` pada sidebar desktop, teks heading, dan kartu hero bergradien.
+5. **Gaya Tipografi**: Font sistem modern sans-serif dengan dukungan khusus font monospasi tabular (`font-tabular`) untuk deretan angka meter dan uang rupiah.
+
+---
+
+## 5. Log Temuan & Status Remediasi (Findings Log)
+
+### FINDING-FE-007 (SEVERITY: MEDIUM) - FIXED
+- **ID**: `FINDING-FE-007`
+- **Kategori**: Routing & Error Handling
+- **Deskripsi**: Aplikasi belum memiliki halaman khusus kustom untuk Error 404 (Not Found) dan Error 500 (Unhandled Client Error Boundary).
+- **Remediasi**:
+  1. Dibuat `frontend/src/app/not-found.tsx` dengan desain marun-emas resmi dan tombol navigasi kembali.
+  2. Dibuat `frontend/src/app/error.tsx` dengan error boundary Next.js dan tombol muat ulang.
+- **Status Verifikasi**: **CLOSED (FIXED & COMPILED)**
+
+### FINDING-FE-008 (SEVERITY: MEDIUM) - FIXED
+- **ID**: `FINDING-FE-008`
+- **Kategori**: State Management & Architecture
+- **Deskripsi**: Terdapat pembungkusan ganda `<AuthProvider>` di dalam `DashboardLayout.tsx`, padahal `RootLayout` (`layout.tsx`) sudah membungkus seluruh aplikasi dengan `<Providers>`. Hal ini berisiko memicu desinkronisasi state autentikasi pada saat fast-refresh.
+- **Remediasi**: Pembungkus `<AuthProvider>` dan import terkait dihapus dari `DashboardLayout.tsx`.
+- **Status Verifikasi**: **CLOSED (FIXED & COMPILED)**
+
+### FINDING-FE-009 (SEVERITY: LOW) - FIXED
+- **ID**: `FINDING-FE-009`
 - **Kategori**: Web Accessibility (WCAG 2.1 AA)
-- **Lokasi**: `frontend/src/components/layout/MobileDrawer.tsx`
-- **Deskripsi**: Kontainer drawer mobile belum memiliki atribut semantik modal `role="dialog"`, `aria-modal="true"`, dan `aria-label`.
-- **Bukti (Evidence)**:
-  Elemen root drawer hanya berupa `<div className="md:hidden fixed inset-0 z-50 flex">`. Pembaca layar (screen reader) pengguna disabilitas netra tidak dapat mengenali drawer sebagai modal interaktif.
-- **Dampak (Impact)**: Penurunan skor kepatuhan aksesibilitas.
-- **Rekomendasi**: Pasang atribut ARIA dialog dan modal.
-- **Tindakan Perbaikan (Remediation)**:
-  Memperbarui baris deklarasi pada `MobileDrawer.tsx`:
+- **Deskripsi**: Elemen `<input>` pada halaman `login/page.tsx` tidak memiliki atribut `id` yang terhubung ke `<label htmlFor="...">`, serta belum ada atribut `focus-visible` pada tombol aksi `Button.tsx`.
+- **Remediasi**:
+  1. Menambahkan atribut `htmlFor="username"`, `id="username"`, `name="username"`, dan `autoComplete="username"` pada input akun pengguna.
+  2. Menambahkan atribut `htmlFor="password"`, `id="password"`, `name="password"`, dan `autoComplete="current-password"` pada input kata sandi.
+  3. Menambahkan kelas `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800` pada komponen `Button.tsx`.
+- **Status Verifikasi**: **CLOSED (FIXED & COMPILED)**
+
+### FINDING-FE-010 (SEVERITY: MEDIUM) - OPEN / RECOMMENDATION
+- **ID**: `FINDING-FE-010`
+- **Kategori**: Table Performance & Scalability
+- **Deskripsi**: Halaman `pelanggan`, `keuangan`, dan `pengguna` saat ini merender seluruh data dalam satu daftar panjang tanpa paginasi (*unpaginated list*).
+- **Dampak**: Jika jumlah sambungan rumah mencapai 600+ pelanggan (seluruh dusun Kuajang), peramban pada ponsel kelas pemula (*entry-level smartphone*) berpotensi mengalami keterlambatan rendering (*DOM lagging*).
+- **Rekomendasi**: Pasang kontrol paginasi (10 / 25 / 50 data per halaman) sebelum peluncuran massal seluruh dusun.
+- **Status**: **NOTED FOR SCALED ROLLOUT (Aman untuk fase pilot Lemo Baru 185 KK)**
+
+### FINDING-FE-011 (SEVERITY: HIGH) - PRE-PRODUCTION WARNING
+- **ID**: `FINDING-FE-011`
+- **Kategori**: Client-Side Privilege Boundary
+- **Deskripsi**: Dropdown *Quick Persona Switcher* di header dan nilai awal kata sandi `"Kuajang2026!"` disertakan dalam komponen klien untuk kemudahan demo/audit.
+- **Dampak**: Pada lingkungan produksi publik, pengguna tanpa hak dapat mengeklik pergantian persona untuk berpindah peran.
+- **Rekomendasi**: Tambahkan pembatas environment:
   ```tsx
-  <div
-    role="dialog"
-    aria-modal="true"
-    aria-label="Menu Navigasi Seluler"
-    className="md:hidden fixed inset-0 z-50 flex"
-  >
+  {process.env.NODE_ENV !== "production" && <PersonaSwitcher />}
   ```
-- **Status Verifikasi**: **CLOSED (FIXED & VERIFIED)**
+  serta kosongkan default state kata sandi pada formulir login.
+- **Status**: **ACTIONABLE PRE-DEPLOYMENT REQUIREMENT**
+
+### FINDING-FE-012 (SEVERITY: LOW) - OPEN / RECOMMENDATION
+- **ID**: `FINDING-FE-012`
+- **Kategori**: UX & Safety Guard
+- **Deskripsi**: Pilihan *"Hapus Permanen dari Database"* pada modal tindakan pelanggan langsung menghapus data seketika tanpa dialog konfirmasi kedua (*two-step confirmation*).
+- **Rekomendasi**: Terapkan dialog konfirmasi teks pengetikan nama pelanggan atau konfirmasi pop-up sebelum menghapus arsip sambungan.
+- **Status**: **RECOMMENDED ENHANCEMENT**
 
 ---
 
-### FINDING-FE-003 (SEVERITY: LOW)
-- **ID**: `FINDING-FE-003`
-- **Kategori**: Code Quality & React Hook Exhaustive Dependencies
-- **Lokasi**: `penagihan-lapangan/page.tsx`, `GisBillingRouteMap.tsx`, `GisLocationPicker.tsx`
-- **Deskripsi**: Terdapat 5 peringatan `react-hooks/exhaustive-deps` saat proses `next lint`.
-- **Bukti (Evidence)**:
-  Log peringatan linter sebelum perbaikan:
-  - `penagihan-lapangan/page.tsx`: hook sinkronisasi nomor WhatsApp kurang dependensi `selectedCustomer`.
-  - `GisBillingRouteMap.tsx`: kurang dependensi `onSelectCustomer` dan `customers`.
-  - `GisLocationPicker.tsx`: mount effect inisialisasi peta memerlukan penandaan eksplisit.
-- **Dampak (Impact)**: Potensi re-render berlebih atau stale closure.
-- **Rekomendasi**: Lengkapi dependency array dan sematkan komentar penonaktifan standar jika efek murni initial mount.
-- **Tindakan Perbaikan (Remediation)**:
-  Memperbaiki seluruh dependency array dan menjalankan ulang `npm run lint`.
-  Hasil: `✔ No ESLint warnings or errors`.
-- **Status Verifikasi**: **CLOSED (FIXED & VERIFIED)**
+## 6. Bukti Kompilasi Bundel Produksi (Production Build Evidence)
+
+Kompilasi produksi penuh dieksekusi dengan perintah:
+```powershell
+npm run build
+```
+
+### Log Output Kompilasi:
+```text
+  ▲ Next.js 14.2.15
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/13) ...
+   Generating static pages (3/13) 
+   Generating static pages (6/13) 
+   Generating static pages (9/13) 
+ ✓ Generating static pages (13/13)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    5.77 kB         214 kB
+├ ○ /_not-found                          138 B          87.4 kB
+├ ƒ /api/ai/ocr-ktp                      0 B                0 B
+├ ○ /dashboard                           16.5 kB         233 kB
+├ ○ /dashboard/billing                   562 B          87.9 kB
+├ ○ /dashboard/keuangan                  10.7 kB         113 kB
+├ ○ /dashboard/pelanggan                 14 kB           119 kB
+├ ○ /dashboard/penagihan-lapangan        9.38 kB         114 kB
+├ ○ /dashboard/pengaduan                 6.79 kB         109 kB
+├ ○ /dashboard/pengguna                  5.98 kB         111 kB
+├ ○ /login                               3.18 kB        93.6 kB
+└ ○ /portal                              5.52 kB        99.6 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/117-2076d4c353f9c55e.js       31.6 kB
+  ├ chunks/fd9d1056-7c1081822893a088.js  53.6 kB
+  └ other shared chunks (total)          2.07 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+```
+
+- **Hasil**: 13/13 rute berhasil dikompilasi secara optimal tanpa *type error* maupun kegagalan linter.
+- **Ukuran JS Bersama (*First Load JS*)**: Hanya **87.3 kB**, sangat ringan dan cepat diakses melalui jaringan seluler pedesaan.
 
 ---
 
-### FINDING-FE-004 (SEVERITY: INFORMATIONAL)
-- **ID**: `FINDING-FE-004`
-- **Kategori**: Production Build Performance
-- **Lokasi**: Next.js Production Build Artifacts
-- **Deskripsi**: Hasil verifikasi kompilasi bundel produksi aplikasi.
-- **Bukti (Evidence)**:
-  Log eksekusi `npm run build`:
-  ```text
-  Route (app)                              Size     First Load JS
-  ┌ ○ /                                    5.76 kB         214 kB
-  ├ ○ /_not-found                          873 B          88.2 kB
-  ├ ƒ /api/ai/ocr-ktp                      0 B                0 B
-  ├ ○ /dashboard                           16.4 kB         232 kB
-  ├ ○ /dashboard/billing                   562 B          87.9 kB
-  ├ ○ /dashboard/keuangan                  10 kB           113 kB
-  ├ ○ /dashboard/pelanggan                 12.9 kB         118 kB
-  ├ ○ /dashboard/penagihan-lapangan        8.29 kB         114 kB
-  ├ ○ /dashboard/pengaduan                 6.01 kB         109 kB
-  ├ ○ /dashboard/pengguna                  7.42 kB         110 kB
-  ├ ○ /login                               5.05 kB        92.4 kB
-  └ ○ /portal                              4.83 kB        99.6 kB
-  + First Load JS shared by all            87.3 kB
-  ```
-  Total 13/13 halaman berhasil digenerasi. Rata-rata First Load JS bersama hanya **87.3 kB**, sangat optimal untuk koneksi seluler pedesaan.
-- **Status Verifikasi**: **VERIFIED (OPTIMIZED)**
+## 7. Kesimpulan & Status Kesiapan Tahap 06
 
----
+Tahap 06 (Frontend UX, Accessibility, Responsiveness & Client-Side Security) dinyatakan **LULUS DENGAN PERBAIKAN & CATATAN PRA-DEPLOYMENT (PASSED WITH REMEDIATION)**.
 
-### FINDING-FE-005 (SEVERITY: INFORMATIONAL)
-- **ID**: `FINDING-FE-005`
-- **Kategori**: Leaflet GIS Server-Side Rendering (SSR) Safety
-- **Lokasi**: `frontend/src/app/dashboard/pelanggan/page.tsx` & `frontend/src/app/dashboard/penagihan-lapangan/page.tsx`
-- **Deskripsi**: Verifikasi keamanan SSR komponen Leaflet.
-- **Bukti (Evidence)**:
-  Kedua komponen peta menggunakan pola impor dinamis Next.js:
-  ```tsx
-  const GisLocationPicker = dynamic(
-    () => import("@/components/gis/GisLocationPicker").then((mod) => mod.GisLocationPicker),
-    { ssr: false, loading: () => <MapLoadingSkeleton /> }
-  );
-  ```
-  Pola ini menjamin tidak terjadi exception `ReferenceError: window is not defined` pada build time maupun server runtime.
-- **Status Verifikasi**: **VERIFIED (SAFE)**
+Halaman kustom 404 & 500 telah diintegrasikan, asosiasi label formulir dan fokus keyboard telah diperbaiki, penataan layout responsif telah teruji, dan bundel produksi Next.js telah terverifikasi stabil.
 
----
-
-### FINDING-FE-006 (SEVERITY: INFORMATIONAL)
-- **ID**: `FINDING-FE-006`
-- **Kategori**: Offline AI OCR Resilience
-- **Lokasi**: `frontend/src/app/api/ai/ocr-ktp/route.ts`
-- **Deskripsi**: Verifikasi strategi fallback OCR KTP.
-- **Bukti (Evidence)**:
-  Sistem mengimplementasikan fallback bertingkat (*graceful degradation*):
-  1. **Tingkat 1 (Cloud Vision)**: Google Gemini 1.5 Flash via REST API (kecepatan & akurasi tinggi).
-  2. **Tingkat 2 (Edge / Local)**: Tesseract.js engine lokal dengan model bahasa Indonesia (`ind` & `eng`) jika kuota habis atau jaringan bermasalah.
-  3. **Tingkat 3 (Heuristic Parser)**: Regex parser lokal `parseKtpRawText` untuk menormalkan NIK 16 digit, Nama, RT/RW, dan Alamat ke dalam form input pelanggan.
-- **Status Verifikasi**: **VERIFIED (RESILIENT)**
-
----
-
-## 4. Matriks Ringkasan Audit Frontend & UX
-
-| Kriteria Audit | Alat Uji | Target Kepatuhan | Hasil Realisasi | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Type Safety** | `tsc --noEmit` | 0 Type Error | 0 Error | **LULUS** |
-| **Linting & Code Style** | `next lint` | 0 Error, 0 Warning | 0 Error, 0 Warning | **LULUS** |
-| **Production Build** | `next build` | 100% Rute Sukses | 13/13 Sukses | **LULUS** |
-| **Shared JS Size** | Next.js Analyzer | < 150 kB | 87.3 kB | **LULUS** |
-| **Touch Target Size** | Inspeksi CSS | >= 44x44 px | min 48x48 px | **LULUS** |
-| **GIS SSR Safety** | Build & Dynamic Import | No SSR Crash | ssr: false aman | **LULUS** |
-| **Aksesibilitas Modal** | Screen Reader Markup | WCAG 2.1 AA | role="dialog" aktif | **LULUS** |
-| **Mobile Navigation** | Bottom Nav & Drawer | Dual Navigation | FAB + Drawer aktif | **LULUS** |
-
----
-
-## 5. Kesimpulan Tahap 06
-
-Tahap 06 (Frontend UX, Accessibility & Client-Side Audit) dinyatakan **LULUS PENUH (PASSED)**. Antarmuka web terbukti ringan, aman dari kegagalan SSR pada modul peta GIS, ramah gawai seluler bagi petugas penagihan lapangan, dan bebas dari error linting maupun kompilasi TypeScript.
-
-Sistem siap dilanjutkan ke **Tahap 07: Performance, Infrastructure & Deployment Audit**.
+Sistem siap dilanjutkan ke **PRE-DEPLOYMENT AUDIT TAHAP 07: Performance, Infrastructure & Production Deployment Configuration Audit**.

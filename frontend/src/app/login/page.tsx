@@ -97,13 +97,16 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label htmlFor="username" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 cursor-pointer">
                 Username / Akun Pengguna
               </label>
               <div className="relative">
                 <input
+                  id="username"
+                  name="username"
                   type="text"
                   required
+                  autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-3.5 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 font-medium text-slate-800"
@@ -113,13 +116,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label htmlFor="password" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 cursor-pointer">
                 Kata Sandi
               </label>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-3.5 pr-4 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 font-medium text-slate-800"
@@ -130,7 +136,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full mt-2 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black shadow-lg shadow-brand-maroon-900/20 active:scale-[0.98] transition"
+              className="w-full mt-2 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black shadow-lg shadow-brand-maroon-900/20 active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800"
             >
               <span>Masuk Aplikasi</span>
               <ArrowRight className="w-4 h-4" />
