@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -950,6 +951,15 @@ function PenagihanLapanganContent() {
           {/* Struk Kwitansi Digital (Pratinjau Layar) */}
           <Card className="max-w-md mx-auto p-5 sm:p-6 border border-slate-300 shadow-xl font-mono text-xs">
             <div className="text-center pb-3 border-b-2 border-dashed border-slate-300 space-y-1">
+              <div className="w-12 h-12 mx-auto rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-sm bg-slate-950 flex items-center justify-center mb-1">
+                <Image
+                  src="/logo.jpg"
+                  alt="Logo SI-KPSPAMS Kuajang"
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="font-extrabold text-sm text-brand-maroon-900">SI-KPSPAMS KUAJANG</div>
               <div className="text-[10px] text-slate-500">Unit: {selectedCustomer.kpspamsName}</div>
               <div className="text-[10px] text-slate-400">Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar</div>

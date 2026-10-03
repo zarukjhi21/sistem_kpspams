@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_KPSPAMS_LIST, DEMO_USERS } from "@/lib/demo-data";
 import {
-  Droplet,
   Building2,
   LogOut,
   ChevronDown,
@@ -41,8 +41,15 @@ export function AppHeader({ onOpenMobileDrawer }: AppHeaderProps) {
 
         {/* Brand Logo */}
         <Link href="/dashboard" className="flex items-center space-x-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-maroon-800 to-brand-maroon-900 border border-brand-gold-500/40 text-brand-gold-400 flex items-center justify-center shadow-md shadow-brand-maroon-900/10 group-hover:scale-105 transition-transform">
-            <Droplet className="w-5 h-5 fill-current" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-md shadow-brand-maroon-900/10 group-hover:scale-105 transition-transform bg-slate-950 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="Logo SI-KPSPAMS Kuajang"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center space-x-1.5">

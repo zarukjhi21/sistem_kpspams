@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  Droplet,
   ShieldCheck,
   Activity,
   Users,
@@ -23,8 +23,15 @@ export default function HomePage() {
       <header className="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-maroon-800 to-brand-maroon-900 border border-brand-gold-500/50 text-brand-gold-400 flex items-center justify-center shadow-lg">
-              <Droplet className="w-6 h-6 fill-current" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-lg bg-slate-950 flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="Logo SI-KPSPAMS Kuajang"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">

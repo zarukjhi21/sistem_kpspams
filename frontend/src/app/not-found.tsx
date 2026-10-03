@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { Droplet, ArrowLeft, Home, HelpCircle } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Home, HelpCircle } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -8,8 +9,14 @@ export default function NotFound() {
       <div className="max-w-md w-full text-center space-y-6">
         {/* Brand Icon */}
         <div className="inline-flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-maroon-800 to-brand-maroon-900 border-2 border-brand-gold-500/50 text-brand-gold-400 flex items-center justify-center shadow-xl shadow-brand-maroon-950/20">
-            <Droplet className="w-9 h-9 fill-current" />
+          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-gold-500/50 shadow-xl shadow-brand-maroon-950/20 bg-slate-950 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="Logo SI-KPSPAMS Kuajang"
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 

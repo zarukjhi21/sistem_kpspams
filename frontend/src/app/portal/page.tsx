@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Droplet,
   AlertCircle,
@@ -39,8 +40,15 @@ export default function CitizenPortalPage() {
       <header className="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-maroon-800 to-brand-maroon-900 border border-brand-gold-500/50 text-brand-gold-400 flex items-center justify-center shadow">
-              <Droplet className="w-5 h-5 fill-current" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow bg-slate-950 flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="Logo SI-KPSPAMS Kuajang"
+                width={36}
+                height={36}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">

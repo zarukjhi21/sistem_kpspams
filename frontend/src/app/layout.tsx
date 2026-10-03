@@ -12,6 +12,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "SI-KPSPAMS KUAJANG | Sistem Informasi Pengelolaan Air Perdesaan",
   description: "Sistem Informasi Terpadu Pengelolaan KPSPAMS Lemo Baru, Lemo Tua, dan Sarampu 1 Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar",
+  icons: {
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({

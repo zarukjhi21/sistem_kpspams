@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Droplet, ShieldCheck, Lock, ArrowRight, UserCheck, Sparkles, Building2, User } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, Lock, ArrowRight, UserCheck, Sparkles, Building2, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_USERS } from "@/lib/demo-data";
 
@@ -74,8 +75,15 @@ export default function LoginPage() {
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
         <div className="inline-flex justify-center mb-3">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-maroon-800 to-brand-maroon-900 border-2 border-brand-gold-500/50 text-brand-gold-400 flex items-center justify-center shadow-2xl shadow-brand-maroon-950">
-            <Droplet className="w-8 h-8 fill-current" />
+          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-gold-500/50 shadow-2xl shadow-brand-maroon-950 bg-slate-950 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="Logo SI-KPSPAMS Kuajang"
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
         </div>
         <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">

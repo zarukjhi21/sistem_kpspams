@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_KPSPAMS_LIST, DEMO_USERS } from "@/lib/demo-data";
@@ -157,8 +158,14 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         {/* Drawer Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-maroon-800 border border-brand-gold-500/40 text-brand-gold-400 flex items-center justify-center shadow">
-              <Droplet className="w-4 h-4 fill-current" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-brand-gold-500/40 shadow bg-slate-950 flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="Logo SI-KPSPAMS Kuajang"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <span className="text-sm font-extrabold text-white tracking-tight">SI-KPSPAMS</span>
