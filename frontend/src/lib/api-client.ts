@@ -3,7 +3,18 @@
  * Menangani Bearer Token Sanctum, Context Scoping Header, dan penanganan format JSON seragam.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api/v1';
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname.includes('pages.dev') || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+      return (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost'))
+        ? process.env.NEXT_PUBLIC_API_URL
+        : 'https://sikpspams-backend.onrender.com/api/v1';
+    }
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface ApiResponse<T = any> {
   status: 'success' | 'fail' | 'error';
@@ -41,7 +52,8 @@ export async function apiClient<T = any>(
     headers['X-KPSPAMS-Context'] = contextId;
   }
 
-  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const response = await fetch(url, {
     ...options,
