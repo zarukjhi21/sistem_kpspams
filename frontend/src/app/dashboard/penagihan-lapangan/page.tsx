@@ -608,20 +608,7 @@ function PenagihanLapanganContent() {
               </div>
             </div>
 
-            {/* Banner info pendaftaran warga baru */}
-            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <Sparkles className="w-4 h-4 text-amber-700 flex-shrink-0" />
-                <span>
-                  Warga belum ada di database? Daftarkan dengan <strong>Scan KTP AI</strong> di menu Pelanggan.
-                </span>
-              </div>
-              <Link href="/dashboard/pelanggan">
-                <Button variant="secondary" size="sm" className="text-[11px] whitespace-nowrap">
-                  + Daftar Warga Baru
-                </Button>
-              </Link>
-            </div>
+
 
             {/* Proceed to Meter */}
             <Button
