@@ -21,7 +21,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/a
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Default logged in user: Operator TI Desa Kuajang (Admin Desa)
   const [user, setUser] = useState<DemoUser | null>(DEMO_USERS[1]);
-  const [activeKpspamsId, setActiveKpspamsId] = useState<number | null>(null);
+  const [activeKpspamsId, setActiveKpspamsId] = useState<number | null>(1);
 
   // Sync user state from localStorage if available
   useEffect(() => {
@@ -132,10 +132,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const switchKpspamsContext = (id: number | null) => {
+    // KPSPAMS Lemo Tua (2) dan Sarampu 1 (3) dinonaktifkan sementara
+    if (id === 2 || id === 3) {
+      setActiveKpspamsId(1);
+      return;
+    }
     // Only desa-level users can switch to global or other KPSPAMS
     if (isDesaLevel) {
-      setActiveKpspamsId(id);
-      localStorage.setItem("kpspams_context_id", id ? String(id) : "");
+      setActiveKpspamsId(id ?? 1);
+      localStorage.setItem("kpspams_context_id", id ? String(id) : "1");
     } else if (user?.kpspamsId) {
       // Locked to own KPSPAMS
       setActiveKpspamsId(user.kpspamsId);

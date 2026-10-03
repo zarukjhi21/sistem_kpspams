@@ -110,26 +110,41 @@ export function AppHeader({ onOpenMobileDrawer }: AppHeaderProps) {
 
                   <div className="my-1 border-t border-slate-100" />
 
-                  {DEMO_KPSPAMS_LIST.map((k) => (
-                    <button
-                      key={k.id}
-                      onClick={() => {
-                        switchKpspamsContext(k.id);
-                        setContextDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-slate-50 transition ${
-                        activeKpspamsId === k.id
-                          ? "font-bold text-brand-maroon-800 bg-brand-maroon-50/60"
-                          : "text-slate-700"
-                      }`}
-                    >
-                      <div>
-                        <div className="font-semibold">{k.name}</div>
-                        <div className="text-[10px] text-slate-400">{k.dusuns.join(", ")}</div>
-                      </div>
-                      {activeKpspamsId === k.id && <Check className="w-4 h-4 text-brand-maroon-800" />}
-                    </button>
-                  ))}
+                  {DEMO_KPSPAMS_LIST.map((k) => {
+                    const isLemoBaru = k.id === 1;
+                    return (
+                      <button
+                        key={k.id}
+                        disabled={!isLemoBaru}
+                        onClick={() => {
+                          if (isLemoBaru) {
+                            switchKpspamsContext(k.id);
+                            setContextDropdownOpen(false);
+                          }
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between transition ${
+                          !isLemoBaru ? "opacity-50 cursor-not-allowed bg-slate-50/50" : "hover:bg-slate-50"
+                        } ${
+                          activeKpspamsId === k.id
+                            ? "font-bold text-brand-maroon-800 bg-brand-maroon-50/60"
+                            : "text-slate-700"
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-semibold">{k.name}</span>
+                            {!isLemoBaru && (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 font-bold">
+                                🔒 Nonaktif Sementara
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-slate-400">{k.dusuns.join(", ")}</div>
+                        </div>
+                        {activeKpspamsId === k.id && <Check className="w-4 h-4 text-brand-maroon-800" />}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

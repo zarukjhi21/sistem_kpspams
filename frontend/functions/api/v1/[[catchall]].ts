@@ -72,7 +72,7 @@ export async function onRequest(context: any) {
       const password = (body.password || "").trim();
 
       const userRows = await sql.query(`
-        SELECT u.id, u.name, u.username, u.email, u.password, u.phone, u.kpspams_id,
+        SELECT u.id, u.name, u.username, u.email, u.password, u.phone, u.kpspams_id, u.is_active,
                r.id as role_id, r.name as role_name, r.display_name as role_display_name, r.scope_level,
                k.name as kpspams_name, k.code as kpspams_code
         FROM users u
@@ -92,6 +92,13 @@ export async function onRequest(context: any) {
       }
 
       const user = userRows[0];
+
+      if (user.is_active === false) {
+        return jsonResponse({
+          status: "fail",
+          message: "Akses Ditolak: Akun unit ini dinonaktifkan sementara. Operasional sistem saat ini difokuskan hanya untuk KPSPAMS Lemo Baru.",
+        }, 403);
+      }
       let passwordValid = false;
 
       if (password === "Kuajang2026!" || password === "password") {
