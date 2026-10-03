@@ -8,7 +8,7 @@ export function getApiBaseUrl(): string {
     if (window.location.hostname.includes('pages.dev') || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
       return (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost'))
         ? process.env.NEXT_PUBLIC_API_URL
-        : 'https://sikpspams-backend.onrender.com/api/v1';
+        : '/api/v1';
     }
   }
   return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
