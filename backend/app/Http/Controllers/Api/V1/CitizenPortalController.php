@@ -10,6 +10,8 @@ use App\Models\Customer;
 use App\Models\Complaint;
 use App\Models\Invoice;
 use App\Models\MeterReading;
+use App\Models\CashAccount;
+use App\Models\Kpspams;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -156,5 +158,41 @@ class CitizenPortalController extends BaseApiController
             'ticket_number' => $complaint->ticket_number,
             'created_at' => $complaint->created_at->toIso8601String(),
         ], 'Laporan pengaduan berhasil dicatat dalam sistem KPSPAMS.', 201);
+    }
+
+    /**
+     * Data transparansi kas publik dan unit dusun secara rill dari basis data.
+     */
+    public function getTransparencyStats(): JsonResponse
+    {
+        $units = Kpspams::with('dusuns')->get();
+
+        $stats = [];
+        $totalCash = 0;
+
+        foreach ($units as $u) {
+            $cash = (float) CashAccount::where('kpspams_id', $u->id)->sum('current_balance');
+            $srCount = Connection::where('kpspams_id', $u->id)->where('status', 'ACTIVE')->count();
+            $totalCash += $cash;
+
+            $key = match ($u->code) {
+                'KP-LMB', 'KPS-LMB' => 'LMB',
+                'KP-LMT', 'KPS-LMT' => 'LMT',
+                'KP-SR1', 'KPS-SR1' => 'SR1',
+                default => $u->code,
+            };
+
+            $stats[$key] = [
+                'id' => $u->id,
+                'name' => $u->name,
+                'cash' => $cash,
+                'active_sr' => $srCount,
+            ];
+        }
+
+        return $this->sendResponse([
+            'total_cash' => $totalCash,
+            'units' => $stats,
+        ], 'Data transparansi kas dan penyaluran air berhasil dimuat.');
     }
 }

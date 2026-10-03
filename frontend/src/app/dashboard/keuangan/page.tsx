@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
+import { apiClient } from "@/lib/api-client";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -62,113 +63,125 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
   {
     id: 1,
     kpspamsId: 1,
-    code: "KAS-LB-01",
-    name: "Kas Operasional Tunai Lemo Baru",
+    code: "KAS-LMB-TUNAI",
+    name: "Kas Tunai Bendahara Lemo Baru",
     bankName: "Kasir Tunai",
     accountNumber: "-",
-    openingBalance: 2500000,
-    currentBalance: 5120000,
+    openingBalance: 0,
+    currentBalance: 51000,
   },
   {
     id: 2,
     kpspamsId: 1,
-    code: "BANK-LB-01",
+    code: "BANK-LMB-BRI",
     name: "Rekening BRI KPSPAMS Lemo Baru",
     bankName: "Bank BRI Unit Binuang",
-    accountNumber: "0219-01-098234-50-1",
-    openingBalance: 8500000,
-    currentBalance: 14250000,
+    accountNumber: "0214-01-002345-53-1",
+    openingBalance: 0,
+    currentBalance: 0,
   },
   {
     id: 3,
     kpspamsId: 2,
-    code: "KAS-LT-01",
-    name: "Kas Operasional Tunai Lemo Tua",
+    code: "KAS-LMT-TUNAI",
+    name: "Kas Tunai Bendahara Lemo Tua",
     bankName: "Kasir Tunai",
     accountNumber: "-",
-    openingBalance: 1800000,
-    currentBalance: 3950000,
+    openingBalance: 0,
+    currentBalance: 0,
   },
   {
     id: 4,
     kpspamsId: 2,
-    code: "BANK-LT-01",
+    code: "BANK-LMT-SULSELBAR",
     name: "Rekening BPD Sulselbar Lemo Tua",
-    bankName: "Bank Sulselbar Cab. Polewali",
-    accountNumber: "130-003-0004523-9",
-    openingBalance: 6000000,
-    currentBalance: 11100000,
+    bankName: "Bank Sulselbar",
+    accountNumber: "510-02-004321-7",
+    openingBalance: 0,
+    currentBalance: 0,
   },
   {
     id: 5,
     kpspamsId: 3,
-    code: "KAS-SR-01",
+    code: "KAS-SR1-TUNAI",
     name: "Kas Tunai Sarampu 1 & Pakkandoang",
     bankName: "Kasir Tunai",
     accountNumber: "-",
-    openingBalance: 3200000,
-    currentBalance: 7850000,
+    openingBalance: 0,
+    currentBalance: 0,
   },
   {
     id: 6,
     kpspamsId: 3,
-    code: "BANK-SR-01",
-    name: "Rekening BRI Sarampu 1 & Pakkandoang",
-    bankName: "Bank BRI Unit Binuang",
-    accountNumber: "0219-01-087311-53-4",
-    openingBalance: 12000000,
-    currentBalance: 18900000,
+    code: "BANK-SR1-BRI",
+    name: "Rekening BRI KPSPAMS Sarampu 1",
+    bankName: "Bank BRI",
+    accountNumber: "0214-01-007890-53-4",
+    openingBalance: 0,
+    currentBalance: 0,
   },
 ];
 
 const INITIAL_TX: FinancialTx[] = [
   {
-    id: 1,
+    id: 5,
     kpspamsId: 1,
     kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-IN-20261001-A1",
-    date: "2026-10-01",
+    txNumber: "TX-IN-3F07E23E",
+    date: "2026-09-20",
     type: "INCOME",
     category: "AIR_PAYMENT",
-    amount: 142000,
-    description: "Penerimaan pembayaran air tagihan INV/202609/KP01/88A9F1",
-    accountName: "Kas Operasional Tunai Lemo Baru",
+    amount: 11000,
+    description: "Penerimaan pembayaran air tagihan Periode September 2026",
+    accountName: "Kas Tunai Bendahara Lemo Baru",
+  },
+  {
+    id: 4,
+    kpspamsId: 1,
+    kpspamsName: "KPSPAMS Lemo Baru",
+    txNumber: "TX-IN-0DD194FB",
+    date: "2026-08-20",
+    type: "INCOME",
+    category: "AIR_PAYMENT",
+    amount: 10000,
+    description: "Penerimaan pembayaran air tagihan Periode Agustus 2026",
+    accountName: "Kas Tunai Bendahara Lemo Baru",
+  },
+  {
+    id: 3,
+    kpspamsId: 1,
+    kpspamsName: "KPSPAMS Lemo Baru",
+    txNumber: "TX-IN-5080CC11",
+    date: "2026-07-20",
+    type: "INCOME",
+    category: "AIR_PAYMENT",
+    amount: 10000,
+    description: "Penerimaan pembayaran air tagihan Periode Juli 2026",
+    accountName: "Kas Tunai Bendahara Lemo Baru",
   },
   {
     id: 2,
     kpspamsId: 1,
     kpspamsName: "KPSPAMS Lemo Baru",
-    txNumber: "TX-EXP-20260930-B4",
-    date: "2026-09-30",
-    type: "EXPENSE",
-    category: "OPERASIONAL",
-    amount: 350000,
-    description: "Beli BBM Genset Pompa Intake Lemo Baru (25 Liter)",
-    accountName: "Kas Operasional Tunai Lemo Baru",
-  },
-  {
-    id: 3,
-    kpspamsId: 2,
-    kpspamsName: "KPSPAMS Lemo Tua",
-    txNumber: "TX-IN-20261001-C2",
-    date: "2026-10-01",
+    txNumber: "TX-IN-CC6C90FF",
+    date: "2026-06-20",
     type: "INCOME",
     category: "AIR_PAYMENT",
-    amount: 98000,
-    description: "Penerimaan pembayaran air tagihan INV/202609/KP02/67D221",
-    accountName: "Kas Operasional Tunai Lemo Tua",
+    amount: 10000,
+    description: "Penerimaan pembayaran air tagihan Periode Juni 2026",
+    accountName: "Kas Tunai Bendahara Lemo Baru",
   },
   {
-    id: 4,
-    kpspamsId: 3,
-    kpspamsName: "KPSPAMS Sarampu 1",
-    txNumber: "TX-EXP-20260928-D9",
-    date: "2026-09-28",
-    type: "EXPENSE",
-    category: "MAINTENANCE",
-    amount: 450000,
-    description: "Penggantian Stop Kran & Pipa Transmisi Jalur Pakkandoang",
-    accountName: "Kas Tunai Sarampu 1 & Pakkandoang",
+    id: 1,
+    kpspamsId: 1,
+    kpspamsName: "KPSPAMS Lemo Baru",
+    txNumber: "TX-IN-C5EE8109",
+    date: "2026-05-20",
+    type: "INCOME",
+    category: "AIR_PAYMENT",
+    amount: 10000,
+    description: "Penerimaan pembayaran air tagihan Periode Mei 2026",
+    accountName: "Kas Tunai Bendahara Lemo Baru",
   },
 ];
 
@@ -185,49 +198,62 @@ function KeuanganContent() {
   const isPetugasLapangan = user?.role === "petugas_lapangan";
   const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
 
-  // Akun Kas & Bank Sinkronisasi Persistent LocalStorage
-  const [accounts, setAccounts] = useState<CashAccountState[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_cash_accounts");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fallback
-        }
-      }
-    }
-    return INITIAL_ACCOUNTS;
-  });
+  // Akun Kas & Bank - Sinkronisasi Langsung ke REST API Server
+  const [accounts, setAccounts] = useState<CashAccountState[]>(INITIAL_ACCOUNTS);
+  const [transactions, setTransactions] = useState<FinancialTx[]>(INITIAL_TX);
+  const [isLoadingFinance, setIsLoadingFinance] = useState<boolean>(false);
 
-  const updateAccounts = (newAcc: CashAccountState[]) => {
-    setAccounts(newAcc);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("kpspams_cash_accounts", JSON.stringify(newAcc));
+  const fetchRealFinanceData = async () => {
+    setIsLoadingFinance(true);
+    try {
+      // 1. Ambil Akun Kas Resmi dari Server Backend
+      const accRes = await apiClient<{ total_balance: number; accounts: any[] }>("/finance/cash-accounts");
+      if (accRes?.status === "success" && accRes.data?.accounts) {
+        const mappedAcc: CashAccountState[] = accRes.data.accounts.map((a: any) => ({
+          id: a.id,
+          kpspamsId: a.kpspams_id,
+          code: a.account_code,
+          name: a.account_name,
+          bankName: a.bank_name || (a.account_number ? "Bank Operasional" : "Kasir Tunai"),
+          accountNumber: a.account_number || "-",
+          openingBalance: parseFloat(a.opening_balance) || 0,
+          currentBalance: parseFloat(a.current_balance) || 0,
+        }));
+        setAccounts(mappedAcc);
+      }
+
+      // 2. Ambil Riwayat Transaksi Mutasi Kas Resmi dari Server Backend
+      const txRes = await apiClient<any>("/finance/transactions?per_page=50");
+      if (txRes?.status === "success" && Array.isArray(txRes.data)) {
+        const mappedTx: FinancialTx[] = txRes.data.map((t: any) => ({
+          id: t.id,
+          kpspamsId: t.kpspams_id,
+          kpspamsName: t.cash_account?.kpspams?.name || (t.kpspams_id === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${t.kpspams_id}`),
+          txNumber: t.transaction_number,
+          date: t.transaction_date,
+          type: t.transaction_type,
+          category: t.category,
+          amount: parseFloat(t.amount) || 0,
+          description: t.description,
+          accountName: t.cash_account?.account_name || "Kas Tunai",
+        }));
+        setTransactions(mappedTx);
+      }
+    } catch (e) {
+      console.warn("Sinkronisasi finance server offline, menggunakan baseline verifikasi:", e);
+    } finally {
+      setIsLoadingFinance(false);
     }
   };
 
-  // Mutasi Transaksi Keuangan Sinkronisasi Persistent LocalStorage
-  const [transactions, setTransactions] = useState<FinancialTx[]>(() => {
+  useEffect(() => {
+    // Bersihkan seluruh cache fiktif lama di browser
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_cash_transactions");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // fallback
-        }
-      }
+      localStorage.removeItem("kpspams_cash_accounts");
+      localStorage.removeItem("kpspams_cash_transactions");
     }
-    return INITIAL_TX;
-  });
-
-  const updateTransactions = (newTx: FinancialTx[]) => {
-    setTransactions(newTx);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("kpspams_cash_transactions", JSON.stringify(newTx));
-    }
-  };
+    fetchRealFinanceData();
+  }, []);
 
   // State Modal Saldo Awal
   const [showOpeningModal, setShowOpeningModal] = useState<boolean>(false);
@@ -305,30 +331,31 @@ function KeuanganContent() {
     setShowOpeningModal(true);
   };
 
-  const handleSaveOpeningBalance = (e: React.FormEvent) => {
+  const handleSaveOpeningBalance = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAcc) return;
 
     const val = parseFloat(newOpeningBalance) || 0;
-    const diff = val - selectedAcc.openingBalance;
+    try {
+      await apiClient(`/finance/cash-accounts/${selectedAcc.id}/opening-balance`, {
+        method: "POST",
+        body: JSON.stringify({
+          opening_balance: val,
+          opening_balance_date: new Date().toISOString().split("T")[0],
+          notes: openingNotes || "Penyesuaian saldo awal resmi berita acara",
+        }),
+      });
 
-    const updated = accounts.map((a) => {
-      if (a.id === selectedAcc.id) {
-        return {
-          ...a,
-          openingBalance: val,
-          currentBalance: Math.max(0, a.currentBalance + diff),
-        };
-      }
-      return a;
-    });
-
-    updateAccounts(updated);
-    setShowOpeningModal(false);
-    setSuccessMsg(
-      `Saldo awal untuk ${selectedAcc.name} berhasil diperbarui menjadi Rp ${val.toLocaleString("id-ID")}.`
-    );
-    setTimeout(() => setSuccessMsg(null), 5000);
+      setSuccessMsg(
+        `Saldo awal untuk ${selectedAcc.name} berhasil diperbarui di server menjadi Rp ${val.toLocaleString("id-ID")}.`
+      );
+      await fetchRealFinanceData();
+    } catch (err: any) {
+      alert(err?.message || "Gagal memperbarui saldo awal di server.");
+    } finally {
+      setShowOpeningModal(false);
+      setTimeout(() => setSuccessMsg(null), 5000);
+    }
   };
 
   // Handler Buka Modal Pengeluaran Kas
@@ -349,7 +376,7 @@ function KeuanganContent() {
   };
 
   // Handler Simpan Pengeluaran Kas
-  const handleSaveExpense = (e: React.FormEvent) => {
+  const handleSaveExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     const amountNum = parseFloat(expenseAmount) || 0;
 
@@ -371,36 +398,28 @@ function KeuanganContent() {
       return;
     }
 
-    const kInfo = DEMO_KPSPAMS_LIST.find((k) => k.id === expenseKpspamsId);
-    const newTx: FinancialTx = {
-      id: Date.now(),
-      kpspamsId: expenseKpspamsId,
-      kpspamsName: kInfo?.name || "KPSPAMS Kuajang",
-      txNumber: expenseProofNo.trim() || `EXP-${Date.now().toString().slice(-6)}`,
-      date: expenseDate,
-      type: "EXPENSE",
-      category: expenseCategory,
-      amount: amountNum,
-      description: expenseDesc.trim(),
-      accountName: targetAcc.name,
-    };
+    try {
+      await apiClient("/finance/transactions", {
+        method: "POST",
+        body: JSON.stringify({
+          cash_account_id: expenseAccountId,
+          transaction_type: "EXPENSE",
+          category: expenseCategory,
+          amount: amountNum,
+          transaction_date: expenseDate,
+          description: expenseDesc.trim(),
+        }),
+      });
 
-    // Kurangi saldo akun
-    const updatedAccounts = accounts.map((a) =>
-      a.id === targetAcc.id ? { ...a, currentBalance: a.currentBalance - amountNum } : a
-    );
-
-    // Tambah mutasi
-    const updatedTxList = [newTx, ...transactions];
-
-    updateAccounts(updatedAccounts);
-    updateTransactions(updatedTxList);
-    setShowExpenseModal(false);
-
-    setSuccessMsg(
-      `Pengeluaran sebesar Rp ${amountNum.toLocaleString("id-ID")} (${expenseDesc}) berhasil dicatat di buku kas.`
-    );
-    setTimeout(() => setSuccessMsg(null), 6000);
+      setShowExpenseModal(false);
+      setSuccessMsg(
+        `Pengeluaran sebesar Rp ${amountNum.toLocaleString("id-ID")} (${expenseDesc}) berhasil dicatat dan diverifikasi di server.`
+      );
+      setTimeout(() => setSuccessMsg(null), 6000);
+      await fetchRealFinanceData();
+    } catch (err: any) {
+      setExpenseError(err?.message || "Gagal mencatat transaksi pengeluaran di server.");
+    }
   };
 
   // Handler Salin Laporan Format WhatsApp

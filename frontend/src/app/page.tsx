@@ -112,14 +112,14 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Unit 1 */}
-            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/70 transition space-y-3">
+            <div className="p-5 rounded-2xl border border-emerald-900/50 bg-emerald-950/20 hover:bg-emerald-950/30 transition space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-maroon-900/90 text-brand-gold-300 border border-brand-maroon-700">
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-900/90 text-emerald-300 border border-emerald-700">
                   Unit 1 (LMB)
                 </span>
                 <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Operasional</span>
+                  <span>Operasional Aktif</span>
                 </span>
               </div>
               <h4 className="text-base font-extrabold text-white">KPSPAMS Lemo Baru</h4>
@@ -127,50 +127,48 @@ export default function HomePage() {
                 Wilayah Layanan: <strong className="text-slate-200">Dusun Lemo Baru</strong>
               </p>
               <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
-                <span>Pelanggan Aktif:</span>
-                <span className="font-bold text-white">185 SR</span>
+                <span>Pelanggan Terdaftar:</span>
+                <span className="font-bold text-emerald-400">1 SR (Aktif Server)</span>
               </div>
             </div>
 
             {/* Unit 2 */}
-            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/70 transition space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/30 hover:bg-slate-800/50 transition space-y-3 opacity-75">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-maroon-900/90 text-brand-gold-300 border border-brand-maroon-700">
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                   Unit 2 (LMT)
                 </span>
-                <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Operasional</span>
+                <span className="text-xs text-slate-400 font-bold flex items-center space-x-1">
+                  <span>Tahap 2</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-white">KPSPAMS Lemo Tua</h4>
+              <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Lemo Tua</h4>
               <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-200">Dusun Lemo Tua</strong>
+                Wilayah Layanan: <strong className="text-slate-400">Dusun Lemo Tua</strong>
               </p>
-              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
-                <span>Pelanggan Aktif:</span>
-                <span className="font-bold text-white">142 SR</span>
+              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
+                <span>Pelanggan Terdaftar:</span>
+                <span className="font-bold text-slate-400">0 SR (Belum Aktif)</span>
               </div>
             </div>
 
             {/* Unit 3 */}
-            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800/70 transition space-y-3">
+            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/30 hover:bg-slate-800/50 transition space-y-3 opacity-75">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-maroon-900/90 text-brand-gold-300 border border-brand-maroon-700">
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                   Unit 3 (SRP)
                 </span>
-                <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Operasional</span>
+                <span className="text-xs text-slate-400 font-bold flex items-center space-x-1">
+                  <span>Tahap 2</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-white">KPSPAMS Sarampu 1</h4>
+              <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Sarampu 1</h4>
               <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-200">Dusun Sarampu 1 & Dusun Pakkandoang</strong>
+                Wilayah Layanan: <strong className="text-slate-400">Dusun Sarampu 1 & Pakkandoang</strong>
               </p>
-              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
-                <span>Pelanggan Aktif:</span>
-                <span className="font-bold text-white">210 SR</span>
+              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
+                <span>Pelanggan Terdaftar:</span>
+                <span className="font-bold text-slate-400">0 SR (Belum Aktif)</span>
               </div>
             </div>
           </div>

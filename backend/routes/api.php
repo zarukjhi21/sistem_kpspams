@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('portal')->middleware('throttle:60,1')->group(function () {
         Route::get('check-sr', [CitizenPortalController::class, 'checkSr']);
         Route::post('complaint', [CitizenPortalController::class, 'submitComplaint']);
+        Route::get('transparency', [CitizenPortalController::class, 'getTransparencyStats']);
     });
 
     // Health check endpoint

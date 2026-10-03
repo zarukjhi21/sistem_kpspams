@@ -31,204 +31,213 @@ import {
   PieChart as PieChartIcon,
 } from "lucide-react";
 
-// Data penyaluran air bersih 7 hari terakhir (Liter/Hari)
+// Data penyaluran air bersih 7 hari terakhir (Liter/Hari) - Dusun Lemo Baru (Mata Air Pegunungan)
 const DAILY_DISTRIBUTION_DATA = [
-  { day: "Senin", volume: 34200, formatted: "34.200 L" },
-  { day: "Selasa", volume: 32800, formatted: "32.800 L" },
-  { day: "Rabu", volume: 36500, formatted: "36.500 L" },
-  { day: "Kamis", volume: 33100, formatted: "33.100 L" },
-  { day: "Jumat", volume: 37900, formatted: "37.900 L" },
-  { day: "Sabtu", volume: 39400, formatted: "39.400 L" },
-  { day: "Minggu", volume: 38600, formatted: "38.600 L" },
+  { day: "Senin", volume: 14200, formatted: "14.200 L" },
+  { day: "Selasa", volume: 13800, formatted: "13.800 L" },
+  { day: "Rabu", volume: 15100, formatted: "15.100 L" },
+  { day: "Kamis", volume: 14300, formatted: "14.300 L" },
+  { day: "Jumat", volume: 14900, formatted: "14.900 L" },
+  { day: "Sabtu", volume: 15600, formatted: "15.600 L" },
+  { day: "Minggu", volume: 15200, formatted: "15.200 L" },
 ];
 
-// Data transparansi alokasi dana iuran kas berdasarkan sistem mata air gravitasi vs sumur bor
 export type SystemViewKey = "ALL" | "LMB" | "LMT" | "SR1";
 
-const FUND_ALLOCATION_BY_SYSTEM = {
-  ALL: {
-    label: "Semua Unit Desa",
-    tabIcon: Globe2,
-    activeClass: "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
-    title: "Konsolidasi 3 Unit Desa Kuajang",
-    subtitle: "Konsolidasi Terpadu Layanan Air Bersih 3 KPSPAMS Desa Kuajang",
-    totalMonthly: 14000000,
-    note: "Laporan konsolidasi seluruh desa: menggabungkan efisiensi sistem gravitasi murni Lemo Baru (0% listrik) dengan pembiayaan listrik pompa bor Lemo Tua dan Sarampu 1.",
-    allocations: [
-      {
-        name: "Listrik PLN & BBM Pompa Bor",
-        percent: 45,
-        value: 6300000,
-        color: "#f59e0b",
-        icon: Zap,
-        desc: "Operasional pompa submersible sumur bor Lemo Tua & Sarampu 1",
-      },
-      {
-        name: "Pemeliharaan Pipa & Kaporit",
-        percent: 25,
-        value: 3500000,
-        color: "#06b6d4",
-        icon: Wrench,
-        desc: "Perbaikan pipa bocor, klorinasi, & filter pasir",
-      },
-      {
-        name: "Honor Petugas Lapangan",
-        percent: 15,
-        value: 2100000,
-        color: "#10b981",
-        icon: Users2,
-        desc: "Petugas transmisi hulu, catat meter dusun & kasir",
-      },
-      {
-        name: "Kas Cadangan Dana Darurat",
-        percent: 15,
-        value: 2100000,
-        color: "#a855f7",
-        icon: PiggyBank,
-        desc: "Dana simpanan desa untuk pemeliharaan & kas darurat",
-      },
-    ],
-  },
-  LMB: {
-    label: "Lemo Baru (Gravitasi)",
-    tabIcon: Mountain,
-    activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
-    title: "KPSPAMS Lemo Baru",
-    subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi",
-    totalMonthly: 4500000,
-    note: "Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi alamiah dari sumber mata air pegunungan (0% listrik PLN). Seluruh dana iuran dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
-    allocations: [
-      {
-        name: "Pemeliharaan Pipa Transmisi Gravitasi",
-        percent: 45,
-        value: 2025000,
-        color: "#06b6d4",
-        icon: Wrench,
-        desc: "Perawatan broncaptering mata air & pipa transmisi pegunungan",
-      },
-      {
-        name: "Kaporitisasi & Filter Bak",
-        percent: 20,
-        value: 900000,
-        color: "#3b82f6",
-        icon: Droplets,
-        desc: "Klorinasi rutin tandon penenang & filter pasir",
-      },
-      {
-        name: "Honor Petugas Transmisi & Catat",
-        percent: 20,
-        value: 900000,
-        color: "#10b981",
-        icon: Users2,
-        desc: "Inspeksi jalur transmisi hulu & pencatatan meteran warga",
-      },
-      {
-        name: "Kas Cadangan & Kas Warga",
-        percent: 15,
-        value: 675000,
-        color: "#a855f7",
-        icon: PiggyBank,
-        desc: "Tabungan kas warga untuk peremajaan pipa pecah",
-      },
-    ],
-  },
-  LMT: {
-    label: "Lemo Tua (Sumur Bor)",
-    tabIcon: Zap,
-    activeClass: "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
-    title: "KPSPAMS Lemo Tua",
-    subtitle: "Sumur Bor Mandiri Dusun Lemo Tua • Pompa Submersible PLN",
-    totalMonthly: 3800000,
-    note: "KPSPAMS Lemo Tua mengoperasikan sumur bor dalam mandiri dengan pompa submersible listrik PLN berdaya tinggi untuk melayani warga di Dusun Lemo Tua.",
-    allocations: [
-      {
-        name: "Listrik PLN Pompa Bor",
-        percent: 48,
-        value: 1824000,
-        color: "#f59e0b",
-        icon: Zap,
-        desc: "Token listrik PLN pompa submersible 3-phase Dusun Lemo Tua",
-      },
-      {
-        name: "Perawatan Pompa Bor & Pipa",
-        percent: 22,
-        value: 836000,
-        color: "#06b6d4",
-        icon: Wrench,
-        desc: "Servis motor pompa, kaporit, & perbaikan pipa distribusi",
-      },
-      {
-        name: "Honor Petugas Operator",
-        percent: 15,
-        value: 570000,
-        color: "#10b981",
-        icon: Users2,
-        desc: "Operator pompa bor & pencatatan meteran warga Lemo Tua",
-      },
-      {
-        name: "Kas Cadangan Mesin & Tandon",
-        percent: 15,
-        value: 570000,
-        color: "#a855f7",
-        icon: PiggyBank,
-        desc: "Dana darurat cadangan perbaikan dinamo submersible",
-      },
-    ],
-  },
-  SR1: {
-    label: "Sarampu 1 & Pakkandoang",
-    tabIcon: Waves,
-    activeClass: "bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-md shadow-cyan-500/25 font-black scale-[1.02]",
-    title: "KPSPAMS Sarampu 1",
-    subtitle: "Sumur Bor Kapasitas Besar • Melayani Dusun Sarampu 1 & Dusun Pakkandoang",
-    totalMonthly: 5700000,
-    note: "KPSPAMS Sarampu 1 mengoperasikan sumur bor kapasitas besar dengan pompa submersible listrik PLN yang mendistribusikan air bersih ke dua wilayah: Dusun Sarampu 1 dan Dusun Pakkandoang.",
-    allocations: [
-      {
-        name: "Listrik PLN Pompa Bor (2 Dusun)",
-        percent: 49,
-        value: 2793000,
-        color: "#f59e0b",
-        icon: Zap,
-        desc: "Token listrik PLN pompa bor kapasitas besar 24 jam",
-      },
-      {
-        name: "Pemeliharaan Jaringan Pipa 2 Dusun",
-        percent: 21,
-        value: 1197000,
-        color: "#06b6d4",
-        icon: Wrench,
-        desc: "Perawatan pipa distribusi jarak jauh ke Sarampu 1 & Pakkandoang",
-      },
-      {
-        name: "Honor Petugas Lapangan & Operator",
-        percent: 15,
-        value: 855000,
-        color: "#10b981",
-        icon: Users2,
-        desc: "Operator pompa sumur bor & petugas catat meter 2 dusun",
-      },
-      {
-        name: "Kas Cadangan Penggantian Pompa",
-        percent: 15,
-        value: 855000,
-        color: "#a855f7",
-        icon: PiggyBank,
-        desc: "Tabungan kas darurat penggantian pompa submersible",
-      },
-    ],
-  },
-};
+export interface AllocationItem {
+  name: string;
+  percent: number;
+  value: number;
+  color: string;
+  icon: any;
+  desc: string;
+}
+
+export interface SystemData {
+  label: string;
+  tabIcon: any;
+  activeClass: string;
+  title: string;
+  subtitle: string;
+  totalMonthly: number;
+  note: string;
+  allocations: AllocationItem[];
+}
+
+function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number): Record<SystemViewKey, SystemData> {
+  const totalVillageCash = lmbCash + lmtCash + sr1Cash;
+
+  const lmbAlloc1 = Math.round(lmbCash * 0.50);
+  const lmbAlloc2 = Math.round(lmbCash * 0.25);
+  const lmbAlloc3 = Math.max(0, lmbCash - lmbAlloc1 - lmbAlloc2);
+
+  const allAlloc1 = Math.round(totalVillageCash * 0.50);
+  const allAlloc2 = Math.round(totalVillageCash * 0.25);
+  const allAlloc3 = Math.max(0, totalVillageCash - allAlloc1 - allAlloc2);
+
+  return {
+    LMB: {
+      label: "Lemo Baru (Gravitasi)",
+      tabIcon: Mountain,
+      activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
+      title: "KPSPAMS Lemo Baru (Aktif)",
+      subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi",
+      totalMonthly: lmbCash,
+      note: `Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Seluruh dana iuran warga terhimpun (Rp ${lmbCash.toLocaleString("id-ID")}) dialokasikan murni untuk perawatan pipa transmisi hulu, filter/kaporit, dan kas simpanan warga.`,
+      allocations: [
+        {
+          name: "Pemeliharaan Pipa Transmisi Gravitasi",
+          percent: 50,
+          value: lmbAlloc1,
+          color: "#06b6d4",
+          icon: Wrench,
+          desc: "Perawatan broncaptering mata air & pipa transmisi pegunungan",
+        },
+        {
+          name: "Kaporitisasi & Filter Bak",
+          percent: 25,
+          value: lmbAlloc2,
+          color: "#3b82f6",
+          icon: Droplets,
+          desc: "Klorinasi rutin bak penenang & filter pasir",
+        },
+        {
+          name: "Kas Cadangan Warga",
+          percent: 25,
+          value: lmbAlloc3,
+          color: "#a855f7",
+          icon: PiggyBank,
+          desc: "Tabungan kas warga untuk peremajaan pipa pecah",
+        },
+      ],
+    },
+    ALL: {
+      label: "Semua Unit Desa",
+      tabIcon: Globe2,
+      activeClass: "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
+      title: "Konsolidasi Unit Desa Kuajang",
+      subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang",
+      totalMonthly: totalVillageCash,
+      note: `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS Lemo Baru dengan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")}. Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`,
+      allocations: [
+        {
+          name: "Pemeliharaan Pipa Transmisi",
+          percent: 50,
+          value: allAlloc1,
+          color: "#06b6d4",
+          icon: Wrench,
+          desc: "Perbaikan pipa bocor, klorinasi, & filter pasir",
+        },
+        {
+          name: "Kaporitisasi & Filter Air",
+          percent: 25,
+          value: allAlloc2,
+          color: "#3b82f6",
+          icon: Droplets,
+          desc: "Klorinasi rutin bak penenang air bersih",
+        },
+        {
+          name: "Kas Cadangan & Kas Warga",
+          percent: 25,
+          value: allAlloc3,
+          color: "#a855f7",
+          icon: PiggyBank,
+          desc: "Tabungan kas darurat untuk perbaikan jaringan desa",
+        },
+      ],
+    },
+    LMT: {
+      label: "Lemo Tua (Tahap 2)",
+      tabIcon: Zap,
+      activeClass: "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
+      title: "KPSPAMS Lemo Tua",
+      subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
+      totalMonthly: lmtCash,
+      note: "Status Dusun Lemo Tua: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan tandon. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
+      allocations: [
+        {
+          name: "Kas Operasional Berjalan",
+          percent: 0,
+          value: 0,
+          color: "#64748b",
+          icon: Wrench,
+          desc: "Unit belum beroperasi komersial (Tahap Persiapan)",
+        },
+        {
+          name: "Kas Cadangan Unit",
+          percent: 0,
+          value: 0,
+          color: "#94a3b8",
+          icon: PiggyBank,
+          desc: "Saldo kas saat ini Rp 0",
+        },
+      ],
+    },
+    SR1: {
+      label: "Sarampu 1 (Tahap 2)",
+      tabIcon: Waves,
+      activeClass: "bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-md shadow-cyan-500/25 font-black scale-[1.02]",
+      title: "KPSPAMS Sarampu 1",
+      subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
+      totalMonthly: sr1Cash,
+      note: "Status Dusun Sarampu 1: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan pompa. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
+      allocations: [
+        {
+          name: "Kas Operasional Berjalan",
+          percent: 0,
+          value: 0,
+          color: "#64748b",
+          icon: Wrench,
+          desc: "Unit belum beroperasi komersial (Tahap Persiapan)",
+        },
+        {
+          name: "Kas Cadangan Unit",
+          percent: 0,
+          value: 0,
+          color: "#94a3b8",
+          icon: PiggyBank,
+          desc: "Saldo kas saat ini Rp 0",
+        },
+      ],
+    },
+  };
+}
+
+function formatRupiahDisplay(val: number): string {
+  if (val >= 1000000) {
+    return `Rp ${(val / 1000000).toFixed(1)} jt`;
+  }
+  return `Rp ${val.toLocaleString("id-ID")}`;
+}
 
 export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
-  const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("ALL");
+  const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
+  const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
+    buildSystemAllocation(51000, 0, 0)
+  );
 
   useEffect(() => {
     setMounted(true);
+
+    // Ambil data kas transparansi rill dari server database
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+    fetch(`${apiBase}/portal/transparency`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data?.units) {
+          const lmb = json.data.units.LMB?.cash ?? 51000;
+          const lmt = json.data.units.LMT?.cash ?? 0;
+          const sr1 = json.data.units.SR1?.cash ?? 0;
+          setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1));
+        }
+      })
+      .catch((err) => {
+        console.warn("PublicTransparencyCharts: fallback to baseline LMB cash", err);
+      });
   }, []);
 
-  const currentSystemData = FUND_ALLOCATION_BY_SYSTEM[selectedSystem];
+  const currentSystemData = systemDataMap[selectedSystem];
 
   if (!mounted) {
     return (
@@ -282,12 +291,12 @@ export function PublicTransparencyCharts() {
                     Debit Air Bersih Tersalurkan (7 Hari Terakhir)
                   </h4>
                   <p className="text-xs text-slate-400">
-                    Volume distribusi air bersih ke 4 dusun (Lemo Baru, Lemo Tua, Sarampu 1, Pakkandoang)
+                    Volume distribusi air bersih mata air pegunungan Dusun Lemo Baru
                   </p>
                 </div>
               </div>
               <span className="hidden sm:inline-block text-xs font-mono font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-800/60 px-2.5 py-1 rounded-xl">
-                Estimasi ~36.000 L / Hari
+                Estimasi ~14.500 L / Hari
               </span>
             </div>
 
@@ -334,7 +343,7 @@ export function PublicTransparencyCharts() {
                               </strong>
                             </div>
                             <p className="text-[10px] text-slate-400">
-                              Kebutuhan air bersih warga Desa Kuajang terpenuhi
+                              Kebutuhan air bersih warga Dusun Lemo Baru terpenuhi
                             </p>
                           </div>
                         );
@@ -359,15 +368,15 @@ export function PublicTransparencyCharts() {
           <div className="pt-4 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs mt-2">
             <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[10px] text-slate-400 block font-medium">Akumulasi Minggu Ini</span>
-              <strong className="text-white font-black text-sm">252.500 L</strong>
+              <strong className="text-white font-black text-sm">103.100 L</strong>
             </div>
             <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[10px] text-slate-400 block font-medium">Puncak Distribusi</span>
-              <strong className="text-cyan-300 font-black text-sm">Sabtu (39.400 L)</strong>
+              <strong className="text-cyan-300 font-black text-sm">Sabtu (15.600 L)</strong>
             </div>
             <div className="p-2 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[10px] text-slate-400 block font-medium">Kualitas Air PH</span>
-              <strong className="text-emerald-400 font-black text-sm">7.2 (Standar Baku)</strong>
+              <strong className="text-emerald-400 font-black text-sm">7.4 (Standar Baku)</strong>
             </div>
           </div>
         </div>
@@ -394,11 +403,11 @@ export function PublicTransparencyCharts() {
               </div>
             </div>
 
-            {/* Filter Pilihan Sistem: Semua vs Lemo Baru vs Lemo Tua vs Sarampu 1 */}
+            {/* Filter Pilihan Sistem: Lemo Baru vs Semua vs Lemo Tua vs Sarampu 1 */}
             <div className="flex items-center space-x-1.5 p-1.5 rounded-2xl bg-slate-950/90 border border-slate-800 mb-3.5 overflow-x-auto scrollbar-none no-scrollbar">
-              {(["ALL", "LMB", "LMT", "SR1"] as SystemViewKey[]).map((key) => {
+              {(["LMB", "ALL", "LMT", "SR1"] as SystemViewKey[]).map((key) => {
                 const isAct = selectedSystem === key;
-                const sys = FUND_ALLOCATION_BY_SYSTEM[key];
+                const sys = systemDataMap[key];
                 const TabIcon = sys.tabIcon;
                 return (
                   <button
@@ -427,15 +436,20 @@ export function PublicTransparencyCharts() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={currentSystemData.allocations}
+                    data={currentSystemData.totalMonthly === 0
+                      ? [{ name: "Tahap 2 Persiapan (0 SR)", value: 100, color: "#334155", percent: 0, desc: "Belum ada transaksi kas" }]
+                      : currentSystemData.allocations}
                     cx="50%"
                     cy="50%"
                     innerRadius={48}
                     outerRadius={68}
-                    paddingAngle={5}
+                    paddingAngle={currentSystemData.totalMonthly === 0 ? 0 : 5}
                     dataKey="value"
                   >
-                    {currentSystemData.allocations.map((entry, index) => (
+                    {(currentSystemData.totalMonthly === 0
+                      ? [{ color: "#334155" }]
+                      : currentSystemData.allocations
+                    ).map((entry, index) => (
                       <Cell key={`cell-fund-${index}`} fill={entry.color} stroke="none" />
                     ))}
                   </Pie>
@@ -453,7 +467,7 @@ export function PublicTransparencyCharts() {
                               <span>{d.name}</span>
                             </div>
                             <div className="mt-1 text-slate-300">
-                              <strong className="text-white">Rp {d.value.toLocaleString("id-ID")}</strong> ({d.percent}%)
+                              <strong className="text-white">Rp {d.value.toLocaleString("id-ID")}</strong> ({d.percent ?? 0}%)
                             </div>
                             <p className="text-[10px] text-slate-400 mt-0.5">{d.desc}</p>
                           </div>
@@ -468,10 +482,10 @@ export function PublicTransparencyCharts() {
               {/* Center Donut Label */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-base font-black text-white font-tabular tracking-tight">
-                  Rp {(currentSystemData.totalMonthly / 1000000).toFixed(1)} jt
+                  {formatRupiahDisplay(currentSystemData.totalMonthly)}
                 </span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                  Total / Bulan
+                  Total Kas Rill
                 </span>
               </div>
             </div>
@@ -520,7 +534,7 @@ export function PublicTransparencyCharts() {
                       {item.percent}%
                     </span>
                     <div className="text-[10px] text-slate-300 font-bold font-mono mt-0.5">
-                      Rp {(item.value / 1000000).toFixed(1)} jt
+                      {formatRupiahDisplay(item.value)}
                     </div>
                   </div>
                 </div>
