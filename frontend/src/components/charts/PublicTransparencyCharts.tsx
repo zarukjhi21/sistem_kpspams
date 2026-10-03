@@ -51,7 +51,7 @@ const FUND_ALLOCATION_BY_SYSTEM = {
     tabIcon: Globe2,
     activeClass: "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
     title: "Konsolidasi 3 Unit Desa Kuajang",
-    subtitle: "Konsolidasi Unit Desa Kuajang (Pilot 185 SR Lemo Baru & Persiapan Tahap 2)",
+    subtitle: "Konsolidasi Terpadu Layanan Air Bersih 3 KPSPAMS Desa Kuajang",
     totalMonthly: 14000000,
     note: "Laporan konsolidasi seluruh desa: menggabungkan efisiensi sistem gravitasi murni Lemo Baru (0% listrik) dengan pembiayaan listrik pompa bor Lemo Tua dan Sarampu 1.",
     allocations: [
@@ -94,7 +94,7 @@ const FUND_ALLOCATION_BY_SYSTEM = {
     tabIcon: Mountain,
     activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
     title: "KPSPAMS Lemo Baru",
-    subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • 185 SR",
+    subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi",
     totalMonthly: 4500000,
     note: "Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi alamiah dari sumber mata air pegunungan (0% listrik PLN). Seluruh dana iuran dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
     allocations: [
@@ -137,9 +137,9 @@ const FUND_ALLOCATION_BY_SYSTEM = {
     tabIcon: Zap,
     activeClass: "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
     title: "KPSPAMS Lemo Tua",
-    subtitle: "Sumur Bor Mandiri Dusun Lemo Tua • 142 SR",
+    subtitle: "Sumur Bor Mandiri Dusun Lemo Tua • Pompa Submersible PLN",
     totalMonthly: 3800000,
-    note: "KPSPAMS Lemo Tua mengoperasikan sumur bor dalam mandiri dengan pompa submersible listrik PLN berdaya tinggi untuk melayani 142 Sambungan Rumah di Dusun Lemo Tua.",
+    note: "KPSPAMS Lemo Tua mengoperasikan sumur bor dalam mandiri dengan pompa submersible listrik PLN berdaya tinggi untuk melayani warga di Dusun Lemo Tua.",
     allocations: [
       {
         name: "Listrik PLN Pompa Bor",
@@ -180,7 +180,7 @@ const FUND_ALLOCATION_BY_SYSTEM = {
     tabIcon: Waves,
     activeClass: "bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-md shadow-cyan-500/25 font-black scale-[1.02]",
     title: "KPSPAMS Sarampu 1",
-    subtitle: "Sumur Bor Kapasitas Besar • Melayani 2 Dusun • 278 SR",
+    subtitle: "Sumur Bor Kapasitas Besar • Melayani Dusun Sarampu 1 & Dusun Pakkandoang",
     totalMonthly: 5700000,
     note: "KPSPAMS Sarampu 1 mengoperasikan sumur bor kapasitas besar dengan pompa submersible listrik PLN yang mendistribusikan air bersih ke dua wilayah: Dusun Sarampu 1 dan Dusun Pakkandoang.",
     allocations: [

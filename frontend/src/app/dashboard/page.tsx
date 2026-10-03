@@ -75,16 +75,12 @@ function DashboardContent() {
       ? DEMO_KPSPAMS_LIST
       : DEMO_KPSPAMS_LIST.filter((k) => k.id === activeKpspamsId);
 
-  const totalTargetCustomers = currentUnits.reduce((acc, curr) => acc + curr.activeCustomers, 0);
-  const totalCustomers = totalTargetCustomers;
   const totalUsage = currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
   const totalBilled = currentUnits.reduce((acc, curr) => acc + curr.totalBilled, 0);
   const totalCollected = currentUnits.reduce((acc, curr) => acc + curr.totalCollected, 0);
   const totalArrears = currentUnits.reduce((acc, curr) => acc + curr.outstandingArrears, 0);
   const totalCash = currentUnits.reduce((acc, curr) => acc + curr.cashBalance, 0);
   const collectionRate = totalBilled > 0 ? ((totalCollected / totalBilled) * 100).toFixed(1) : "0";
-  const inputProgressRate =
-    totalTargetCustomers > 0 ? ((realCustomerCount / totalTargetCustomers) * 100).toFixed(1) : "0";
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -136,7 +132,7 @@ function DashboardContent() {
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Pelanggan Terdaftar (Pilot)
+              Pelanggan Aktif
             </span>
             <div className="p-2 rounded-xl bg-blue-50 text-blue-700">
               <Users className="w-4 h-4" />
@@ -145,22 +141,17 @@ function DashboardContent() {
           <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
             <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
               {realCustomerCount}
-              <span className="text-xs sm:text-sm font-semibold text-slate-400 ml-1">
-                / {activeKpspamsId === null || activeKpspamsId === 1 ? 185 : totalTargetCustomers} SR
+              <span className="text-xs sm:text-sm font-semibold text-slate-400 ml-1.5">
+                Sambungan Rumah (SR)
               </span>
             </span>
             <span className="text-[11px] text-emerald-600 font-bold hidden sm:flex items-center">
-              <TrendingUp className="w-3 h-3 mr-0.5" />{" "}
-              {(
-                (realCustomerCount /
-                  (activeKpspamsId === null || activeKpspamsId === 1 ? 185 : totalTargetCustomers)) *
-                100
-              ).toFixed(1)}
-              % Terdata
+              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />
+              Aktif Terdata
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {realCustomerCount} warga terinput di Dusun Lemo Baru (Pilot Project)
+            {realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem
           </p>
         </Card>
 

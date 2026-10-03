@@ -43,7 +43,6 @@ export function DashboardAnalyticsCharts({
   const [mounted, setMounted] = useState(false);
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
 
-  const [donutMode, setDonutMode] = useState<"registered" | "target">("registered");
 
   useEffect(() => {
     setMounted(true);
@@ -78,120 +77,59 @@ export function DashboardAnalyticsCharts({
     );
   }
 
-  // Apakah unit yang dipilih adalah unit persiapan Tahap 2?
-  const isPhase2Unit = activeKpspamsId === 2 || activeKpspamsId === 3;
-
-  // Hitung data kepatuhan pelanggan real dari data lokal
-  const isLemoBaruScope = activeKpspamsId === null || activeKpspamsId === 1;
-
-  // Total SR target berdasarkan konteks
-  const totalTargetSR = isLemoBaruScope ? 185 : activeKpspamsId === 2 ? 142 : 278;
-
   // Pelanggan terdaftar di unit aktif (yang benar-benar sudah diinput di sistem)
   const registeredInUnit = customers.filter((c) =>
-    activeKpspamsId === null ? c.kpspamsId === 1 : c.kpspamsId === activeKpspamsId
+    activeKpspamsId === null ? true : c.kpspamsId === activeKpspamsId
   );
 
   const realCustomerCount = registeredInUnit.length;
   const realPaidCount = registeredInUnit.filter((c) => c.billingStatus === "PAID").length;
   const realUnpaidCount = registeredInUnit.filter((c) => c.billingStatus === "UNPAID").length;
 
-  // Angka total dan irisan donat berdasarkan mode tampilan
-  let centerNumber = totalTargetSR;
-  let centerLabel = isLemoBaruScope ? "TOTAL SR PILOT" : "SR TAHAP 2";
+  // Angka total dan irisan donat berdasarkan status pembayaran riil
+  const centerNumber = realCustomerCount;
+  const centerLabel = "TOTAL SR";
   let complianceData: { name: string; value: number; percent: number; color: string }[] = [];
 
-  if (isPhase2Unit) {
-    centerNumber = totalTargetSR;
-    centerLabel = "SR TAHAP 2";
+  if (realCustomerCount === 0) {
     complianceData = [
       {
-        name: "Persiapan Tahap 2 (Belum Beroperasi)",
-        value: totalTargetSR,
+        name: "Belum Ada Warga Terdata",
+        value: 1,
         percent: 100,
         color: "#94a3b8",
       },
     ];
-  } else if (donutMode === "registered") {
-    // Mode Data Riil yang Sudah Terinput oleh Admin
-    centerNumber = realCustomerCount;
-    centerLabel = "SR TERDAFTAR";
-    if (realCustomerCount === 0) {
-      complianceData = [
-        {
-          name: "Belum Ada Warga Terdata",
-          value: 1,
-          percent: 100,
-          color: "#94a3b8",
-        },
-      ];
-    } else if (realPaidCount === 0) {
-      complianceData = [
-        {
-          name: "Siap Ditagih (Jadwal Mulai 5 Okt)",
-          value: realCustomerCount,
-          percent: 100,
-          color: "#0284c7",
-        },
-        {
-          name: "Lunas Terbayar (PAID)",
-          value: 0,
-          percent: 0,
-          color: "#10b981",
-        },
-      ];
-    } else {
-      complianceData = [
-        {
-          name: "Siap Ditagih / Belum Bayar",
-          value: realUnpaidCount,
-          percent: Number(((realUnpaidCount / realCustomerCount) * 100).toFixed(1)),
-          color: "#0284c7",
-        },
-        {
-          name: "Lunas Terbayar (PAID)",
-          value: realPaidCount,
-          percent: Number(((realPaidCount / realCustomerCount) * 100).toFixed(1)),
-          color: "#10b981",
-        },
-      ];
-    }
+  } else if (realPaidCount === 0) {
+    complianceData = [
+      {
+        name: "Belum Bayar / Siap Ditagih",
+        value: realCustomerCount,
+        percent: 100,
+        color: "#0284c7",
+      },
+      {
+        name: "Lunas Terbayar",
+        value: 0,
+        percent: 0,
+        color: "#10b981",
+      },
+    ];
   } else {
-    // Mode Target Kuota Wilayah (185 SR Lemo Baru)
-    centerNumber = totalTargetSR;
-    centerLabel = "TARGET SR PILOT";
-    if (realPaidCount === 0) {
-      complianceData = [
-        {
-          name: "Siap Ditagih (Jadwal Mulai 5 Okt)",
-          value: totalTargetSR,
-          percent: 100,
-          color: "#0284c7",
-        },
-        {
-          name: "Lunas Terbayar (PAID)",
-          value: 0,
-          percent: 0,
-          color: "#10b981",
-        },
-      ];
-    } else {
-      const remaining = totalTargetSR - realPaidCount;
-      complianceData = [
-        {
-          name: "Siap Ditagih / Belum Bayar",
-          value: remaining,
-          percent: Number(((remaining / totalTargetSR) * 100).toFixed(1)),
-          color: "#0284c7",
-        },
-        {
-          name: "Lunas Terbayar (PAID)",
-          value: realPaidCount,
-          percent: Number(((realPaidCount / totalTargetSR) * 100).toFixed(1)),
-          color: "#10b981",
-        },
-      ];
-    }
+    complianceData = [
+      {
+        name: "Belum Bayar / Tertagih",
+        value: realUnpaidCount,
+        percent: Number(((realUnpaidCount / realCustomerCount) * 100).toFixed(1)),
+        color: "#0284c7",
+      },
+      {
+        name: "Lunas Terbayar",
+        value: realPaidCount,
+        percent: Number(((realPaidCount / realCustomerCount) * 100).toFixed(1)),
+        color: "#10b981",
+      },
+    ];
   }
 
   // Data Tren Penagihan & Realisasi Kas
@@ -211,43 +149,42 @@ export function DashboardAnalyticsCharts({
     },
   ];
 
-  // Data Distribusi Konsumsi Air per Dusun
-  // Sesuai instruksi: Volume dinolkan karena belum ada pencatatan meter rill sebelum 5 Oktober
+  // Data Distribusi Konsumsi Air per Dusun (Jumlah SR dihitung langsung dari warga terdaftar riil)
   const dusunWaterUsage = [
     {
-      dusun: "Lemo Baru (Pilot)",
+      dusun: "Dusun Lemo Baru",
       usage: 0,
-      sr: 185,
+      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("lemo baru")).length,
       system: "Mata Air Gravitasi (0% Listrik)",
-      status: "Pilot Project (Live)",
+      status: "Unit Beroperasi",
       fill: "#0284c7",
       isPilot: true,
     },
     {
-      dusun: "Lemo Tua (Tahap 2)",
+      dusun: "Dusun Lemo Tua",
       usage: 0,
-      sr: 142,
+      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("lemo tua")).length,
       system: "Sumur Bor Pompa PLN",
-      status: "Persiapan Tahap 2",
-      fill: "#94a3b8",
+      status: "Unit Beroperasi",
+      fill: "#0ea5e9",
       isPilot: false,
     },
     {
-      dusun: "Sarampu 1 (Tahap 2)",
+      dusun: "Dusun Sarampu 1",
       usage: 0,
-      sr: 160,
+      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("sarampu")).length,
       system: "Sumur Bor Pompa PLN",
-      status: "Persiapan Tahap 2",
-      fill: "#94a3b8",
+      status: "Unit Beroperasi",
+      fill: "#6366f1",
       isPilot: false,
     },
     {
-      dusun: "Pakkandoang (Tahap 2)",
+      dusun: "Dusun Pakkandoang",
       usage: 0,
-      sr: 50,
+      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("pakkandoang")).length,
       system: "Sumur Bor Pompa PLN",
-      status: "Persiapan Tahap 2",
-      fill: "#cbd5e1",
+      status: "Unit Beroperasi",
+      fill: "#8b5cf6",
       isPilot: false,
     },
   ];
@@ -445,25 +382,25 @@ export function DashboardAnalyticsCharts({
           {/* Quick Metrics Footer */}
           <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
             <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/50">
-              <span className="text-[10px] text-slate-400 block font-medium">Target Tagihan Pilot</span>
+              <span className="text-[10px] text-slate-400 block font-medium">Total Sambungan</span>
               <strong className="text-slate-800 font-tabular text-sm">
-                Rp 0
+                {realCustomerCount} SR
               </strong>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Target 185 SR Lemo Baru</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Warga Terdaftar Aktif</span>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/50">
               <span className="text-[10px] text-emerald-600 block font-medium">Realisasi Kas Masuk</span>
               <strong className="text-emerald-800 font-tabular text-sm">
                 Rp {realPaidCount > 0 ? (realPaidCount * 25000).toLocaleString("id-ID") : "0"}
               </strong>
-              <span className="text-[10px] text-emerald-600/80 block mt-0.5">Mulai tgl 5 Oktober</span>
+              <span className="text-[10px] text-emerald-600/80 block mt-0.5">Penerimaan Kas Lunas</span>
             </div>
             <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/50">
-              <span className="text-[10px] text-amber-700 block font-medium">Status Efisiensi</span>
+              <span className="text-[10px] text-amber-700 block font-medium">Kepatuhan Bayar</span>
               <strong className="text-amber-900 font-tabular text-sm">
-                {realPaidCount > 0 ? `${((realPaidCount / totalTargetSR) * 100).toFixed(1)}%` : "0% Terbayar"}
+                {realCustomerCount > 0 ? `${((realPaidCount / realCustomerCount) * 100).toFixed(1)}%` : "0%"}
               </strong>
-              <span className="text-[10px] text-amber-700/80 block mt-0.5">Siap Go-Live 5 Okt</span>
+              <span className="text-[10px] text-amber-700/80 block mt-0.5">{realPaidCount} dari {realCustomerCount} SR Lunas</span>
             </div>
           </div>
         </Card>
@@ -477,43 +414,13 @@ export function DashboardAnalyticsCharts({
               </div>
               <div>
                 <h3 className="text-sm font-extrabold text-slate-900">
-                  Status Kesiapan Penagihan SR
+                  Status Pembayaran Sambungan Rumah
                 </h3>
                 <p className="text-[11px] text-slate-400">
-                  {donutMode === "registered"
-                    ? `${realCustomerCount} warga telah terinput di sistem • Lemo Baru`
-                    : `Kapasitas target 185 SR Dusun Lemo Baru`}
+                  {realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem
                 </p>
               </div>
             </div>
-
-            {/* Toggle Mode: Terdaftar Riil vs Target Kuota Wilayah */}
-            {isLemoBaruScope && (
-              <div className="flex rounded-xl bg-slate-100 p-1 mb-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setDonutMode("registered")}
-                  className={`flex-1 py-1 px-2 rounded-lg font-bold transition text-[11px] ${
-                    donutMode === "registered"
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  Warga Terinput ({realCustomerCount} SR)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDonutMode("target")}
-                  className={`flex-1 py-1 px-2 rounded-lg font-bold transition text-[11px] ${
-                    donutMode === "target"
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  Target Dusun (185 SR)
-                </button>
-              </div>
-            )}
 
             {/* Donut Chart with Center Text */}
             <div className="h-52 relative flex items-center justify-center">
@@ -589,25 +496,10 @@ export function DashboardAnalyticsCharts({
               </div>
             ))}
 
-            {isLemoBaruScope && (
-              <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                <div className="flex justify-between text-[11px] text-slate-600">
-                  <span>Progres Input Warga:</span>
-                  <strong className="text-slate-900 font-tabular">
-                    {realCustomerCount} / 185 SR ({((realCustomerCount / 185) * 100).toFixed(1)}%)
-                  </strong>
-                </div>
-                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-brand-maroon-700 rounded-full transition-all"
-                    style={{ width: `${Math.min(100, (realCustomerCount / 185) * 100)}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400">
-                  *Warga yang Anda input manual di menu Pelanggan akan otomatis bertambah ke angka ini.
-                </p>
-              </div>
-            )}
+            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+              <span>Integrasi Data:</span>
+              <span className="font-semibold text-emerald-600">100% Data Riil Terdaftar</span>
+            </div>
           </div>
         </Card>
       </div>
@@ -686,7 +578,7 @@ export function DashboardAnalyticsCharts({
                           <strong className="text-white font-tabular">{d.usage} m³</strong>
                         </div>
                         <div className="flex justify-between space-x-4 text-slate-300">
-                          <span>Kapasitas SR:</span>
+                          <span>Sambungan Rumah (SR):</span>
                           <strong className="text-white">{d.sr} SR</strong>
                         </div>
                         <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-800">
