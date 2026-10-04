@@ -255,11 +255,20 @@ export async function onRequest(context: any) {
             CAST(c.kpspams_id AS integer) as kpspams_id,
             conn.id as connection_id, conn.connection_no, conn.status as connection_status, conn.installed_date as installed_at,
             conn.latitude, conn.longitude, conn.dusun_id, conn.address_detail,
+            m.id as meter_id,
             m.serial_number as meter_serial,
+            m.brand as meter_brand,
+            COALESCE(m.initial_reading, 0) as initial_reading,
+            COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
             k.name as kpspams_name, k.code as kpspams_code
           FROM customers c
           LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
           LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+          LEFT JOIN LATERAL (
+            SELECT current_reading FROM meter_readings 
+            WHERE connection_id = conn.id::text OR connection_id = c.id::text 
+            ORDER BY id DESC LIMIT 1
+          ) mr ON true
           LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
           WHERE c.deleted_at IS NULL
           ORDER BY c.id DESC
@@ -304,16 +313,17 @@ export async function onRequest(context: any) {
         ]);
         const newCust = inserted[0];
 
-        // Buat meter air fisik jika nomor seri diisi
+        // Buat meter air fisik jika nomor seri diisi atau stand awal ditentukan
         let meterId = null;
-        if (b.meter_serial) {
+        const initialReading = Number(b.initial_reading ?? b.last_reading) || 0;
+        if (b.meter_serial || b.initial_reading !== undefined || b.last_reading !== undefined) {
           const mInserted = await sql.query(`
             INSERT INTO meters (
               kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at
             ) VALUES (
               $1, $2, $3, $4, true, 'GOOD', NOW(), NOW()
             ) RETURNING id
-          `, [kpspamsId, b.meter_serial, b.meter_brand || "Onda Multi-Jet", Number(b.initial_reading) || 0]);
+          `, [kpspamsId, b.meter_serial || `MTR-${prefix}-${newCust.id}`, b.meter_brand || "Onda Multi-Jet", initialReading]);
           meterId = mInserted[0]?.id || null;
         }
 
@@ -343,9 +353,43 @@ export async function onRequest(context: any) {
             ...newCust,
             connection: connInserted[0],
             connection_no: connNo,
+            meter_serial: b.meter_serial || null,
+            initial_reading: initialReading,
+            last_reading: initialReading,
           },
         }, 201);
       }
+    }
+
+    if (path.startsWith("customers/") && method === "GET") {
+      const custId = parseInt(path.split("/")[1], 10);
+      const rows = await sql.query(`
+        SELECT c.*, 
+          CAST(c.kpspams_id AS integer) as kpspams_id,
+          conn.id as connection_id, conn.connection_no, conn.status as connection_status, conn.installed_date as installed_at,
+          conn.latitude, conn.longitude, conn.dusun_id, conn.address_detail,
+          m.id as meter_id,
+          m.serial_number as meter_serial,
+          m.brand as meter_brand,
+          COALESCE(m.initial_reading, 0) as initial_reading,
+          COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
+          k.name as kpspams_name, k.code as kpspams_code
+        FROM customers c
+        LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
+        LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+        LEFT JOIN LATERAL (
+          SELECT current_reading FROM meter_readings 
+          WHERE connection_id = conn.id::text OR connection_id = c.id::text 
+          ORDER BY id DESC LIMIT 1
+        ) mr ON true
+        LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
+        WHERE c.id = $1 AND c.deleted_at IS NULL
+        LIMIT 1
+      `, [custId]);
+      if (rows.length === 0) {
+        return jsonResponse({ status: "fail", message: "Pelanggan tidak ditemukan" }, 404);
+      }
+      return jsonResponse({ status: "success", data: rows[0] });
     }
 
     if (path.startsWith("customers/") && method === "PUT") {
@@ -395,20 +439,42 @@ export async function onRequest(context: any) {
         ]);
       }
 
-      if (b.meter_serial) {
+      if (b.meter_serial !== undefined || b.initial_reading !== undefined || b.last_reading !== undefined) {
         const connRows = await sql.query(`SELECT id, meter_id, kpspams_id FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
+        const readingVal = b.initial_reading !== undefined && b.initial_reading !== null 
+          ? Number(b.initial_reading) 
+          : (b.last_reading !== undefined && b.last_reading !== null ? Number(b.last_reading) : null);
+
         if (connRows.length > 0 && connRows[0].meter_id) {
-          await sql.query(`UPDATE meters SET serial_number = $1, updated_at = NOW() WHERE id = $2`, [b.meter_serial, connRows[0].meter_id]);
+          await sql.query(`
+            UPDATE meters SET 
+              serial_number = COALESCE($1, serial_number),
+              initial_reading = COALESCE($2, initial_reading),
+              updated_at = NOW() 
+            WHERE id = $3
+          `, [b.meter_serial || null, readingVal, connRows[0].meter_id]);
+
+          // Jika ada record meter_readings, sinkronkan pembacaan terbaru
+          if (readingVal !== null) {
+            await sql.query(`
+              UPDATE meter_readings SET current_reading = $1, updated_at = NOW()
+              WHERE id = (
+                SELECT id FROM meter_readings 
+                WHERE connection_id = $2::text OR connection_id = $3::text 
+                ORDER BY id DESC LIMIT 1
+              )
+            `, [readingVal.toString(), connRows[0].id.toString(), custId.toString()]);
+          }
         } else if (connRows.length > 0) {
           const newMeter = await sql.query(`
             INSERT INTO meters (kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at)
-            VALUES ($1, $2, 'Onda Multi-Jet', 0, true, 'GOOD', NOW(), NOW()) RETURNING id
-          `, [connRows[0].kpspams_id || 1, b.meter_serial]);
+            VALUES ($1, $2, 'Onda Multi-Jet', $3, true, 'GOOD', NOW(), NOW()) RETURNING id
+          `, [connRows[0].kpspams_id || 1, b.meter_serial || `MTR-${custId}`, readingVal || 0]);
           await sql.query(`UPDATE connections SET meter_id = $1 WHERE id = $2`, [newMeter[0].id, connRows[0].id]);
         }
       }
 
-      return jsonResponse({ status: "success", message: "Data pelanggan dan titik lokasi GIS berhasil diperbarui." });
+      return jsonResponse({ status: "success", message: "Data pelanggan dan meter air berhasil diperbarui." });
     }
 
     if (path.startsWith("customers/") && method === "DELETE") {
@@ -422,9 +488,19 @@ export async function onRequest(context: any) {
     if (path === "connections") {
       if (method === "GET") {
         const rows = await sql.query(`
-          SELECT conn.*, c.full_name as customer_name, c.nik, k.name as kpspams_name
+          SELECT conn.*, c.full_name as customer_name, c.nik,
+            m.serial_number as meter_serial, m.brand as meter_brand,
+            COALESCE(m.initial_reading, 0) as initial_reading,
+            COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
+            k.name as kpspams_name
           FROM connections conn
           LEFT JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
+          LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+          LEFT JOIN LATERAL (
+            SELECT current_reading FROM meter_readings 
+            WHERE connection_id = conn.id::text OR connection_id = c.id::text 
+            ORDER BY id DESC LIMIT 1
+          ) mr ON true
           LEFT JOIN kpspams k ON CAST(conn.kpspams_id AS integer) = k.id
           ORDER BY conn.id DESC
         `);
@@ -435,19 +511,31 @@ export async function onRequest(context: any) {
         const b = await request.json().catch(() => ({}));
         const custId = Number(b.customer_id);
 
-        let meterId = null;
-        if (b.meter_serial) {
-          const m = await sql.query(`
-            INSERT INTO meters (
-              kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at
-            ) VALUES (
-              $1, $2, $3, $4, true, 'GOOD', NOW(), NOW()
-            ) RETURNING id
-          `, [Number(b.kpspams_id) || 1, b.meter_serial, b.meter_brand || "Onda Multi-Jet", Number(b.initial_reading) || 0]);
-          meterId = m[0]?.id || null;
+        const existing = await sql.query(`SELECT * FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
+        let meterId = existing.length > 0 ? existing[0].meter_id : null;
+        const readingVal = Number(b.initial_reading ?? b.last_reading) || 0;
+
+        if (b.meter_serial || b.initial_reading !== undefined || b.last_reading !== undefined) {
+          if (meterId) {
+            await sql.query(`
+              UPDATE meters SET
+                serial_number = COALESCE($1, serial_number),
+                initial_reading = COALESCE($2, initial_reading),
+                updated_at = NOW()
+              WHERE id = $3
+            `, [b.meter_serial || null, readingVal, meterId]);
+          } else {
+            const m = await sql.query(`
+              INSERT INTO meters (
+                kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4, true, 'GOOD', NOW(), NOW()
+              ) RETURNING id
+            `, [Number(b.kpspams_id) || 1, b.meter_serial || `MTR-${custId}`, b.meter_brand || "Onda Multi-Jet", readingVal]);
+            meterId = m[0]?.id || null;
+          }
         }
 
-        const existing = await sql.query(`SELECT * FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
         if (existing.length > 0) {
           const updated = await sql.query(`
             UPDATE connections SET

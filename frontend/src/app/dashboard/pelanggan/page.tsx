@@ -14,9 +14,23 @@ import { scanKtpImage } from "@/lib/ktp-ocr-client";
 
 const mapApiCustomerToDemo = (item: any): DemoCustomer => {
   const primaryConn = item.connections?.[0];
+  const rawReading =
+    item.last_reading !== undefined && item.last_reading !== null
+      ? item.last_reading
+      : item.lastReading !== undefined && item.lastReading !== null
+      ? item.lastReading
+      : item.initial_reading !== undefined && item.initial_reading !== null
+      ? item.initial_reading
+      : primaryConn?.meter?.current_reading !== undefined && primaryConn?.meter?.current_reading !== null
+      ? primaryConn.meter.current_reading
+      : primaryConn?.meter?.initial_reading !== undefined && primaryConn?.meter?.initial_reading !== null
+      ? primaryConn.meter.initial_reading
+      : 0;
+  const lastReadingNum = Number(rawReading);
+
   return {
     id: item.id,
-    connectionNo: primaryConn?.connection_no || primaryConn?.connection_number || item.code || `SR-${item.id}`,
+    connectionNo: primaryConn?.connection_no || primaryConn?.connection_number || item.connection_no || item.code || `SR-${item.id}`,
     name: item.full_name || item.name,
     nik: item.nik || "",
     birthPlaceDate: item.birth_place_date,
@@ -29,11 +43,11 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     maritalStatus: item.marital_status,
     occupation: item.occupation,
     phone: item.phone,
-    dusun: primaryConn?.dusun?.name || item.dusun || "Lemo Baru",
+    dusun: item.dusun || primaryConn?.dusun?.name || "Lemo Baru",
     kpspamsId: Number(item.kpspams_id || item.kpspams?.id || 1),
-    kpspamsName: item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
-    meterSerial: primaryConn?.meter?.serial_number || item.meter_serial || "MTR-1001",
-    lastReading: primaryConn?.meter?.current_reading !== undefined ? Number(primaryConn.meter.current_reading) : (primaryConn?.meter?.initial_reading !== undefined ? Number(primaryConn.meter.initial_reading) : (item.lastReading ?? 0)),
+    kpspamsName: item.kpspams_name || item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
+    meterSerial: item.meter_serial || primaryConn?.meter?.serial_number || "MTR-1001",
+    lastReading: isNaN(lastReadingNum) ? 0 : lastReadingNum,
     status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
     latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
@@ -503,6 +517,13 @@ function PelangganContent() {
         occupation: newOccupation.trim() || undefined,
         kpspams_id: kInfo.id,
         ktp_photo_path: gdrivePhotoUrl || undefined,
+        meter_serial: newMeterSerial.trim() || `MTR-${kInfo.codePrefix}-${Math.floor(1000 + Math.random() * 9000)}`,
+        initial_reading: parseFloat(newInitialReading) || 0,
+        last_reading: parseFloat(newInitialReading) || 0,
+        meter_brand: "Onda Multi-Jet",
+        dusun_id: dusunId,
+        latitude: newLatitude,
+        longitude: newLongitude,
       };
 
       const custRes = await apiClient("/customers", {
@@ -627,6 +648,8 @@ function PelangganContent() {
         latitude: editLatitude,
         longitude: editLongitude,
         meter_serial: editMeterSerial.trim() || undefined,
+        initial_reading: parseFloat(editLastReading) || 0,
+        last_reading: parseFloat(editLastReading) || 0,
         status: editStatus,
       };
 
