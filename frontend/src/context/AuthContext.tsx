@@ -9,6 +9,7 @@ interface AuthContextType {
   activeKpspamsId: number | null; // null = Konsolidasi Seluruh Desa Kuajang
   activeKpspamsName: string;
   isDesaLevel: boolean;
+  isLoading: boolean;
   login: (username: string, password?: string) => Promise<boolean>;
   logout: () => void;
   switchKpspamsContext: (id: number | null) => void;
@@ -18,41 +19,49 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Default logged in user: null atau load dari session
-  const [user, setUser] = useState<DemoUser | null>(DEMO_USERS[1]);
+  // Default logged in user: null (memerlukan login resmi atau sesi valid)
+  const [user, setUser] = useState<DemoUser | null>(null);
   const [activeKpspamsId, setActiveKpspamsId] = useState<number | null>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Sync user state from localStorage if available
   useEffect(() => {
-    const savedUserJson = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
-    if (savedUserJson) {
-      try {
-        const parsed = JSON.parse(savedUserJson);
-        const kId = parsed.kpspamsId !== null && parsed.kpspamsId !== undefined ? Number(parsed.kpspamsId) : null;
-        parsed.kpspamsId = kId;
-        setUser(parsed);
-        if (kId !== null) {
-          setActiveKpspamsId(kId);
-        } else {
-          setActiveKpspamsId(1); // default Lemo Baru
+    try {
+      const savedUserJson = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
+      if (savedUserJson) {
+        try {
+          const parsed = JSON.parse(savedUserJson);
+          const kId = parsed.kpspamsId !== null && parsed.kpspamsId !== undefined ? Number(parsed.kpspamsId) : null;
+          parsed.kpspamsId = kId;
+          setUser(parsed);
+          if (kId !== null) {
+            setActiveKpspamsId(kId);
+          } else {
+            setActiveKpspamsId(1); // default Lemo Baru
+          }
+          setIsLoading(false);
+          return;
+        } catch {
+          // invalid json, fallback
         }
-        return;
-      } catch {
-        // invalid json, fallback
       }
-    }
 
-    const savedUserId = localStorage.getItem("demo_user_id");
-    if (savedUserId) {
-      const found = DEMO_USERS.find((u) => u.id === Number(savedUserId));
-      if (found) {
-        setUser(found);
-        if (found.kpspamsId !== null) {
-          setActiveKpspamsId(Number(found.kpspamsId));
-        } else {
-          setActiveKpspamsId(1);
+      const savedUserId = typeof window !== "undefined" ? localStorage.getItem("demo_user_id") : null;
+      if (savedUserId) {
+        const found = DEMO_USERS.find((u) => u.id === Number(savedUserId));
+        if (found) {
+          setUser(found);
+          if (found.kpspamsId !== null) {
+            setActiveKpspamsId(Number(found.kpspamsId));
+          } else {
+            setActiveKpspamsId(1);
+          }
+          setIsLoading(false);
+          return;
         }
       }
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -177,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         activeKpspamsId,
         activeKpspamsName: getActiveKpspamsName(),
         isDesaLevel: !!isDesaLevel,
+        isLoading,
         login,
         logout,
         switchKpspamsContext,

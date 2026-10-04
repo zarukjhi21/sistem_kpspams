@@ -109,7 +109,8 @@ function PenggunaContent() {
       const res = await apiClient("/users?per_page=100");
       if (res?.status === "success" && Array.isArray(res.data)) {
         const mapped: DemoUser[] = res.data.map((u: any) => {
-          const roleName = u.roles?.[0]?.name || "petugas_lapangan";
+          const roleName = (u.roles?.[0]?.name || u.role_name || u.role || "petugas_lapangan") as DemoUser["role"];
+          const kId = u.kpspams_id !== null && u.kpspams_id !== undefined ? Number(u.kpspams_id) : null;
           return {
             id: u.id,
             name: u.name,
@@ -117,8 +118,8 @@ function PenggunaContent() {
             role: roleName,
             roleLabel: getRoleLabel(roleName),
             phone: u.phone || "-",
-            kpspamsId: u.kpspams_id,
-            kpspamsName: u.kpspams?.name || getKpspamsName(u.kpspams_id),
+            kpspamsId: kId,
+            kpspamsName: u.kpspams?.name || u.kpspams_name || getKpspamsName(kId),
           };
         });
         setUsersList(mapped);

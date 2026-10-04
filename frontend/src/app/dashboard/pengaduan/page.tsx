@@ -52,56 +52,6 @@ interface TechnicianUser {
   kpspams_id?: number;
 }
 
-const INITIAL_COMPLAINTS: ComplaintItem[] = [
-  {
-    id: 1,
-    ticketNumber: "TKT/20261001/A88",
-    kpspamsId: 1,
-    kpspamsName: "KPSPAMS Lemo Baru",
-    customerName: "H. Abdullah Rahman",
-    customerCode: "CUST-LB-001",
-    dusunName: "Dusun Lemo Baru",
-    phone: "081234567801",
-    category: "PIPA_BOCOR",
-    description: "Pipa distribusi depan rumah patah terkena roda traktor warga, air meluap ke badan jalan.",
-    priority: "HIGH",
-    status: "IN_PROGRESS",
-    createdAt: "2026-10-01 08:30",
-    technicianName: "Syamsul Bahri (Petugas LMB)",
-    spkNumber: "SPK/20261001/01A",
-  },
-  {
-    id: 2,
-    ticketNumber: "TKT/20261001/B12",
-    kpspamsId: 2,
-    kpspamsName: "KPSPAMS Lemo Tua",
-    customerName: "Kaharuddin Tahir",
-    customerCode: "CUST-LT-003",
-    dusunName: "Dusun Lemo Tua",
-    phone: "081234567808",
-    category: "AIR_KERUH",
-    description: "Air kran berwarna kecokelatan setelah hujan lebat malam kemarin.",
-    priority: "MEDIUM",
-    status: "VERIFIED",
-    createdAt: "2026-10-01 09:15",
-  },
-  {
-    id: 3,
-    ticketNumber: "TKT/20260930/C44",
-    kpspamsId: 3,
-    kpspamsName: "KPSPAMS Sarampu 1",
-    customerName: "Drs. Muh. Yusuf",
-    customerCode: "CUST-SR-005",
-    dusunName: "Dusun Pakkandoang",
-    phone: "081234567812",
-    category: "METER_RUSAK",
-    description: "Kaca meteran buram dan jarum angka macet tidak bergerak meskipun kran air mengalir kencang.",
-    priority: "MEDIUM",
-    status: "SUBMITTED",
-    createdAt: "2026-09-30 16:40",
-  },
-];
-
 export default function PengaduanPage() {
   return (
     <DashboardLayout>
@@ -112,7 +62,7 @@ export default function PengaduanPage() {
 
 function PengaduanContent() {
   const { activeKpspamsId, user } = useAuth();
-  const [complaints, setComplaints] = useState<ComplaintItem[]>(INITIAL_COMPLAINTS);
+  const [complaints, setComplaints] = useState<ComplaintItem[]>([]);
   const [technicians, setTechnicians] = useState<TechnicianUser[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
