@@ -30,6 +30,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { DEMO_CUSTOMERS, DemoCustomer } from "@/lib/demo-data";
+import { apiClient } from "@/lib/api-client";
 
 interface DashboardAnalyticsChartsProps {
   activeKpspamsId: number | null;
@@ -43,29 +44,49 @@ export function DashboardAnalyticsCharts({
   const [mounted, setMounted] = useState(false);
   const [customers, setCustomers] = useState<DemoCustomer[]>([]);
 
-
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("kpspams_customers");
-      if (saved) {
-        try {
-          const parsed: DemoCustomer[] = JSON.parse(saved);
-          // Baseline bersih pra-go-live 5 Oktober 2026:
-          // Pastikan semua pelanggan statusnya UNPAID (0 Lunas) karena penagihan belum dimulai
-          const sanitized = parsed.map((c) => ({
-            ...c,
-            billingStatus: "UNPAID" as const,
+    const loadData = async () => {
+      try {
+        const res = await apiClient("/customers?per_page=100");
+        if (res?.status === "success" && Array.isArray(res.data)) {
+          const mapped: DemoCustomer[] = res.data.map((c: any) => ({
+            id: c.id,
+            connectionNo: c.connection_no || `SR-${c.id}`,
+            name: c.full_name || c.name,
+            nik: c.nik || "",
+            dusun: c.dusun || "Lemo Baru",
+            kpspamsId: Number(c.kpspams_id) || 1,
+            kpspamsName: c.kpspams_name || "KPSPAMS Lemo Baru",
+            meterSerial: c.meter_serial || "MTR-1001",
+            lastReading: Number(c.lastReading) || 0,
+            status: c.status || "ACTIVE",
+            tariffType: c.tariffType || "Rumah Tangga",
+            billingStatus: c.billing_status || "UNPAID",
           }));
-          localStorage.setItem("kpspams_customers", JSON.stringify(sanitized));
-          setCustomers(sanitized);
+          setCustomers(mapped);
           return;
-        } catch (e) {
-          console.error("Failed to parse kpspams_customers", e);
+        }
+      } catch (err) {
+        console.warn("Gagal fetch pelanggan untuk chart, gunakan cache:", err);
+      }
+
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("kpspams_customers");
+        if (saved) {
+          try {
+            const parsed: DemoCustomer[] = JSON.parse(saved);
+            setCustomers(parsed);
+            return;
+          } catch (e) {
+            console.error("Failed to parse kpspams_customers", e);
+          }
         }
       }
       setCustomers(DEMO_CUSTOMERS);
-    }
+    };
+
+    loadData();
   }, []);
 
   if (!mounted) {

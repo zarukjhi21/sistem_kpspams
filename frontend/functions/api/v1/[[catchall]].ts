@@ -1102,7 +1102,7 @@ export async function onRequest(context: any) {
             invoice_id: latestInv.id,
             invoice_number: latestInv.invoice_number,
             period_name: latestInv.period_name || "Oktober 2026",
-            usage_m3: Number(latestInv.total_usage_m3) || 12,
+            usage_m3: Number(latestInv.usage_m3) || 0,
             water_amount: Number(latestInv.water_amount) || Number(latestInv.total_amount) || 10000,
             admin_fee: Number(latestInv.admin_fee) || 0,
             maintenance_fee: Number(latestInv.maintenance_fee) || 0,
@@ -1112,31 +1112,8 @@ export async function onRequest(context: any) {
             status: latestInv.status || "UNPAID",
             due_date: latestInv.due_date ? new Date(latestInv.due_date).toISOString().split("T")[0] : "2026-10-25",
             is_paid: latestInv.status === "PAID",
-          } : {
-            invoice_id: 1,
-            invoice_number: `INV/202610/LMB/${String(cust.id).padStart(4, "0")}`,
-            period_name: "Oktober 2026",
-            usage_m3: 14,
-            water_amount: 10000,
-            admin_fee: 0,
-            maintenance_fee: 0,
-            penalty_fee: 0,
-            total_amount: 10000,
-            balance_due: 10000,
-            status: "UNPAID",
-            due_date: "2026-10-25",
-            is_paid: false,
-          },
-          consumption_history: consumptionHistory.length > 0 ? consumptionHistory : [
-            {
-              period_name: "Oktober 2026",
-              month: "Okt 2026",
-              reading_date: "2026-10-01",
-              previous_reading: 120.0,
-              current_reading: 134.0,
-              usage_m3: 14.0,
-            }
-          ],
+          } : null,
+          consumption_history: consumptionHistory,
         },
       });
     }
