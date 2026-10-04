@@ -137,7 +137,9 @@ function PenagihanLapanganContent() {
   });
 
   // Simpan data invoice aktif per sambungan agar bisa langsung dilunasi di backend
+  // Simpan data invoice aktif per sambungan agar bisa langsung dilunasi di backend
   const [unpaidInvoices, setUnpaidInvoices] = useState<Record<string, any>>({});
+  const [activePeriods, setActivePeriods] = useState<Record<number, any>>({});
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
   const fetchCustomersAndInvoices = async () => {
@@ -159,15 +161,37 @@ function PenagihanLapanganContent() {
       if (invRes?.status === "success" && Array.isArray(invRes.data)) {
         const invMap: Record<string, any> = {};
         invRes.data.forEach((inv: any) => {
-          const connNo = inv.connection?.connection_no || inv.connection?.connection_number;
+          const connNo = inv.connection_no || inv.connection?.connection_no || inv.connection?.connection_number;
           if (connNo) {
             invMap[connNo] = inv;
+          }
+          if (inv.customer_id) {
+            invMap[`CUST_${inv.customer_id}`] = inv;
+          }
+          if (inv.connection_id) {
+            invMap[`CONN_${inv.connection_id}`] = inv;
           }
         });
         setUnpaidInvoices(invMap);
       }
     } catch (err) {
       console.warn("Gagal fetch invoices:", err);
+    }
+
+    try {
+      const bpRes = await apiClient("/billing-periods");
+      if (bpRes?.status === "success" && Array.isArray(bpRes.data)) {
+        const bpMap: Record<number, any> = {};
+        bpRes.data.forEach((bp: any) => {
+          const kId = Number(bp.kpspams_id) || 1;
+          if (bp.status === "OPEN" || !bpMap[kId]) {
+            bpMap[kId] = bp;
+          }
+        });
+        setActivePeriods(bpMap);
+      }
+    } catch (err) {
+      console.warn("Gagal fetch billing periods:", err);
     }
   };
 
@@ -293,10 +317,18 @@ function PenagihanLapanganContent() {
     setTransactionTime(nowTime);
 
     // Cari data invoice aktif untuk sambungan ini
-    const activeInvoice = unpaidInvoices[selectedCustomer.connectionNo];
-    const invoiceId = activeInvoice?.id;
+    const activeInvoice =
+      unpaidInvoices[selectedCustomer.connectionNo] ||
+      unpaidInvoices[`CUST_${selectedCustomer.id}`] ||
+      unpaidInvoices[`CONN_${selectedCustomer.id}`];
+
+    let invoiceId = activeInvoice?.id;
     const connectionId = activeInvoice?.connection_id || selectedCustomer.id;
-    const billingPeriodId = activeInvoice?.billing_period_id;
+
+    // Default billing period ID: dari invoice, open billing period, atau fallback resmi Kuajang (KP1: 6, KP2: 12, KP3: 18)
+    const kId = Number(selectedCustomer.kpspamsId) || 1;
+    const defaultBpId = kId === 1 ? 6 : kId === 2 ? 12 : 18;
+    const billingPeriodId = activeInvoice?.billing_period_id || activePeriods[kId]?.id || defaultBpId;
 
     // Petakan Akun Kas Tunai Resmi KPSPAMS
     // KPSPAMS 1 (Lemo Baru) -> ID: 1 (Kas Tunai Bendahara Lemo Baru)
@@ -310,43 +342,56 @@ function PenagihanLapanganContent() {
     const cashAccountId = cashAccountMapping[selectedCustomer.kpspamsId] || 1;
 
     try {
-      // 1. Eksekusi Pembayaran Kasir Atomik ke Backend API (Database SQLite)
-      if (invoiceId) {
-        const paymentPayload = {
-          invoice_id: invoiceId,
-          cash_account_id: cashAccountId,
-          amount_paid: totalDue,
-          payment_method: "CASH",
-          reference_number: `FIELD-${Date.now().toString().slice(-6)}`,
-        };
-
-        const payRes = await apiClient("/payments", {
+      // 1. Rekam Pembacaan Stand Meter Air Resmi ke Backend API (Database Neon PostgreSQL)
+      let targetInvoiceId = invoiceId;
+      try {
+        const mrRes: any = await apiClient("/meter-readings", {
           method: "POST",
-          body: JSON.stringify(paymentPayload),
+          body: JSON.stringify({
+            connection_id: connectionId,
+            customer_id: selectedCustomer.id,
+            billing_period_id: billingPeriodId,
+            kpspams_id: selectedCustomer.kpspamsId,
+            current_reading: currentNum,
+            is_initial_setup: isInitialSetup,
+            reading_date: new Date().toISOString().split("T")[0],
+            notes: isInitialSetup
+              ? `Pencatatan perdana stand awal (${currentNum.toFixed(2)} m³)`
+              : `Dicatat tunai di tempat oleh ${user?.name || "Petugas Lapangan"}`,
+          }),
         });
 
-        if (payRes?.status === "success" && payRes.data?.receipt_number) {
-          receiptNo = payRes.data.receipt_number;
+        if (mrRes?.data?.invoice_id || mrRes?.data?.invoice?.id) {
+          targetInvoiceId = mrRes.data.invoice_id || mrRes.data.invoice.id;
         }
+      } catch (mrErr) {
+        console.warn("Pencatatan meter notice:", mrErr);
       }
 
-      // 2. Rekam Pembacaan Stand Meter Air Resmi ke Backend API
-      if (connectionId && billingPeriodId) {
-        try {
-          await apiClient("/meter-readings", {
-            method: "POST",
-            body: JSON.stringify({
-              connection_id: connectionId,
-              billing_period_id: billingPeriodId,
-              current_reading: currentNum,
-              reading_date: new Date().toISOString().split("T")[0],
-              notes: `Dicatat tunai di tempat oleh ${user?.name || "Petugas Lapangan"}`,
-            }),
-          });
-        } catch {
-          // Pembacaan meter mungkin sudah ada pada periode berjalan
-        }
+      // 2. Eksekusi Pembayaran Kasir Atomik ke Backend API (Database Neon PostgreSQL)
+      const paymentPayload = {
+        invoice_id: targetInvoiceId || undefined,
+        customer_id: selectedCustomer.id,
+        connection_id: connectionId,
+        kpspams_id: selectedCustomer.kpspamsId,
+        billing_period_id: billingPeriodId,
+        cash_account_id: cashAccountId,
+        amount_paid: totalDue,
+        payment_method: "CASH",
+        reference_number: `FIELD-${Date.now().toString().slice(-6)}`,
+      };
+
+      const payRes: any = await apiClient("/payments", {
+        method: "POST",
+        body: JSON.stringify(paymentPayload),
+      });
+
+      if (payRes?.status === "success" && payRes.data?.receipt_number) {
+        receiptNo = payRes.data.receipt_number;
       }
+
+      // 3. Sinkronkan data terbaru langsung dari server
+      await fetchCustomersAndInvoices();
     } catch (apiErr: any) {
       console.warn("Gagal memproses transaksi kasir di server, menggunakan fallback:", apiErr);
     } finally {

@@ -260,6 +260,9 @@ export async function onRequest(context: any) {
             m.brand as meter_brand,
             COALESCE(m.initial_reading, 0) as initial_reading,
             COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
+            COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
+            inv.invoice_id,
+            inv.total_amount as invoice_total,
             k.name as kpspams_name, k.code as kpspams_code
           FROM customers c
           LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
@@ -269,6 +272,12 @@ export async function onRequest(context: any) {
             WHERE connection_id = conn.id::text OR connection_id = c.id::text 
             ORDER BY id DESC LIMIT 1
           ) mr ON true
+          LEFT JOIN LATERAL (
+            SELECT id as invoice_id, status as invoice_status, total_amount, balance_due, billing_period_id
+            FROM invoices 
+            WHERE connection_id = conn.id::text OR customer_id = c.id::text 
+            ORDER BY id DESC LIMIT 1
+          ) inv ON true
           LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
           WHERE c.deleted_at IS NULL
           ORDER BY c.id DESC
@@ -373,6 +382,9 @@ export async function onRequest(context: any) {
           m.brand as meter_brand,
           COALESCE(m.initial_reading, 0) as initial_reading,
           COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
+          COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
+          inv.invoice_id,
+          inv.total_amount as invoice_total,
           k.name as kpspams_name, k.code as kpspams_code
         FROM customers c
         LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
@@ -382,6 +394,12 @@ export async function onRequest(context: any) {
           WHERE connection_id = conn.id::text OR connection_id = c.id::text 
           ORDER BY id DESC LIMIT 1
         ) mr ON true
+        LEFT JOIN LATERAL (
+          SELECT id as invoice_id, status as invoice_status, total_amount, balance_due, billing_period_id
+          FROM invoices 
+          WHERE connection_id = conn.id::text OR customer_id = c.id::text 
+          ORDER BY id DESC LIMIT 1
+        ) inv ON true
         LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
         WHERE c.id = $1 AND c.deleted_at IS NULL
         LIMIT 1
@@ -581,15 +599,22 @@ export async function onRequest(context: any) {
 
     // 11. Invoices
     if (path === "invoices") {
-      const rows = await sql.query(`
+      const statusParam = url.searchParams.get("status");
+      let queryStr = `
         SELECT inv.*, c.full_name as customer_name, conn.connection_no, p.name as period_name, k.name as kpspams_name
         FROM invoices inv
         LEFT JOIN customers c ON CAST(inv.customer_id AS integer) = c.id
         LEFT JOIN connections conn ON CAST(inv.connection_id AS integer) = conn.id
         LEFT JOIN billing_periods p ON CAST(inv.billing_period_id AS integer) = p.id
         LEFT JOIN kpspams k ON CAST(inv.kpspams_id AS integer) = k.id
-        ORDER BY inv.id DESC
-      `);
+      `;
+      const params = [];
+      if (statusParam) {
+        queryStr += ` WHERE inv.status = $1 `;
+        params.push(statusParam);
+      }
+      queryStr += ` ORDER BY inv.id DESC `;
+      const rows = await sql.query(queryStr, params);
       return jsonResponse({ status: "success", data: rows });
     }
 
@@ -598,10 +623,10 @@ export async function onRequest(context: any) {
       if (method === "POST") {
         const b = await request.json().catch(() => ({}));
         const connId = b.connection_id ? b.connection_id.toString() : "1";
-        const billingPeriodId = b.billing_period_id ? b.billing_period_id.toString() : "6";
         const currentReading = Number(b.current_reading) || 0;
         const readingDate = b.reading_date || new Date().toISOString().split("T")[0];
-        const notes = b.notes || "Pencatatan meter lapangan";
+        const isInitialSetup = Boolean(b.is_initial_setup);
+        const notes = b.notes || (isInitialSetup ? "Pencatatan perdana stand awal" : "Pencatatan meter lapangan");
 
         const connRows = await sql.query(`
           SELECT c.*, cust.id as cust_id, cust.kpspams_id as cust_kpspams_id
@@ -611,26 +636,60 @@ export async function onRequest(context: any) {
           LIMIT 1
         `, [Number(connId) || 0, connId]);
 
-        const kId = connRows.length > 0 ? (connRows[0].kpspams_id || "1") : "1";
+        const kId = connRows.length > 0 ? (connRows[0].kpspams_id || connRows[0].cust_kpspams_id || "1") : (b.kpspams_id ? b.kpspams_id.toString() : "1");
         const meterId = connRows.length > 0 ? connRows[0].meter_id : null;
-        const customerId = connRows.length > 0 ? connRows[0].customer_id : connId;
+        const customerId = connRows.length > 0 && connRows[0].customer_id ? connRows[0].customer_id.toString() : (b.customer_id ? b.customer_id.toString() : connId);
 
+        // Cari billing period aktif jika tidak disertakan
+        let billingPeriodId = b.billing_period_id ? b.billing_period_id.toString() : null;
+        if (!billingPeriodId) {
+          const bpRows = await sql.query(`
+            SELECT id FROM billing_periods 
+            WHERE CAST(kpspams_id AS text) = $1 AND status = 'OPEN' 
+            ORDER BY id DESC LIMIT 1
+          `, [kId.toString()]);
+          billingPeriodId = bpRows.length > 0 ? bpRows[0].id.toString() : (kId === "1" ? "6" : kId === "2" ? "12" : "18");
+        }
+
+        // Ambil stand sebelumnya dari meter_readings atau tabel meters
         const lastMr = await sql.query(`
           SELECT current_reading FROM meter_readings 
           WHERE connection_id = $1 OR CAST(connection_id AS text) = $2
           ORDER BY id DESC LIMIT 1
         `, [connId, connId]);
 
-        const prevReading = lastMr.length > 0 ? Number(lastMr[0].current_reading) : 0;
-        const usageM3 = Math.max(0, currentReading - prevReading);
+        let prevReading = 0;
+        if (lastMr.length > 0) {
+          prevReading = Number(lastMr[0].current_reading) || 0;
+        } else if (meterId) {
+          const mRow = await sql.query(`SELECT initial_reading FROM meters WHERE id = $1 LIMIT 1`, [meterId]);
+          prevReading = mRow.length > 0 ? (Number(mRow[0].initial_reading) || 0) : 0;
+        }
 
-        // Rumus Tagihan KPSPAMS Lemo Baru: Beban dasar Rp 10.000 (s.d 15 m3), kelebihan > 15 m3 = +Rp 1.000 / m3
+        // Kalkulasi pemakaian air dan tagihan
+        let usageM3 = 0;
         let totalAmount = 10000;
         let waterAmount = 0;
-        if (usageM3 > 15) {
-          const excess = usageM3 - 15;
-          waterAmount = excess * 1000;
-          totalAmount = 10000 + waterAmount;
+
+        if (isInitialSetup) {
+          usageM3 = 0;
+          totalAmount = 10000;
+          waterAmount = 0;
+        } else {
+          usageM3 = Math.max(0, currentReading - prevReading);
+          if (kId.toString() === "1") {
+            // Gravitasi Kuajang (LMB): Beban dasar Rp 10.000 s.d 15 m3, kelebihan > 15 m3 = +Rp 1.000 / m3
+            totalAmount = 10000;
+            if (usageM3 > 15) {
+              const excess = usageM3 - 15;
+              waterAmount = excess * 1000;
+              totalAmount = 10000 + waterAmount;
+            }
+          } else {
+            // Sumur Bor: Abonemen Rp 7.500 + pemakaian * Rp 2.000
+            waterAmount = usageM3 * 2000;
+            totalAmount = 7500 + waterAmount;
+          }
         }
 
         const mrRes = await sql.query(`
@@ -648,14 +707,21 @@ export async function onRequest(context: any) {
 
         const newMeterReadingId = mrRes[0]?.id;
 
+        // Update stand meter fisik pada tabel meters
+        if (meterId) {
+          await sql.query(`UPDATE meters SET initial_reading = $1, updated_at = NOW() WHERE id = $2`, [currentReading, meterId]);
+        }
+
+        // Buat atau perbarui invoice
         const existingInv = await sql.query(`
           SELECT * FROM invoices 
           WHERE (connection_id = $1 OR customer_id = $2) AND billing_period_id = $3
           LIMIT 1
         `, [connId.toString(), customerId.toString(), billingPeriodId.toString()]);
 
+        let invRow = null;
         if (existingInv.length > 0) {
-          await sql.query(`
+          const updatedInv = await sql.query(`
             UPDATE invoices SET
               usage_m3 = $1,
               water_amount = $2,
@@ -665,10 +731,12 @@ export async function onRequest(context: any) {
               meter_reading_id = COALESCE($4, meter_reading_id),
               updated_at = NOW()
             WHERE id = $5
+            RETURNING *
           `, [usageM3.toString(), waterAmount.toString(), totalAmount.toString(), newMeterReadingId ? newMeterReadingId.toString() : null, existingInv[0].id]);
+          invRow = updatedInv[0];
         } else {
-          const invNum = `INV/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP01/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-          await sql.query(`
+          const invNum = `INV/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP0${kId}/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          const insertedInv = await sql.query(`
             INSERT INTO invoices (
               kpspams_id, billing_period_id, connection_id, customer_id, meter_reading_id,
               invoice_number, invoice_date, due_date, usage_m3, water_amount,
@@ -679,14 +747,22 @@ export async function onRequest(context: any) {
               $6, NOW(), NOW() + INTERVAL '14 days', $7, $8,
               '10000', '0', '0', $9, '0', $9,
               'UNPAID', NOW(), NOW()
-            )
+            ) RETURNING *
           `, [
             kId.toString(), billingPeriodId.toString(), connId.toString(), customerId.toString(), newMeterReadingId ? newMeterReadingId.toString() : null,
             invNum, usageM3.toString(), waterAmount.toString(), totalAmount.toString()
           ]);
+          invRow = insertedInv[0];
         }
 
-        return jsonResponse({ status: "success", data: mrRes[0] }, 201);
+        return jsonResponse({
+          status: "success",
+          data: {
+            ...mrRes[0],
+            invoice_id: invRow?.id,
+            invoice: invRow,
+          }
+        }, 201);
       }
 
       const rows = await sql.query(`
@@ -704,31 +780,59 @@ export async function onRequest(context: any) {
     if (path === "payments") {
       if (method === "POST") {
         const b = await request.json().catch(() => ({}));
-        const invoiceId = b.invoice_id;
+        let invoiceId = b.invoice_id;
         const amountPaid = Number(b.amount_paid) || 10000;
         const cashAccountId = b.cash_account_id ? b.cash_account_id.toString() : "1";
         const paymentMethod = b.payment_method || "CASH";
         const referenceNo = b.reference_number || `FIELD-${Date.now().toString().slice(-6)}`;
-        const receiptNo = `KW/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP01/${Math.floor(1000 + Math.random() * 9000)}`;
 
-        let custId = "1";
-        let kpspamsId = "1";
-        if (invoiceId) {
-          const invRows = await sql.query(`SELECT * FROM invoices WHERE id = $1 LIMIT 1`, [invoiceId]);
+        let custId = b.customer_id ? b.customer_id.toString() : "1";
+        let kpspamsId = b.kpspams_id ? b.kpspams_id.toString() : "1";
+
+        // Jika invoice_id belum ada, cari atau buat invoice untuk pelanggan ini
+        if (!invoiceId) {
+          const invRows = await sql.query(`
+            SELECT * FROM invoices 
+            WHERE (customer_id = $1 OR connection_id = $2) AND status != 'PAID'
+            ORDER BY id DESC LIMIT 1
+          `, [custId, b.connection_id ? b.connection_id.toString() : custId]);
           if (invRows.length > 0) {
-            custId = invRows[0].customer_id ? invRows[0].customer_id.toString() : "1";
-            kpspamsId = invRows[0].kpspams_id ? invRows[0].kpspams_id.toString() : "1";
-
-            await sql.query(`
-              UPDATE invoices SET 
-                status = 'PAID',
-                paid_amount = $1,
-                balance_due = '0',
-                paid_at = NOW(),
-                updated_at = NOW()
-              WHERE id = $2
-            `, [amountPaid.toString(), invoiceId]);
+            invoiceId = invRows[0].id;
+            kpspamsId = invRows[0].kpspams_id || kpspamsId;
+          } else {
+            // Buat invoice lunas langsung
+            const bpRows = await sql.query(`SELECT id FROM billing_periods WHERE CAST(kpspams_id AS text) = $1 AND status = 'OPEN' ORDER BY id DESC LIMIT 1`, [kpspamsId]);
+            const bpId = bpRows.length > 0 ? bpRows[0].id.toString() : "6";
+            const invNum = `INV/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP0${kpspamsId}/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+            const newInv = await sql.query(`
+              INSERT INTO invoices (
+                kpspams_id, billing_period_id, connection_id, customer_id,
+                invoice_number, invoice_date, due_date, usage_m3, water_amount,
+                admin_fee, maintenance_fee, penalty_fee, total_amount, paid_amount, balance_due,
+                status, created_at, updated_at
+              ) VALUES (
+                $1, $2, $3, $4,
+                $5, NOW(), NOW() + INTERVAL '14 days', '0', '0',
+                $6, '0', '0', $6, $6, '0',
+                'PAID', NOW(), NOW()
+              ) RETURNING id
+            `, [kpspamsId, bpId, b.connection_id ? b.connection_id.toString() : custId, custId, invNum, amountPaid.toString()]);
+            invoiceId = newInv[0].id;
           }
+        }
+
+        const receiptNo = `KW/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP0${kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+        if (invoiceId) {
+          await sql.query(`
+            UPDATE invoices SET 
+              status = 'PAID',
+              paid_amount = $1,
+              balance_due = '0',
+              paid_at = NOW(),
+              updated_at = NOW()
+            WHERE id = $2
+          `, [amountPaid.toString(), invoiceId]);
         }
 
         const payResult = await sql.query(`
@@ -740,6 +844,7 @@ export async function onRequest(context: any) {
           ) RETURNING *
         `, [kpspamsId, invoiceId ? invoiceId.toString() : null, custId, cashAccountId, receiptNo, amountPaid.toString(), paymentMethod, referenceNo]);
 
+        // Catat ke Buku Kas (financial_transactions)
         const txNumber = `TX/IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
         await sql.query(`
           INSERT INTO financial_transactions (
@@ -751,11 +856,20 @@ export async function onRequest(context: any) {
           )
         `, [kpspamsId, cashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]);
 
+        // Sinkronkan saldo akun kas tunai di database
+        await sql.query(`
+          UPDATE cash_accounts SET
+            current_balance = (COALESCE(current_balance::numeric, 0) + $1)::text,
+            updated_at = NOW()
+          WHERE id = $2
+        `, [amountPaid, Number(cashAccountId)]);
+
         return jsonResponse({
           status: "success",
           data: {
             receipt_number: receiptNo,
             payment: payResult[0],
+            invoice_id: invoiceId,
           },
         }, 201);
       }
