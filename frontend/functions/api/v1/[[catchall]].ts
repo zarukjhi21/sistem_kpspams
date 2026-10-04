@@ -667,28 +667,272 @@ export async function onRequest(context: any) {
       return jsonResponse({ status: "success", data: rows });
     }
 
-    // 13. Financial Transactions
-    if (path === "financial-transactions" || path === "finances") {
+    // 13. Finance: Cash Accounts
+    if (path === "finance/cash-accounts") {
       const rows = await sql.query(`
-        SELECT ft.*, ca.account_name, k.name as kpspams_name
+        SELECT ca.*, k.name as kpspams_name, k.code as kpspams_code
+        FROM cash_accounts ca
+        LEFT JOIN kpspams k ON CAST(ca.kpspams_id AS integer) = k.id
+        WHERE ca.is_active = '1'
+        ORDER BY ca.id ASC
+      `);
+      const totalBalance = rows.reduce((acc: number, r: any) => acc + (parseFloat(r.current_balance) || 0), 0);
+      const mapped = rows.map((r: any) => ({
+        ...r,
+        kpspams: {
+          id: r.kpspams_id,
+          name: r.kpspams_name,
+          code: r.kpspams_code,
+        },
+      }));
+      return jsonResponse({
+        status: "success",
+        data: {
+          total_balance: totalBalance,
+          accounts: mapped,
+        },
+      });
+    }
+
+    // 13b. Finance: Update Opening Balance
+    if (path.startsWith("finance/cash-accounts/") && path.endsWith("/opening-balance") && method === "POST") {
+      const accountId = parseInt(pathParts[2], 10);
+      const b = await request.json().catch(() => ({}));
+      const opening = parseFloat(b.opening_balance) || 0;
+      const opDate = b.opening_balance_date || new Date().toISOString().split("T")[0];
+      const notes = b.notes || "Penyesuaian saldo awal resmi berita acara";
+
+      // Calculate net from financial_transactions for this account
+      const netTx = await sql.query(`
+        SELECT COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN CAST(amount AS numeric) ELSE -CAST(amount AS numeric) END), 0) as net
+        FROM financial_transactions WHERE CAST(cash_account_id AS text) = $1
+      `, [accountId.toString()]);
+      const net = parseFloat(netTx[0]?.net) || 0;
+      const newCur = opening + net;
+
+      await sql.query(`
+        UPDATE cash_accounts SET
+          opening_balance = $1,
+          opening_balance_date = $2,
+          opening_balance_notes = $3,
+          current_balance = $4,
+          updated_at = NOW()
+        WHERE id = $5
+      `, [opening.toString(), opDate, notes, newCur.toString(), accountId]);
+
+      return jsonResponse({
+        status: "success",
+        message: "Saldo awal kas berhasil disesuaikan dan diperbarui di database.",
+      });
+    }
+
+    // 13c. Finance: Transactions (GET, POST)
+    if (path === "finance/transactions" || path === "financial-transactions" || path === "finances") {
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const accountId = Number(b.cash_account_id) || 1;
+        const accRows = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [accountId]);
+        const kId = accRows.length > 0 ? (accRows[0].kpspams_id || "1") : "1";
+        const txType = b.transaction_type || "EXPENSE";
+        const amount = parseFloat(b.amount) || 0;
+        const txNum = `TX/${txType === "INCOME" ? "IN" : "OUT"}/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+        const txRes = await sql.query(`
+          INSERT INTO financial_transactions (
+            kpspams_id, cash_account_id, transaction_number, transaction_date,
+            transaction_type, category, amount, reference_type, description, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, 'MANUAL', $8, NOW(), NOW()
+          ) RETURNING *
+        `, [
+          kId.toString(), accountId.toString(), txNum,
+          b.transaction_date || new Date().toISOString().split("T")[0],
+          txType, b.category || "OPERASIONAL", amount.toString(), b.description || ""
+        ]);
+
+        const change = txType === "INCOME" ? amount : -amount;
+        await sql.query(`
+          UPDATE cash_accounts SET
+            current_balance = (CAST(current_balance AS numeric) + $1)::text,
+            updated_at = NOW()
+          WHERE id = $2
+        `, [change, accountId]);
+
+        return jsonResponse({
+          status: "success",
+          message: "Transaksi kas berhasil dicatat dan saldo kas telah diperbarui.",
+          data: txRes[0],
+        }, 201);
+      }
+
+      const rows = await sql.query(`
+        SELECT ft.*, ca.account_name, ca.account_code, ca.bank_name, k.name as kpspams_name
         FROM financial_transactions ft
         LEFT JOIN cash_accounts ca ON CAST(ft.cash_account_id AS integer) = ca.id
         LEFT JOIN kpspams k ON CAST(ft.kpspams_id AS integer) = k.id
         ORDER BY ft.id DESC
       `);
-      return jsonResponse({ status: "success", data: rows });
+      const mapped = rows.map((r: any) => ({
+        ...r,
+        cash_account: {
+          id: r.cash_account_id,
+          account_name: r.account_name,
+          account_code: r.account_code,
+          bank_name: r.bank_name,
+          kpspams: {
+            id: r.kpspams_id,
+            name: r.kpspams_name,
+          },
+        },
+      }));
+      return jsonResponse({ status: "success", data: mapped });
     }
 
-    // 14. Complaints
+    // 13d. Finance: Transfer Between Cash Accounts
+    if (path === "finance/transfer" && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      const fromId = Number(b.from_account_id);
+      const toId = Number(b.to_account_id);
+      const amount = parseFloat(b.amount) || 0;
+      const date = b.transfer_date || new Date().toISOString().split("T")[0];
+      const notes = b.notes || "Pemindahan dana kas internal";
+
+      if (!fromId || !toId || fromId === toId || amount <= 0) {
+        return jsonResponse({ status: "fail", message: "Parameter rekening asal dan tujuan tidak valid." }, 400);
+      }
+
+      const fromAcc = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [fromId]);
+      const toAcc = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [toId]);
+
+      if (fromAcc.length === 0 || toAcc.length === 0) {
+        return jsonResponse({ status: "fail", message: "Buku kas atau rekening bank tidak ditemukan." }, 404);
+      }
+
+      const kId = fromAcc[0].kpspams_id || "1";
+      const txNumOut = `TX/TRF-OUT/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+      const txNumIn = `TX/TRF-IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+      // Catat mutasi keluar dari rekening asal
+      await sql.query(`
+        INSERT INTO financial_transactions (
+          kpspams_id, cash_account_id, transaction_number, transaction_date,
+          transaction_type, category, amount, reference_type, description, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, 'EXPENSE', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
+        )
+      `, [kId.toString(), fromId.toString(), txNumOut, date, amount.toString(), `Transfer ke ${toAcc[0].account_name}: ${notes}`]);
+
+      // Catat mutasi masuk ke rekening tujuan
+      await sql.query(`
+        INSERT INTO financial_transactions (
+          kpspams_id, cash_account_id, transaction_number, transaction_date,
+          transaction_type, category, amount, reference_type, description, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, 'INCOME', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
+        )
+      `, [toAcc[0].kpspams_id || kId.toString(), toId.toString(), txNumIn, date, amount.toString(), `Terima transfer dari ${fromAcc[0].account_name}: ${notes}`]);
+
+      // Perbarui saldo rekening asal dan tujuan
+      await sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) - $1)::text, updated_at = NOW() WHERE id = $2`, [amount, fromId]);
+      await sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) + $1)::text, updated_at = NOW() WHERE id = $2`, [amount, toId]);
+
+      return jsonResponse({
+        status: "success",
+        message: `Pemindahan dana sebesar Rp ${amount.toLocaleString("id-ID")} berhasil diselesaikan.`,
+      });
+    }
+
+    // 14. Complaints & SPK Work Orders
+    if (path.startsWith("complaints/") && path.endsWith("/create-work-order") && method === "POST") {
+      const complaintId = parseInt(pathParts[1], 10);
+      const b = await request.json().catch(() => ({}));
+      const compRows = await sql.query(`SELECT * FROM complaints WHERE id = $1 LIMIT 1`, [complaintId]);
+
+      if (compRows.length === 0) {
+        return jsonResponse({ status: "fail", message: "Tiket pengaduan tidak ditemukan." }, 404);
+      }
+
+      const kId = Number(compRows[0].kpspams_id) || 1;
+      const techId = Number(b.assigned_to_user_id) || 7;
+      const schedDate = b.scheduled_date || new Date().toISOString().split("T")[0];
+      const supNotes = b.supervisor_notes || "Segera tindak lanjuti keluhan warga di lapangan.";
+      const woNum = `SPK/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+      const inserted = await sql.query(`
+        INSERT INTO work_orders (
+          kpspams_id, complaint_id, wo_number, assigned_to_user_id, scheduled_date,
+          status, supervisor_notes, labor_cost, material_cost, total_cost, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5, 'IN_PROGRESS', $6, 0, 0, 0, NOW(), NOW()
+        ) RETURNING *
+      `, [kId, complaintId, woNum, techId, schedDate, supNotes]);
+
+      await sql.query(`UPDATE complaints SET status = 'IN_PROGRESS', updated_at = NOW() WHERE id = $1`, [complaintId]);
+
+      return jsonResponse({
+        status: "success",
+        message: `SPK resmi nomor ${woNum} berhasil diterbitkan di database server.`,
+        data: inserted[0],
+      }, 201);
+    }
+
+    if (path.startsWith("complaints/") && (path.endsWith("/status") || pathParts.length === 2) && (method === "PATCH" || method === "PUT")) {
+      const complaintId = parseInt(pathParts[1], 10);
+      const b = await request.json().catch(() => ({}));
+
+      await sql.query(`
+        UPDATE complaints SET
+          status = COALESCE($1, status),
+          rejection_reason = COALESCE($2, rejection_reason),
+          resolved_at = CASE WHEN $1 = 'RESOLVED' THEN NOW()::text ELSE resolved_at END,
+          updated_at = NOW()::text
+        WHERE id = $3
+      `, [b.status || null, b.rejection_reason || null, complaintId]);
+
+      return jsonResponse({ status: "success", message: "Status pengaduan berhasil diperbarui." });
+    }
+
     if (path === "complaints") {
       const rows = await sql.query(`
-        SELECT comp.*, c.full_name as customer_name, k.name as kpspams_name
+        SELECT comp.*, 
+               c.full_name as customer_name, c.code as customer_code, c.phone as customer_phone,
+               k.name as kpspams_name,
+               d.name as dusun_name,
+               wo.id as wo_id, wo.wo_number, wo.status as wo_status,
+               tech.name as technician_name, tech.id as technician_id
         FROM complaints comp
         LEFT JOIN customers c ON CAST(comp.customer_id AS integer) = c.id
         LEFT JOIN kpspams k ON CAST(comp.kpspams_id AS integer) = k.id
+        LEFT JOIN connections conn ON CAST(comp.connection_id AS integer) = conn.id
+        LEFT JOIN dusun d ON CAST(conn.dusun_id AS integer) = d.id
+        LEFT JOIN work_orders wo ON wo.complaint_id = comp.id
+        LEFT JOIN users tech ON wo.assigned_to_user_id = tech.id
         ORDER BY comp.id DESC
       `);
-      return jsonResponse({ status: "success", data: rows });
+      const mapped = rows.map((r: any) => ({
+        ...r,
+        customer: {
+          id: r.customer_id,
+          full_name: r.customer_name,
+          code: r.customer_code,
+          phone: r.customer_phone,
+        },
+        connection: {
+          dusun: {
+            name: r.dusun_name,
+          },
+        },
+        work_order: r.wo_id ? {
+          id: r.wo_id,
+          wo_number: r.wo_number,
+          status: r.wo_status,
+          technician: {
+            id: r.technician_id,
+            name: r.technician_name,
+          },
+        } : null,
+      }));
+      return jsonResponse({ status: "success", data: mapped });
     }
 
     // 15. Dashboard Overview Metrics
@@ -705,15 +949,20 @@ export async function onRequest(context: any) {
           count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count
         FROM invoices
       `;
+      let cashQuery = "SELECT COALESCE(SUM(CAST(current_balance AS numeric)), 0) as balance FROM cash_accounts WHERE is_active = '1'";
       const queryParams: any[] = [];
+      const cashParams: any[] = [];
       if (kId) {
         custQuery += " AND CAST(kpspams_id AS integer) = $1";
         invQuery += " WHERE CAST(kpspams_id AS integer) = $1";
+        cashQuery += " AND CAST(kpspams_id AS integer) = $1";
         queryParams.push(kId);
+        cashParams.push(kId);
       }
 
       const custCount = await sql.query(custQuery, queryParams);
       const invStats = await sql.query(invQuery, queryParams);
+      const cashRes = await sql.query(cashQuery, cashParams);
       const kpspamsCount = await sql`SELECT count(*)::int as count FROM kpspams`;
       const meterUsage = await sql`SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings`;
       const complaintsCount = await sql`SELECT count(*)::int as count FROM complaints WHERE status IN ('SUBMITTED', 'VERIFIED', 'IN_PROGRESS')`;
@@ -723,6 +972,7 @@ export async function onRequest(context: any) {
       const arrears = Number(invStats[0]?.total_unpaid) || 0;
       const rate = billed > 0 ? Number(((collected / billed) * 100).toFixed(1)) : 100;
       const activeCust = Number(custCount[0]?.count) || 0;
+      const totalCashBalance = Number(cashRes[0]?.balance) || 0;
 
       return jsonResponse({
         status: "success",
@@ -742,7 +992,7 @@ export async function onRequest(context: any) {
             total_collected: collected,
             total_arrears: arrears,
             collection_rate_percent: rate,
-            total_cash_balance: 0,
+            total_cash_balance: totalCashBalance,
             active_complaints: Number(complaintsCount[0]?.count) || 0,
           },
           active_customers: activeCust,
@@ -910,11 +1160,54 @@ export async function onRequest(context: any) {
       });
     }
 
-    // 17. Users list
+    // 17. Users Management (CRUD)
     if (path === "users") {
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const username = (b.username || "").trim().toLowerCase();
+        if (!username || !b.name) {
+          return jsonResponse({ status: "fail", message: "Nama lengkap dan username login wajib diisi." }, 400);
+        }
+
+        const existing = await sql.query(`SELECT id FROM users WHERE username = $1 AND deleted_at IS NULL`, [username]);
+        if (existing.length > 0) {
+          return jsonResponse({ status: "fail", message: `Username @${username} sudah digunakan. Silakan gunakan username lain.` }, 400);
+        }
+
+        const pwd = b.password || "Kuajang2026!";
+        const hashedPassword = bcrypt.hashSync(pwd, 10);
+        const kId = b.kpspams_id !== null && b.kpspams_id !== undefined ? Number(b.kpspams_id) : null;
+        const email = b.email || `${username}@desa-kuajang.id`;
+
+        const userInserted = await sql.query(`
+          INSERT INTO users (
+            name, username, email, phone, password, kpspams_id, is_active, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, true, NOW(), NOW()
+          ) RETURNING id, name, username, email, phone, kpspams_id, is_active
+        `, [b.name.trim(), username, email, b.phone || "081200000000", hashedPassword, kId]);
+
+        const newUserId = userInserted[0].id;
+        const roleName = b.role || "petugas_lapangan";
+        const roleRows = await sql.query(`SELECT id FROM roles WHERE name = $1 LIMIT 1`, [roleName]);
+        const roleId = roleRows.length > 0 ? roleRows[0].id : 7;
+
+        await sql.query(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [newUserId.toString(), roleId.toString()]);
+
+        return jsonResponse({
+          status: "success",
+          message: "Akun pengguna baru berhasil dibuat di database server.",
+          data: {
+            ...userInserted[0],
+            role: roleName,
+            role_id: roleId,
+          },
+        }, 201);
+      }
+
       const rows = await sql.query(`
-        SELECT u.id, u.name, u.username, u.email, u.phone, u.is_active,
-               r.name as role_name, r.display_name as role_display_name,
+        SELECT u.id, u.name, u.username, u.email, u.phone, u.kpspams_id, u.is_active,
+               r.id as role_id, r.name as role_name, r.display_name as role_display_name,
                k.name as kpspams_name
         FROM users u
         LEFT JOIN user_roles ur ON u.id = CAST(ur.user_id AS integer)
@@ -923,7 +1216,68 @@ export async function onRequest(context: any) {
         WHERE u.deleted_at IS NULL
         ORDER BY u.id ASC
       `);
-      return jsonResponse({ status: "success", data: rows });
+      const mapped = rows.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        username: r.username,
+        email: r.email,
+        phone: r.phone,
+        kpspams_id: r.kpspams_id,
+        is_active: r.is_active,
+        role_id: r.role_id,
+        role_name: r.role_name,
+        role_display_name: r.role_display_name,
+        roles: [
+          {
+            id: r.role_id,
+            name: r.role_name || "petugas_lapangan",
+            display_name: r.role_display_name || "Petugas Lapangan",
+          },
+        ],
+        kpspams: {
+          id: r.kpspams_id,
+          name: r.kpspams_name,
+        },
+        kpspams_name: r.kpspams_name,
+      }));
+      return jsonResponse({ status: "success", data: mapped });
+    }
+
+    if (path.startsWith("users/") && method === "PUT") {
+      const userId = parseInt(pathParts[1], 10);
+      const b = await request.json().catch(() => ({}));
+      const kId = b.kpspams_id !== null && b.kpspams_id !== undefined ? Number(b.kpspams_id) : null;
+
+      await sql.query(`
+        UPDATE users SET
+          name = COALESCE($1, name),
+          phone = COALESCE($2, phone),
+          kpspams_id = $3,
+          updated_at = NOW()
+        WHERE id = $4
+      `, [b.name ? b.name.trim() : null, b.phone ? b.phone.trim() : null, kId, userId]);
+
+      if (b.password && b.password.trim()) {
+        const hashed = bcrypt.hashSync(b.password.trim(), 10);
+        await sql.query(`UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2`, [hashed, userId]);
+      }
+
+      if (b.role) {
+        const roleRows = await sql.query(`SELECT id FROM roles WHERE name = $1 LIMIT 1`, [b.role]);
+        if (roleRows.length > 0) {
+          const roleId = roleRows[0].id;
+          await sql.query(`DELETE FROM user_roles WHERE user_id = $1 OR user_id = $2`, [userId.toString(), userId]);
+          await sql.query(`INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)`, [userId.toString(), roleId.toString()]);
+        }
+      }
+
+      return jsonResponse({ status: "success", message: "Data pengguna berhasil diperbarui di server." });
+    }
+
+    if (path.startsWith("users/") && method === "DELETE") {
+      const userId = parseInt(pathParts[1], 10);
+      await sql.query(`UPDATE users SET deleted_at = NOW(), is_active = false, updated_at = NOW() WHERE id = $1`, [userId]);
+      return jsonResponse({ status: "success", message: "Akun pengguna berhasil dinonaktifkan/dihapus dari sistem." });
     }
 
     // 18. Upload KTP to Google Drive
