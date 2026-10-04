@@ -146,7 +146,14 @@ export async function onRequest(context: any) {
 
     // 3. Auth Me
     if (path === "auth/me" && method === "GET") {
-      const userRows = await sql.query(`
+      const authHeader = request.headers.get("Authorization") || request.headers.get("authorization") || "";
+      let tokenUserId: number | null = null;
+      if (authHeader.startsWith("Bearer cf_tok_")) {
+        const parts = authHeader.replace("Bearer cf_tok_", "").split("_");
+        tokenUserId = parseInt(parts[0], 10);
+      }
+
+      let userQuery = `
         SELECT u.id, u.name, u.username, u.email, u.phone, u.kpspams_id,
                r.id as role_id, r.name as role_name, r.display_name as role_display_name, r.scope_level,
                k.name as kpspams_name, k.code as kpspams_code
@@ -155,8 +162,16 @@ export async function onRequest(context: any) {
         LEFT JOIN roles r ON CAST(ur.role_id AS integer) = r.id
         LEFT JOIN kpspams k ON u.kpspams_id = k.id
         WHERE u.deleted_at IS NULL
-        ORDER BY u.id ASC LIMIT 1
-      `);
+      `;
+      const queryParams: any[] = [];
+      if (tokenUserId && !isNaN(tokenUserId)) {
+        userQuery += " AND u.id = $1 LIMIT 1";
+        queryParams.push(tokenUserId);
+      } else {
+        userQuery += " ORDER BY u.id ASC LIMIT 1";
+      }
+
+      const userRows = await sql.query(userQuery, queryParams);
       const user = userRows[0] || {};
       return jsonResponse({
         status: "success",
@@ -228,7 +243,7 @@ export async function onRequest(context: any) {
 
     // 8. Billing Periods
     if (path === "billing-periods") {
-      const rows = await sql`SELECT * FROM billing_periods ORDER BY start_date DESC`;
+      const rows = await sql`SELECT * FROM billing_periods ORDER BY id DESC`;
       return jsonResponse({ status: "success", data: rows });
     }
 
@@ -974,13 +989,18 @@ export async function onRequest(context: any) {
       const activeCust = Number(custCount[0]?.count) || 0;
       const totalCashBalance = Number(cashRes[0]?.balance) || 0;
 
+      const activeBp = await sql.query(`
+        SELECT name FROM billing_periods WHERE status = 'OPEN' ORDER BY id DESC LIMIT 1
+      `);
+      const periodLabel = activeBp.length > 0 ? activeBp[0].name : "Periode Berjalan";
+
       return jsonResponse({
         status: "success",
         data: {
           context: {
             kpspams_id: kId,
             scope_label: kId === 1 ? "KPSPAMS Lemo Baru" : "Konsolidasi Seluruh Desa Kuajang",
-            period: "Periode Berjalan Oktober 2026",
+            period: periodLabel,
           },
           kpi: {
             total_customers: activeCust,
