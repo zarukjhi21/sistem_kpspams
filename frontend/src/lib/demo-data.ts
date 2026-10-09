@@ -19,6 +19,7 @@ export interface DemoKpspams {
   systemType: 'GRAVITASI' | 'SUMUR_BOR';
   waterSource: string;
   hasElectricityCost: boolean;
+  totalPhysicalMeterM3?: number;
 }
 
 export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
@@ -28,12 +29,13 @@ export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
     name: 'KPSPAMS Lemo Baru',
     dusuns: ['Dusun Lemo Baru'],
     head: 'Fadli',
-    activeCustomers: 37, // 37 SR Aktif Terverifikasi Server
-    waterUsageThisMonth: 271,
-    totalBilled: 370000,
-    totalCollected: 370000,
+    activeCustomers: 42, // SR Aktif Terverifikasi Server
+    waterUsageThisMonth: 0, // Pencatatan Perdana Stand Awal
+    totalPhysicalMeterM3: 49635.5, // Total kumulatif stand fisik seluruh SR
+    totalBilled: 420000,
+    totalCollected: 420000,
     outstandingArrears: 0,
-    cashBalance: 30136000, // Rp 29.766.000 saldo awal + Rp 370.000 iuran 37 SR
+    cashBalance: 30186000,
     activeComplaints: 0,
     systemType: 'GRAVITASI',
     waterSource: 'Mata Air Alami Pegunungan (Sistem Gravitasi Murni - Tanpa Pompa Listrik)',

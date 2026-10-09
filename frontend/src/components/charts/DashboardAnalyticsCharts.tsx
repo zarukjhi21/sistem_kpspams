@@ -162,7 +162,7 @@ export function DashboardAnalyticsCharts({
   // Nilai riil dari basis data melalui overviewData
   const realBilled = Number(overviewData?.kpi?.total_billed ?? (overviewData?.total_billed ?? (realPaidCount > 0 ? realPaidCount * 10000 : 0)));
   const realCollected = Number(overviewData?.kpi?.total_collected ?? (overviewData?.total_collected ?? (realPaidCount > 0 ? realPaidCount * 10000 : 0)));
-  const realTotalUsage = Number(overviewData?.kpi?.total_usage_m3 ?? (overviewData?.total_consumption_m3 ?? 271));
+  const realTotalUsage = Number(overviewData?.kpi?.total_usage_m3 ?? (overviewData?.total_consumption_m3 ?? 0));
 
   // Data Tren Penagihan & Realisasi Kas
   // Baseline dinolkan karena penagihan digital dimulai Oktober 2026

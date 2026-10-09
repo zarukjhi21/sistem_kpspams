@@ -26,6 +26,7 @@ import {
   Clock,
   Smartphone,
   RefreshCw,
+  Gauge,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -56,6 +57,7 @@ interface OverviewApiData {
     sealed_connections: number;
     disconnected_connections: number;
     total_usage_m3: number;
+    total_physical_meter_m3?: number;
     total_billed: number;
     total_collected: number;
     total_arrears: number;
@@ -68,6 +70,8 @@ interface OverviewApiData {
     code: string;
     name: string;
     total_connections: number;
+    total_usage_m3?: number;
+    total_physical_meter_m3?: number;
   }>;
   unit_breakdown?: Array<{
     kpspams_id: number;
@@ -75,6 +79,8 @@ interface OverviewApiData {
     name: string;
     dusuns: string[];
     total_customers: number;
+    total_usage_m3?: number;
+    total_physical_meter_m3?: number;
     total_billed: number;
     total_collected: number;
     total_arrears: number;
@@ -160,6 +166,16 @@ function DashboardContent() {
       : overviewData?.kpi?.total_usage_m3 ??
         (overviewData as any)?.total_consumption_m3 ??
         currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
+
+  const dusunSumPhysicalMeter = overviewData?.dusun_breakdown?.reduce(
+    (acc: number, curr: any) => acc + (Number(curr.total_physical_meter_m3) || 0),
+    0
+  );
+
+  const totalPhysicalMeter =
+    overviewData?.kpi?.total_physical_meter_m3 ??
+    (dusunSumPhysicalMeter && dusunSumPhysicalMeter > 0 ? dusunSumPhysicalMeter : undefined) ??
+    currentUnits.reduce((acc, curr) => acc + (curr.totalPhysicalMeterM3 || 0), 0);
 
   const totalBilled =
     overviewData?.kpi?.total_billed ??
@@ -259,11 +275,11 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 2 */}
+        {/* Metric 2: Pemakaian Air Bulan Berjalan */}
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Pemakaian Air
+              Pemakaian Air Bulan Ini
             </span>
             <div className="p-2 rounded-xl bg-cyan-50 text-cyan-700">
               <Activity className="w-4 h-4" />
@@ -274,15 +290,38 @@ function DashboardContent() {
               {Number(totalUsage).toLocaleString("id-ID")}
               <span className="text-xs sm:text-sm font-normal text-slate-500 ml-1">m³</span>
             </span>
+            <Badge variant="brand" size="sm">Bulan Berjalan</Badge>
           </div>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
             {totalUsage === 0
-              ? "Pencatatan meter periode berjalan"
+              ? "Masa transisi stand awal • Beban dasar Rp 10.000/SR"
               : `Rata-rata ${(totalCustomers > 0 ? (Number(totalUsage) / totalCustomers).toFixed(1) : 0)} m³/SR`}
           </p>
         </Card>
 
-        {/* Metric 3 */}
+        {/* Metric 3: Total Stand Fisik Meteran (Odometer SR) */}
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              Total Stand Fisik Meteran
+            </span>
+            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700">
+              <Gauge className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
+            <span className="text-xl sm:text-3xl font-black text-indigo-950 font-tabular">
+              {Number(totalPhysicalMeter).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+              <span className="text-xs sm:text-sm font-normal text-slate-500 ml-1">m³</span>
+            </span>
+            <Badge variant="neutral" size="sm">Odometer SR</Badge>
+          </div>
+          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+            Total akumulasi putaran meter fisik {realCustomerCount} SR di lapangan
+          </p>
+        </Card>
+
+        {/* Metric 4: Penerimaan Iuran Air */}
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">

@@ -1271,11 +1271,35 @@ export async function onRequest(context: any) {
         cashParams.push(kId);
       }
 
-      let meterQuery = "SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings";
+      let meterQuery = `
+        SELECT COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage 
+        FROM meter_readings mr
+        LEFT JOIN billing_periods bp ON mr.billing_period_id::text = bp.id::text
+        WHERE (bp.status = 'OPEN' OR mr.billing_period_id = '6')
+      `;
       const meterParams: any[] = [];
       if (kId) {
-        meterQuery += " WHERE CAST(kpspams_id AS integer) = $1";
+        meterQuery += " AND CAST(mr.kpspams_id AS integer) = $1";
         meterParams.push(kId);
+      }
+
+      let physicalMeterQuery = `
+        SELECT COALESCE(SUM(
+          COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading::numeric, 0)
+        ), 0)::numeric as total_physical_meter
+        FROM connections conn
+        LEFT JOIN meters m ON conn.meter_id::text = m.id::text
+        LEFT JOIN LATERAL (
+          SELECT current_reading FROM meter_readings 
+          WHERE connection_id = conn.id::text 
+          ORDER BY id DESC LIMIT 1
+        ) mr ON true
+        WHERE conn.status = 'ACTIVE' AND conn.deleted_at IS NULL
+      `;
+      const physicalParams: any[] = [];
+      if (kId) {
+        physicalMeterQuery += " AND CAST(conn.kpspams_id AS integer) = $1";
+        physicalParams.push(kId);
       }
 
       let compQuery = "SELECT count(*)::int as count FROM complaints WHERE status NOT IN ('RESOLVED', 'REJECTED')";
@@ -1332,21 +1356,28 @@ export async function onRequest(context: any) {
           d.code, 
           d.name, 
           count(DISTINCT conn.id)::int as total_connections,
-          COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage_m3
+          COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage_m3,
+          COALESCE(sum(COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading::numeric, 0)), 0)::numeric as total_physical_meter_m3
         FROM dusun d
-        LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE'
-        LEFT JOIN meter_readings mr ON CAST(mr.connection_id AS text) = CAST(conn.id AS text)
+        LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE' AND conn.deleted_at IS NULL
+        LEFT JOIN meters m ON conn.meter_id::text = m.id::text
+        LEFT JOIN LATERAL (
+          SELECT current_reading, usage_m3 FROM meter_readings 
+          WHERE connection_id = conn.id::text 
+          ORDER BY id DESC LIMIT 1
+        ) mr ON true
         GROUP BY d.id, d.code, d.name
         ORDER BY d.id ASC
       `;
 
-      // Eksekusi seluruh 9 query independen secara paralel dengan Promise.all
+      // Eksekusi seluruh query independen secara paralel dengan Promise.all
       const [
         custCount,
         invStats,
         cashRes,
         kpspamsCount,
         meterUsage,
+        physicalMeter,
         complaintsCount,
         activeBp,
         unitBreakdownRows,
@@ -1358,6 +1389,7 @@ export async function onRequest(context: any) {
         sql.query(cashQuery, cashParams),
         sql`SELECT count(*)::int as count FROM kpspams`,
         sql.query(meterQuery, meterParams),
+        sql.query(physicalMeterQuery, physicalParams),
         sql.query(compQuery, compParams),
         sql.query(activeBpQuery),
         sql.query(unitBreakdownQuery),
@@ -1414,6 +1446,7 @@ export async function onRequest(context: any) {
             sealed_connections: 0,
             disconnected_connections: 0,
             total_usage_m3: Number(meterUsage[0]?.total_usage) || 0,
+            total_physical_meter_m3: Number(physicalMeter[0]?.total_physical_meter) || 0,
             total_billed: billed,
             total_collected: collected,
             total_arrears: arrears,
@@ -1421,7 +1454,14 @@ export async function onRequest(context: any) {
             total_cash_balance: totalCashBalance,
             active_complaints: Number(complaintsCount[0]?.count) || 0,
           },
-          dusun_breakdown: dusunRows,
+          dusun_breakdown: dusunRows.map((d: any) => ({
+            dusun_id: d.dusun_id,
+            code: d.code,
+            name: d.name,
+            total_connections: Number(d.total_connections) || 0,
+            total_usage_m3: Number(d.total_usage_m3) || 0,
+            total_physical_meter_m3: Number(d.total_physical_meter_m3) || 0,
+          })),
           unit_breakdown: unitBreakdown,
           active_customers: activeCust,
           total_kpspams: kpspamsCount[0]?.count || 1,
@@ -1567,7 +1607,7 @@ export async function onRequest(context: any) {
 
     // 16c. Portal Transparency Data (Public)
     if (path === "portal/transparency") {
-      const [cashRows, custRows, meterRows, expenseRows] = await Promise.all([
+      const [cashRows, custRows, meterRows, physRows, expenseRows] = await Promise.all([
         sql.query(`
           SELECT 
             CAST(kpspams_id AS integer) as kid,
@@ -1588,8 +1628,26 @@ export async function onRequest(context: any) {
           SELECT 
             CAST(kpspams_id AS integer) as kid,
             COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as usage_m3
-          FROM meter_readings
+          FROM meter_readings mr
+          LEFT JOIN billing_periods bp ON mr.billing_period_id::text = bp.id::text
+          WHERE (bp.status = 'OPEN' OR mr.billing_period_id = '6')
           GROUP BY CAST(kpspams_id AS integer)
+        `),
+        sql.query(`
+          SELECT 
+            CAST(conn.kpspams_id AS integer) as kid,
+            COALESCE(SUM(
+              COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading::numeric, 0)
+            ), 0)::numeric as total_physical_meter
+          FROM connections conn
+          LEFT JOIN meters m ON conn.meter_id::text = m.id::text
+          LEFT JOIN LATERAL (
+            SELECT current_reading FROM meter_readings 
+            WHERE connection_id = conn.id::text 
+            ORDER BY id DESC LIMIT 1
+          ) mr ON true
+          WHERE conn.status = 'ACTIVE' AND conn.deleted_at IS NULL
+          GROUP BY CAST(conn.kpspams_id AS integer)
         `),
         sql.query(`
           SELECT 
@@ -1615,6 +1673,11 @@ export async function onRequest(context: any) {
       const meterMap: Record<number, number> = {};
       meterRows.forEach((r: any) => {
         meterMap[Number(r.kid)] = Number(r.usage_m3) || 0;
+      });
+
+      const physMap: Record<number, number> = {};
+      physRows.forEach((r: any) => {
+        physMap[Number(r.kid)] = Number(r.total_physical_meter) || 0;
       });
 
       const expenseMap: Record<number, {
@@ -1675,8 +1738,9 @@ export async function onRequest(context: any) {
           units: {
             LMB: {
               cash: lmbCash,
-              customers: custMap[1] || 37,
-              usage_m3: meterMap[1] || 271,
+              customers: custMap[1] || 42,
+              usage_m3: meterMap[1] || 0,
+              physical_meter_m3: physMap[1] || 49635.5,
               name: "KPSPAMS Lemo Baru",
               expenses: lmbExp,
             },
@@ -1684,6 +1748,7 @@ export async function onRequest(context: any) {
               cash: lmtCash,
               customers: custMap[2] || 0,
               usage_m3: meterMap[2] || 0,
+              physical_meter_m3: physMap[2] || 0,
               name: "KPSPAMS Lemo Tua",
               expenses: lmtExp,
             },
@@ -1691,14 +1756,16 @@ export async function onRequest(context: any) {
               cash: sr1Cash,
               customers: custMap[3] || 0,
               usage_m3: meterMap[3] || 0,
+              physical_meter_m3: physMap[3] || 0,
               name: "KPSPAMS Sarampu 1",
               expenses: sr1Exp,
             },
           },
           total_cash: lmbCash + lmtCash + sr1Cash,
           total_expenses: lmbExp.total + lmtExp.total + sr1Exp.total,
-          total_customers: (custMap[1] || 37) + (custMap[2] || 0) + (custMap[3] || 0),
-          total_usage_m3: (meterMap[1] || 271) + (meterMap[2] || 0) + (meterMap[3] || 0),
+          total_customers: (custMap[1] || 42) + (custMap[2] || 0) + (custMap[3] || 0),
+          total_usage_m3: (meterMap[1] || 0) + (meterMap[2] || 0) + (meterMap[3] || 0),
+          total_physical_meter_m3: (physMap[1] || 49635.5) + (physMap[2] || 0) + (physMap[3] || 0),
         },
       }, 200, {
         "Cache-Control": "public, max-age=15, stale-while-revalidate=60",
