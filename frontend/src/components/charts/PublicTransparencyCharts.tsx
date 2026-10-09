@@ -55,6 +55,13 @@ export interface AllocationItem {
   desc: string;
 }
 
+export interface UnitExpenses {
+  maintenance: number;
+  chemicals: number;
+  operational: number;
+  total: number;
+}
+
 export interface SystemData {
   label: string;
   tabIcon: any;
@@ -62,20 +69,163 @@ export interface SystemData {
   title: string;
   subtitle: string;
   totalMonthly: number;
+  totalExpense: number;
   note: string;
   allocations: AllocationItem[];
 }
 
-function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number): Record<SystemViewKey, SystemData> {
+function buildSystemAllocation(
+  lmbCash: number,
+  lmtCash: number,
+  sr1Cash: number,
+  lmbExp?: UnitExpenses,
+  lmtExp?: UnitExpenses,
+  sr1Exp?: UnitExpenses
+): Record<SystemViewKey, SystemData> {
+  const lmbExpenses = lmbExp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+  const lmtExpenses = lmtExp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+  const sr1Expenses = sr1Exp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+
   const totalVillageCash = lmbCash + lmtCash + sr1Cash;
+  const totalVillageExpenses = lmbExpenses.total + lmtExpenses.total + sr1Expenses.total;
 
-  const lmbAlloc1 = Math.round(lmbCash * 0.50);
-  const lmbAlloc2 = Math.round(lmbCash * 0.25);
-  const lmbAlloc3 = Math.max(0, lmbCash - lmbAlloc1 - lmbAlloc2);
+  const lmbTotalFunds = lmbCash + lmbExpenses.total;
+  const lmbAllocations: AllocationItem[] = lmbExpenses.total === 0 ? [
+    {
+      name: "Saldo Kas Tersedia (Utuh di Kas Pengurus)",
+      percent: 100,
+      value: lmbCash,
+      color: "#10b981",
+      icon: PiggyBank,
+      desc: "Kas tersimpan utuh di kas pengurus (Belum ada transaksi pengeluaran belanja)",
+    },
+    {
+      name: "Realisasi Pemeliharaan Pipa Transmisi",
+      percent: 0,
+      value: 0,
+      color: "#06b6d4",
+      icon: Wrench,
+      desc: "Rp 0 (Belum ada transaksi pengeluaran belanja pipa/perbaikan)",
+    },
+    {
+      name: "Realisasi Kaporitisasi & Filter Bak",
+      percent: 0,
+      value: 0,
+      color: "#3b82f6",
+      icon: Droplets,
+      desc: "Rp 0 (Belum ada transaksi pengeluaran bahan kimia filter)",
+    },
+    {
+      name: "Realisasi Beban Operasional Lapangan",
+      percent: 0,
+      value: 0,
+      color: "#f59e0b",
+      icon: ShieldCheck,
+      desc: "Rp 0 (Belum ada transaksi pengeluaran operasional)",
+    },
+  ] : [
+    {
+      name: "Saldo Kas Tersedia",
+      percent: Math.max(1, Math.round((lmbCash / lmbTotalFunds) * 100)),
+      value: lmbCash,
+      color: "#10b981",
+      icon: PiggyBank,
+      desc: "Sisa saldo kas operasional aktif tersedia",
+    },
+    {
+      name: "Realisasi Pemeliharaan Pipa Transmisi",
+      percent: Math.round((lmbExpenses.maintenance / lmbTotalFunds) * 100),
+      value: lmbExpenses.maintenance,
+      color: "#06b6d4",
+      icon: Wrench,
+      desc: "Total belanja riil perbaikan pipa & bak",
+    },
+    {
+      name: "Realisasi Kaporitisasi & Filter Bak",
+      percent: Math.round((lmbExpenses.chemicals / lmbTotalFunds) * 100),
+      value: lmbExpenses.chemicals,
+      color: "#3b82f6",
+      icon: Droplets,
+      desc: "Total belanja riil kaporit & penjernih",
+    },
+    {
+      name: "Realisasi Beban Operasional",
+      percent: Math.round((lmbExpenses.operational / lmbTotalFunds) * 100),
+      value: lmbExpenses.operational,
+      color: "#f59e0b",
+      icon: ShieldCheck,
+      desc: "Total belanja riil operasional lapangan",
+    },
+  ];
 
-  const allAlloc1 = Math.round(totalVillageCash * 0.50);
-  const allAlloc2 = Math.round(totalVillageCash * 0.25);
-  const allAlloc3 = Math.max(0, totalVillageCash - allAlloc1 - allAlloc2);
+  const allTotalFunds = totalVillageCash + totalVillageExpenses;
+  const allAllocations: AllocationItem[] = totalVillageExpenses === 0 ? [
+    {
+      name: "Total Saldo Kas Tersedia Utuh",
+      percent: 100,
+      value: totalVillageCash,
+      color: "#10b981",
+      icon: PiggyBank,
+      desc: "Seluruh kas desa tersimpan utuh di kas pengurus",
+    },
+    {
+      name: "Realisasi Pemeliharaan Jaringan",
+      percent: 0,
+      value: 0,
+      color: "#06b6d4",
+      icon: Wrench,
+      desc: "Rp 0 (Belum ada transaksi pengeluaran jaringan)",
+    },
+    {
+      name: "Realisasi Kaporitisasi & Filter",
+      percent: 0,
+      value: 0,
+      color: "#3b82f6",
+      icon: Droplets,
+      desc: "Rp 0 (Belum ada transaksi pengeluaran bahan kimia)",
+    },
+    {
+      name: "Realisasi Biaya Operasional",
+      percent: 0,
+      value: 0,
+      color: "#f59e0b",
+      icon: ShieldCheck,
+      desc: "Rp 0 (Belum ada transaksi operasional desa)",
+    },
+  ] : [
+    {
+      name: "Total Saldo Kas Tersedia",
+      percent: Math.max(1, Math.round((totalVillageCash / allTotalFunds) * 100)),
+      value: totalVillageCash,
+      color: "#10b981",
+      icon: PiggyBank,
+      desc: "Sisa kas konsolidasi desa yang belum terpakai",
+    },
+    {
+      name: "Realisasi Pemeliharaan Jaringan",
+      percent: Math.round(((lmbExpenses.maintenance + lmtExpenses.maintenance + sr1Expenses.maintenance) / allTotalFunds) * 100),
+      value: lmbExpenses.maintenance + lmtExpenses.maintenance + sr1Expenses.maintenance,
+      color: "#06b6d4",
+      icon: Wrench,
+      desc: "Pengeluaran riil perbaikan pipa seluruh unit",
+    },
+    {
+      name: "Realisasi Kaporitisasi & Filter",
+      percent: Math.round(((lmbExpenses.chemicals + lmtExpenses.chemicals + sr1Expenses.chemicals) / allTotalFunds) * 100),
+      value: lmbExpenses.chemicals + lmtExpenses.chemicals + sr1Expenses.chemicals,
+      color: "#3b82f6",
+      icon: Droplets,
+      desc: "Pengeluaran riil kaporit seluruh unit",
+    },
+    {
+      name: "Realisasi Operasional",
+      percent: Math.round(((lmbExpenses.operational + lmtExpenses.operational + sr1Expenses.operational) / allTotalFunds) * 100),
+      value: lmbExpenses.operational + lmtExpenses.operational + sr1Expenses.operational,
+      color: "#f59e0b",
+      icon: ShieldCheck,
+      desc: "Pengeluaran riil operasional seluruh unit",
+    },
+  ];
 
   return {
     LMB: {
@@ -85,35 +235,11 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: 'KPSPAMS "Wai Kaili" Lemo Baru (Aktif)',
       subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi (37 SR)",
       totalMonthly: lmbCash,
-      note: lmbCash > 0
-        ? `Keunggulan Alami Wai Kaili Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Total dana kas terhimpun Rp ${lmbCash.toLocaleString("id-ID")} (akumulasi saldo awal kas pengurus Rp 29.766.000 dan penerimaan iuran 37 SR sebesar Rp 370.000) dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi/filter bak, dan kas cadangan warga.`
-        : "Keunggulan Alami Wai Kaili Lemo Baru: 100% menggunakan sistem gravitasi alami pegunungan (0% biaya listrik PLN). Saldo kas awal saat ini Rp 0 (bersih). Seluruh penerimaan iuran warga yang masuk nantinya akan dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
-      allocations: [
-        {
-          name: "Pemeliharaan Pipa Transmisi Gravitasi",
-          percent: 50,
-          value: lmbAlloc1,
-          color: "#06b6d4",
-          icon: Wrench,
-          desc: "Perawatan broncaptering mata air & pipa transmisi pegunungan",
-        },
-        {
-          name: "Kaporitisasi & Filter Bak",
-          percent: 25,
-          value: lmbAlloc2,
-          color: "#3b82f6",
-          icon: Droplets,
-          desc: "Klorinasi rutin bak penenang & filter pasir",
-        },
-        {
-          name: "Kas Cadangan Warga",
-          percent: 25,
-          value: lmbAlloc3,
-          color: "#a855f7",
-          icon: PiggyBank,
-          desc: "Tabungan kas warga untuk peremajaan pipa pecah",
-        },
-      ],
+      totalExpense: lmbExpenses.total,
+      note: lmbExpenses.total === 0
+        ? `Catatan Transparansi Riil: Seluruh dana kas terhimpun Rp ${lmbCash.toLocaleString("id-ID")} (Saldo Awal Pengurus Rp 29.766.000 + Iuran 37 SR Rp 370.000) saat ini tersimpan 100% utuh di Kas Operasional Pengurus. Belum ada catatan transaksi pengeluaran kas (Pengeluaran Riil = Rp 0). Setiap pengeluaran belanja yang dicatat pengurus di Buku Kas otomatis akan tampil di sini secara jujur dan transparan.`
+        : `Catatan Transparansi Riil: Dari total dana kas yang terhimpun, telah direalisasikan pengeluaran belanja sebesar Rp ${lmbExpenses.total.toLocaleString("id-ID")}, dan sisa saldo kas operasional yang tersedia saat ini adalah Rp ${lmbCash.toLocaleString("id-ID")}.`,
+      allocations: lmbAllocations,
     },
     ALL: {
       label: "Semua Unit Desa",
@@ -122,35 +248,11 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: "Konsolidasi Unit Desa Kuajang",
       subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang (37 SR Aktif)",
       totalMonthly: totalVillageCash,
-      note: totalVillageCash > 0
-        ? `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS "Wai Kaili" Lemo Baru dengan 37 SR aktif terverifikasi dan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")} (termasuk saldo awal kas pengurus Rp 29.766.000). Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`
-        : "Laporan Konsolidasi: Seluruh kas unit KPSPAMS berstatus Rp 0 (bersih). Unit Lemo Baru siap beroperasi dengan sistem gravitasi murni (0% listrik), unit Lemo Tua dan Sarampu 1 dalam tahap persiapan.",
-      allocations: [
-        {
-          name: "Pemeliharaan Pipa Transmisi",
-          percent: 50,
-          value: allAlloc1,
-          color: "#06b6d4",
-          icon: Wrench,
-          desc: "Perbaikan pipa bocor, klorinasi, & filter pasir",
-        },
-        {
-          name: "Kaporitisasi & Filter Air",
-          percent: 25,
-          value: allAlloc2,
-          color: "#3b82f6",
-          icon: Droplets,
-          desc: "Klorinasi rutin bak penenang air bersih",
-        },
-        {
-          name: "Kas Cadangan & Kas Warga",
-          percent: 25,
-          value: allAlloc3,
-          color: "#a855f7",
-          icon: PiggyBank,
-          desc: "Tabungan kas darurat untuk perbaikan jaringan desa",
-        },
-      ],
+      totalExpense: totalVillageExpenses,
+      note: totalVillageExpenses === 0
+        ? `Catatan Konsolidasi Desa: Seluruh dana kas unit aktif KPSPAMS "Wai Kaili" Lemo Baru (Rp ${totalVillageCash.toLocaleString("id-ID")}) tersimpan 100% utuh di kas pengurus dan belum ada transaksi penarikan pengeluaran kas (Pengeluaran = Rp 0). Unit Lemo Tua dan Sarampu 1 berstatus Rp 0 (Tahap Persiapan).`
+        : `Catatan Konsolidasi Desa: Total pengeluaran riil konsolidasi yang telah dicatat adalah Rp ${totalVillageExpenses.toLocaleString("id-ID")}, dengan sisa saldo kas tersedia Rp ${totalVillageCash.toLocaleString("id-ID")}.`,
+      allocations: allAllocations,
     },
     LMT: {
       label: "Lemo Tua (Tahap 2)",
@@ -159,6 +261,7 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: "KPSPAMS Lemo Tua",
       subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
       totalMonthly: lmtCash,
+      totalExpense: lmtExpenses.total,
       note: "Status Dusun Lemo Tua: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan tandon. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
       allocations: [
         {
@@ -186,6 +289,7 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       title: "KPSPAMS Sarampu 1",
       subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
       totalMonthly: sr1Cash,
+      totalExpense: sr1Expenses.total,
       note: "Status Dusun Sarampu 1: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan pompa. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
       allocations: [
         {
@@ -227,13 +331,20 @@ export function PublicTransparencyCharts() {
     setMounted(true);
 
     // Ambil data kas transparansi rill dari server database
-    apiClient<{ units: Record<string, { cash: number }> }>("/portal/transparency")
+    apiClient<{
+      units: Record<string, { cash: number; expenses?: UnitExpenses }>;
+      total_cash: number;
+      total_expenses: number;
+    }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
           const lmb = res.data.units.LMB?.cash ?? 30136000;
           const lmt = res.data.units.LMT?.cash ?? 0;
           const sr1 = res.data.units.SR1?.cash ?? 0;
-          setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1));
+          const lmbExp = res.data.units.LMB?.expenses;
+          const lmtExp = res.data.units.LMT?.expenses;
+          const sr1Exp = res.data.units.SR1?.expenses;
+          setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1, lmbExp, lmtExp, sr1Exp));
         }
       })
       .catch((err) => {
@@ -398,10 +509,10 @@ export function PublicTransparencyCharts() {
                 </div>
                 <div>
                   <h4 className="text-base font-extrabold text-white">
-                    Alokasi Dana Iuran Air Warga
+                    Realisasi Penggunaan Kas &amp; Saldo Tersedia
                   </h4>
                   <p className="text-xs text-slate-400">
-                    Transparansi penggunaan dana kas bulanan
+                    Transparansi riil mutasi pengeluaran vs saldo kas operasional pengurus
                   </p>
                 </div>
               </div>
@@ -442,17 +553,21 @@ export function PublicTransparencyCharts() {
                   <Pie
                     data={currentSystemData.totalMonthly === 0
                       ? [{ name: "Tahap 2 Persiapan (0 SR)", value: 100, color: "#334155", percent: 0, desc: "Belum ada transaksi kas" }]
-                      : currentSystemData.allocations}
+                      : currentSystemData.totalExpense === 0
+                      ? [{ name: "Saldo Kas Tersedia Utuh", value: currentSystemData.totalMonthly, color: "#10b981", percent: 100, desc: "Kas tersimpan utuh di kas pengurus (Belum ada pengeluaran)" }]
+                      : currentSystemData.allocations.filter((a) => a.value > 0)}
                     cx="50%"
                     cy="50%"
                     innerRadius={48}
                     outerRadius={68}
-                    paddingAngle={currentSystemData.totalMonthly === 0 ? 0 : 5}
+                    paddingAngle={currentSystemData.totalMonthly === 0 || currentSystemData.totalExpense === 0 ? 0 : 5}
                     dataKey="value"
                   >
                     {(currentSystemData.totalMonthly === 0
                       ? [{ color: "#334155" }]
-                      : currentSystemData.allocations
+                      : currentSystemData.totalExpense === 0
+                      ? [{ color: "#10b981" }]
+                      : currentSystemData.allocations.filter((a) => a.value > 0)
                     ).map((entry, index) => (
                       <Cell key={`cell-fund-${index}`} fill={entry.color} stroke="none" />
                     ))}
@@ -489,7 +604,7 @@ export function PublicTransparencyCharts() {
                   {formatRupiahDisplay(currentSystemData.totalMonthly)}
                 </span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                  Total Kas Rill
+                  {currentSystemData.totalExpense === 0 ? "Kas Riil (Utuh)" : "Saldo Kas Tersedia"}
                 </span>
               </div>
             </div>

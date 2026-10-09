@@ -1572,9 +1572,33 @@ export async function onRequest(context: any) {
         meterMap[Number(r.kid)] = Number(r.usage_m3) || 0;
       });
 
+      const expenseRows = await sql.query(`
+        SELECT 
+          CAST(kpspams_id AS integer) as kid,
+          category,
+          COALESCE(SUM(CAST(amount AS numeric)), 0)::numeric as total
+        FROM financial_transactions
+        WHERE transaction_type = 'EXPENSE'
+        GROUP BY CAST(kpspams_id AS integer), category
+      `);
+      const expenseMap: Record<number, { maintenance: number; chemicals: number; operational: number; total: number }> = {};
+      expenseRows.forEach((r: any) => {
+        const kid = Number(r.kid);
+        if (!expenseMap[kid]) expenseMap[kid] = { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+        const amt = Number(r.total) || 0;
+        expenseMap[kid].total += amt;
+        if (r.category === 'MAINTENANCE') expenseMap[kid].maintenance += amt;
+        else if (r.category === 'BAHAN_KIMIA') expenseMap[kid].chemicals += amt;
+        else expenseMap[kid].operational += amt;
+      });
+
       const lmbCash = cashMap[1] !== undefined ? cashMap[1] : 30136000;
       const lmtCash = cashMap[2] !== undefined ? cashMap[2] : 0;
       const sr1Cash = cashMap[3] !== undefined ? cashMap[3] : 0;
+
+      const lmbExp = expenseMap[1] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+      const lmtExp = expenseMap[2] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+      const sr1Exp = expenseMap[3] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
 
       return jsonResponse({
         status: "success",
@@ -1585,21 +1609,25 @@ export async function onRequest(context: any) {
               customers: custMap[1] || 37,
               usage_m3: meterMap[1] || 353,
               name: 'KPSPAMS "Wai Kaili" Lemo Baru',
+              expenses: lmbExp,
             },
             LMT: {
               cash: lmtCash,
               customers: custMap[2] || 0,
               usage_m3: meterMap[2] || 0,
               name: "KPSPAMS Lemo Tua",
+              expenses: lmtExp,
             },
             SR1: {
               cash: sr1Cash,
               customers: custMap[3] || 0,
               usage_m3: meterMap[3] || 0,
               name: "KPSPAMS Sarampu 1",
+              expenses: sr1Exp,
             },
           },
           total_cash: lmbCash + lmtCash + sr1Cash,
+          total_expenses: lmbExp.total + lmtExp.total + sr1Exp.total,
           total_customers: (custMap[1] || 37) + (custMap[2] || 0) + (custMap[3] || 0),
           total_usage_m3: (meterMap[1] || 353) + (meterMap[2] || 0) + (meterMap[3] || 0),
         },
