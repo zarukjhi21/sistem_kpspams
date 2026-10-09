@@ -606,63 +606,29 @@ export default function HomePage() {
           <PublicTransparencyCharts />
         </div>
 
-        {/* Feature Highlights Grid */}
-        <section id="fitur-layanan" className="scroll-mt-28 space-y-4">
-          <div className="border-b border-slate-800/80 pb-3">
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Keunggulan Layanan Air Minum Desa Kuajang
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-400">
-              Modern, tertib administrasi, dan transparan untuk seluruh masyarakat desa.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-maroon-800/40 to-brand-maroon-950/80 border border-brand-maroon-700/60 text-brand-gold-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-maroon-950/30 group-hover:scale-105 transition-transform">
-                <Activity className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(217,119,6,0.3)]" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-brand-gold-300 transition-colors">Pencatatan Meter Digital</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Petugas mencatat meteran langsung di lapangan dengan foto bukti pemakaian air.
-                </p>
-              </div>
+        {/* Fitur Layanan: Mini Badges Ringkas 1 Baris */}
+        <section id="fitur-layanan" className="scroll-mt-28">
+          <div className="rounded-2xl bg-slate-950/70 border border-slate-800/80 p-3 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex items-center space-x-2 text-slate-400 text-xs font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Standar Layanan KPSPAMS Kuajang:</span>
             </div>
-
-            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10 group-hover:scale-105 transition-transform">
-                <Receipt className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(245,158,11,0.3)]" />
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
+                <Activity className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                <span>Pencatatan Meter Digital</span>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Kwitansi &amp; Tarif Resmi</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Tarif iuran jelas sesuai musyawarah warga dengan bukti bayar resmi QR digital.
-                </p>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
+                <Receipt className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                <span>Kwitansi &amp; QR Resmi</span>
               </div>
-            </div>
-
-            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/40 text-emerald-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/10 group-hover:scale-105 transition-transform">
-                <Wallet className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(16,185,129,0.3)]" />
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
+                <Wallet className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                <span>Kas Terbuka &amp; Teruji</span>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Kas Terbuka &amp; Rinci</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Setiap rupiah iuran warga dan biaya operasional tercatat rapi serta dapat diaudit.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-500/40 text-sky-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-500/10 group-hover:scale-105 transition-transform">
-                <Users className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(14,165,233,0.3)]" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">Portal Mandiri Warga</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Cek tagihan bulanan, riwayat pembayaran, dan aduan pipa kapan saja dari HP.
-                </p>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
+                <Users className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+                <span>Portal Mandiri Warga</span>
               </div>
             </div>
           </div>
