@@ -220,6 +220,15 @@ function PenagihanLapanganContent() {
 
   // Step 1: Pemilihan Pelanggan
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 200);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   const [selectedCustomerId, setSelectedCustomerId] = useState<number>(
     availableCustomers[0]?.id || 1
   );
@@ -729,10 +738,10 @@ function PenagihanLapanganContent() {
                   {availableCustomers
                     .filter(
                       (c) =>
-                        !searchQuery ||
-                        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.connectionNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.dusun.toLowerCase().includes(searchQuery.toLowerCase())
+                        !debouncedSearchQuery ||
+                        c.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                        c.connectionNo.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                        c.dusun.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
                     )
                     .map((cust) => {
                       const isSelected = cust.id === selectedCustomerId;
