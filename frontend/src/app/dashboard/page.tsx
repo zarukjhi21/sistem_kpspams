@@ -359,6 +359,7 @@ function DashboardContent() {
       <DashboardAnalyticsCharts
         activeKpspamsId={activeKpspamsId}
         activeKpspamsName={activeKpspamsName}
+        overviewData={overviewData}
       />
 
       {/* Rincian Operasional Per Unit KPSPAMS */}

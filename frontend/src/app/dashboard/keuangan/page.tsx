@@ -266,12 +266,17 @@ function KeuanganContent() {
   const totalLiquidCash = filteredAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
   const totalOpeningBalance = filteredAccounts.reduce((sum, a) => sum + a.openingBalance, 0);
 
+  const isTransfer = (t: FinancialTx) =>
+    t.category === "TRANSFER_ANTAR_KAS" ||
+    t.category === "TRANSFER" ||
+    (Boolean(t.description) && t.description.toLowerCase().includes("transfer"));
+
   const totalIncome = filteredTx
-    .filter((t) => t.type === "INCOME")
+    .filter((t) => t.type === "INCOME" && !isTransfer(t))
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = filteredTx
-    .filter((t) => t.type === "EXPENSE")
+    .filter((t) => t.type === "EXPENSE" && !isTransfer(t))
     .reduce((sum, t) => sum + t.amount, 0);
 
   // Handler Atur Saldo Awal

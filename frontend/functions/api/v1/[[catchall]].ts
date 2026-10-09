@@ -1337,9 +1337,15 @@ export async function onRequest(context: any) {
       }));
 
       const dusunRows = await sql.query(`
-        SELECT d.id as dusun_id, d.code, d.name, count(conn.id)::int as total_connections
+        SELECT 
+          d.id as dusun_id, 
+          d.code, 
+          d.name, 
+          count(DISTINCT conn.id)::int as total_connections,
+          COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage_m3
         FROM dusun d
         LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE'
+        LEFT JOIN meter_readings mr ON CAST(mr.connection_id AS text) = CAST(conn.id AS text)
         GROUP BY d.id, d.code, d.name
         ORDER BY d.id ASC
       `);
