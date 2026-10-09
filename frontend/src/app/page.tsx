@@ -387,10 +387,10 @@ export default function HomePage() {
         <section id="fitur-layanan" className="scroll-mt-28 space-y-4">
           <div className="border-b border-slate-800/80 pb-3">
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Keunggulan Sistem Informasi SI-KPSPAMS Kuajang
+              Keunggulan Layanan Air Minum Desa Kuajang
             </h3>
             <p className="text-xs sm:text-sm text-slate-400">
-              Dibangun dengan standar Enterprise Architecture untuk kemudahan petugas dan kenyamanan warga.
+              Modern, tertib administrasi, dan transparan untuk seluruh masyarakat desa.
             </p>
           </div>
 
@@ -400,9 +400,9 @@ export default function HomePage() {
                 <Activity className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(217,119,6,0.3)]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-brand-gold-300 transition-colors">Catat Meter Mobile</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Optimasi HP lapangan, validasi stand mundur otomatis, &amp; foto dial meter.
+                <h4 className="text-sm font-bold text-white group-hover:text-brand-gold-300 transition-colors">Pencatatan Meter Digital</h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Petugas mencatat meteran langsung di lapangan dengan foto bukti pemakaian air.
                 </p>
               </div>
             </div>
@@ -412,9 +412,9 @@ export default function HomePage() {
                 <Receipt className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(245,158,11,0.3)]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Billing Multi-Tarif</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Tarif independen per KPSPAMS dan kwitansi kasir QR digital resmi.
+                <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Kwitansi &amp; Tarif Resmi</h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Tarif iuran jelas sesuai musyawarah warga dengan bukti bayar resmi QR digital.
                 </p>
               </div>
             </div>
@@ -424,9 +424,9 @@ export default function HomePage() {
                 <Wallet className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(16,185,129,0.3)]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Buku Kas &amp; Saldo Awal</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Koreksi kasir tanpa hard delete (Void T+0) &amp; audit trail transparan.
+                <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Kas Terbuka &amp; Rinci</h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Setiap rupiah iuran warga dan biaya operasional tercatat rapi serta dapat diaudit.
                 </p>
               </div>
             </div>
@@ -436,9 +436,9 @@ export default function HomePage() {
                 <Users className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(14,165,233,0.3)]" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">Portal Warga 24/7</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Akses cek tagihan, histori pembayaran, &amp; pengaduan pipa via ponsel.
+                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">Portal Mandiri Warga</h4>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Cek tagihan bulanan, riwayat pembayaran, dan aduan pipa kapan saja dari HP.
                 </p>
               </div>
             </div>
@@ -447,54 +447,27 @@ export default function HomePage() {
 
         {/* Pusat Bantuan & Pengaduan Warga */}
         <section id="pusat-bantuan" className="scroll-mt-28 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-6 sm:p-8 shadow-xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-            <div className="space-y-1">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-1.5 max-w-2xl">
               <h3 className="text-xl sm:text-2xl font-black text-white">
-                Pusat Bantuan &amp; Pengaduan Gangguan Air
+                Pusat Bantuan &amp; Layanan Warga
               </h3>
-              <p className="text-xs sm:text-sm text-slate-400">
-                Mengalami gangguan pipa bocor, meter macet, atau air keruh? Laporkan segera ke tim pengelola KPSPAMS.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Pipa bocor, meteran macet, atau kendala air? Laporkan langsung melalui Portal Warga untuk penanganan cepat oleh pengurus KPSPAMS.
               </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 pt-1">
+                <span>📍 Posko: Dusun Lemo Baru</span>
+                <span>•</span>
+                <span>⏰ Jam Layanan: 08.00 - 17.00 WITA</span>
+              </div>
             </div>
             <Link
               href="/portal"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black text-sm shadow-lg shadow-blue-600/25 transition active:scale-95 flex items-center space-x-2 whitespace-nowrap flex-shrink-0"
             >
               <span>Kirim Laporan Gangguan</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-950 text-blue-400 flex items-center justify-center font-bold">
-                1
-              </div>
-              <h5 className="text-sm font-bold text-white">Tiket Pengaduan Online</h5>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Laporkan lewat Portal Warga dan dapatkan nomor tiket untuk memantau status tindak lanjut petugas di lapangan.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold">
-                2
-              </div>
-              <h5 className="text-sm font-bold text-white">Posko KPSPAMS Wai Kaili</h5>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Pelayanan tatap muka bertempat di Dusun Lemo Baru, Desa Kuajang setiap hari kerja (08.00 - 17.00 WITA).
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-950 text-amber-400 flex items-center justify-center font-bold">
-                3
-              </div>
-              <h5 className="text-sm font-bold text-white">Musyawarah &amp; LPJ Terbuka</h5>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Laporan pertanggungjawaban pengelolaan air dibahas secara terbuka dan jujur dalam musyawarah desa bersama BPD.
-              </p>
-            </div>
           </div>
         </section>
       </main>

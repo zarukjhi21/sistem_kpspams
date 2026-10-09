@@ -240,8 +240,8 @@ function buildSystemAllocation(
       totalMonthly: lmbCash,
       totalExpense: lmbExpenses.total,
       note: lmbExpenses.total === 0
-        ? `Catatan Transparansi Riil: Seluruh dana kas terhimpun Rp ${lmbCash.toLocaleString("id-ID")} (Saldo Awal Pengurus Rp 29.766.000 + Iuran 37 SR Rp 370.000) saat ini tersimpan 100% utuh di Kas Operasional Pengurus. Belum ada catatan transaksi pengeluaran kas (Pengeluaran Riil = Rp 0). Setiap pengeluaran belanja yang dicatat pengurus di Buku Kas otomatis akan tampil di sini secara jujur dan transparan.`
-        : `Catatan Transparansi Riil: Dari total dana kas yang terhimpun, telah direalisasikan pengeluaran belanja sebesar Rp ${lmbExpenses.total.toLocaleString("id-ID")}, dan sisa saldo kas operasional yang tersedia saat ini adalah Rp ${lmbCash.toLocaleString("id-ID")}.`,
+        ? `Dana kas Rp ${lmbCash.toLocaleString("id-ID")} tersimpan 100% utuh di kas operasional pengurus. Belum ada transaksi pengeluaran belanja.`
+        : `Realisasi belanja tercatat Rp ${lmbExpenses.total.toLocaleString("id-ID")}, dengan sisa kas operasional Rp ${lmbCash.toLocaleString("id-ID")}.`,
       allocations: lmbAllocations,
     },
     ALL: {
@@ -253,8 +253,8 @@ function buildSystemAllocation(
       totalMonthly: totalVillageCash,
       totalExpense: totalVillageExpenses,
       note: totalVillageExpenses === 0
-        ? `Catatan Konsolidasi Desa: Seluruh dana kas unit aktif KPSPAMS "Wai Kaili" Lemo Baru (Rp ${totalVillageCash.toLocaleString("id-ID")}) tersimpan 100% utuh di kas pengurus dan belum ada transaksi penarikan pengeluaran kas (Pengeluaran = Rp 0). Unit Lemo Tua dan Sarampu 1 berstatus Rp 0 (Tahap Persiapan).`
-        : `Catatan Konsolidasi Desa: Total pengeluaran riil konsolidasi yang telah dicatat adalah Rp ${totalVillageExpenses.toLocaleString("id-ID")}, dengan sisa saldo kas tersedia Rp ${totalVillageCash.toLocaleString("id-ID")}.`,
+        ? `Dana kas konsolidasi desa Rp ${totalVillageCash.toLocaleString("id-ID")} tersimpan 100% utuh di kas pengurus unit aktif. Unit Lemo Tua & Sarampu 1 dalam tahap persiapan.`
+        : `Total realisasi belanja konsolidasi desa tercatat Rp ${totalVillageExpenses.toLocaleString("id-ID")}, dengan sisa saldo kas Rp ${totalVillageCash.toLocaleString("id-ID")}.`,
       allocations: allAllocations,
     },
     LMT: {
@@ -265,7 +265,7 @@ function buildSystemAllocation(
       subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
       totalMonthly: lmtCash,
       totalExpense: lmtExpenses.total,
-      note: "Status Dusun Lemo Tua: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan tandon. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
+      note: "Dusun Lemo Tua dalam tahap persiapan jaringan sambungan rumah (SR). Belum ada iuran kas berjalan.",
       allocations: [
         {
           name: "Kas Operasional Berjalan",
@@ -293,7 +293,7 @@ function buildSystemAllocation(
       subtitle: "Tahap 2 Persiapan Sambungan Rumah (0 SR Aktif)",
       totalMonthly: sr1Cash,
       totalExpense: sr1Expenses.total,
-      note: "Status Dusun Sarampu 1: Masih dalam tahap persiapan infrastruktur sambungan rumah (SR) dan pompa. Belum ada pungutan iuran atau saldo kas berjalan (Rp 0).",
+      note: "Dusun Sarampu 1 dalam tahap persiapan jaringan sambungan rumah (SR). Belum ada iuran kas berjalan.",
       allocations: [
         {
           name: "Kas Operasional Berjalan",
@@ -616,6 +616,7 @@ export function PublicTransparencyCharts() {
               return (
                 <div
                   key={idx}
+                  title={item.desc}
                   className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/30 hover:bg-slate-800/60 border border-slate-800/80 transition-all flex items-center justify-between group"
                 >
                   <div className="flex items-center space-x-2.5 sm:space-x-3 truncate">
@@ -637,7 +638,6 @@ export function PublicTransparencyCharts() {
                       <div className="font-extrabold text-white text-xs truncate group-hover:text-amber-200 transition-colors">
                         {item.name}
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">{item.desc}</div>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
