@@ -1581,24 +1581,57 @@ export async function onRequest(context: any) {
         WHERE transaction_type = 'EXPENSE'
         GROUP BY CAST(kpspams_id AS integer), category
       `);
-      const expenseMap: Record<number, { maintenance: number; chemicals: number; operational: number; total: number }> = {};
+      const expenseMap: Record<number, {
+        operasional: number;
+        maintenance: number;
+        bahan_kimia: number;
+        honor: number;
+        atk_konsumsi: number;
+        lainnya: number;
+        total: number;
+      }> = {};
+
       expenseRows.forEach((r: any) => {
         const kid = Number(r.kid);
-        if (!expenseMap[kid]) expenseMap[kid] = { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+        if (!expenseMap[kid]) {
+          expenseMap[kid] = {
+            operasional: 0,
+            maintenance: 0,
+            bahan_kimia: 0,
+            honor: 0,
+            atk_konsumsi: 0,
+            lainnya: 0,
+            total: 0,
+          };
+        }
         const amt = Number(r.total) || 0;
         expenseMap[kid].total += amt;
-        if (r.category === 'MAINTENANCE') expenseMap[kid].maintenance += amt;
-        else if (r.category === 'BAHAN_KIMIA') expenseMap[kid].chemicals += amt;
-        else expenseMap[kid].operational += amt;
+        const cat = (r.category || '').toUpperCase();
+        if (cat === 'OPERASIONAL') expenseMap[kid].operasional += amt;
+        else if (cat === 'MAINTENANCE') expenseMap[kid].maintenance += amt;
+        else if (cat === 'BAHAN_KIMIA') expenseMap[kid].bahan_kimia += amt;
+        else if (cat === 'HONOR') expenseMap[kid].honor += amt;
+        else if (cat === 'ATK_KONSUMSI') expenseMap[kid].atk_konsumsi += amt;
+        else expenseMap[kid].lainnya += amt;
       });
+
+      const defaultExp = {
+        operasional: 0,
+        maintenance: 0,
+        bahan_kimia: 0,
+        honor: 0,
+        atk_konsumsi: 0,
+        lainnya: 0,
+        total: 0,
+      };
 
       const lmbCash = cashMap[1] !== undefined ? cashMap[1] : 30136000;
       const lmtCash = cashMap[2] !== undefined ? cashMap[2] : 0;
       const sr1Cash = cashMap[3] !== undefined ? cashMap[3] : 0;
 
-      const lmbExp = expenseMap[1] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
-      const lmtExp = expenseMap[2] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
-      const sr1Exp = expenseMap[3] || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+      const lmbExp = expenseMap[1] || { ...defaultExp };
+      const lmtExp = expenseMap[2] || { ...defaultExp };
+      const sr1Exp = expenseMap[3] || { ...defaultExp };
 
       return jsonResponse({
         status: "success",

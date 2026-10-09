@@ -29,6 +29,7 @@ import {
   Mountain,
   Waves,
   PieChart as PieChartIcon,
+  FileText,
 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 
@@ -56,9 +57,12 @@ export interface AllocationItem {
 }
 
 export interface UnitExpenses {
+  operasional: number;
   maintenance: number;
-  chemicals: number;
-  operational: number;
+  bahan_kimia: number;
+  honor: number;
+  atk_konsumsi: number;
+  lainnya: number;
   total: number;
 }
 
@@ -82,148 +86,147 @@ function buildSystemAllocation(
   lmtExp?: UnitExpenses,
   sr1Exp?: UnitExpenses
 ): Record<SystemViewKey, SystemData> {
-  const lmbExpenses = lmbExp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
-  const lmtExpenses = lmtExp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
-  const sr1Expenses = sr1Exp || { maintenance: 0, chemicals: 0, operational: 0, total: 0 };
+  const defaultExp: UnitExpenses = {
+    operasional: 0,
+    maintenance: 0,
+    bahan_kimia: 0,
+    honor: 0,
+    atk_konsumsi: 0,
+    lainnya: 0,
+    total: 0,
+  };
+
+  const lmbExpenses = lmbExp || defaultExp;
+  const lmtExpenses = lmtExp || defaultExp;
+  const sr1Expenses = sr1Exp || defaultExp;
 
   const totalVillageCash = lmbCash + lmtCash + sr1Cash;
   const totalVillageExpenses = lmbExpenses.total + lmtExpenses.total + sr1Expenses.total;
 
   const lmbTotalFunds = lmbCash + lmbExpenses.total;
-  const lmbAllocations: AllocationItem[] = lmbExpenses.total === 0 ? [
+  const lmbAllocations: AllocationItem[] = [
     {
-      name: "Saldo Kas Tersedia (Utuh di Kas Pengurus)",
-      percent: 100,
+      name: "Saldo Kas Tersedia (Kas Utuh Pengurus)",
+      percent: lmbTotalFunds > 0 ? (lmbExpenses.total === 0 ? 100 : Math.max(1, Math.round((lmbCash / lmbTotalFunds) * 100))) : 100,
       value: lmbCash,
       color: "#10b981",
       icon: PiggyBank,
-      desc: "Kas tersimpan utuh di kas pengurus (Belum ada transaksi pengeluaran belanja)",
+      desc: lmbExpenses.total === 0 ? "Kas tersimpan utuh di kas pengurus (Belum ada transaksi pengeluaran belanja)" : "Sisa saldo kas operasional aktif tersedia",
     },
     {
-      name: "Realisasi Pemeliharaan Pipa Transmisi",
-      percent: 0,
-      value: 0,
-      color: "#06b6d4",
-      icon: Wrench,
-      desc: "Rp 0 (Belum ada transaksi pengeluaran belanja pipa/perbaikan)",
-    },
-    {
-      name: "Realisasi Kaporitisasi & Filter Bak",
-      percent: 0,
-      value: 0,
-      color: "#3b82f6",
-      icon: Droplets,
-      desc: "Rp 0 (Belum ada transaksi pengeluaran bahan kimia filter)",
-    },
-    {
-      name: "Realisasi Beban Operasional Lapangan",
-      percent: 0,
-      value: 0,
-      color: "#f59e0b",
-      icon: ShieldCheck,
-      desc: "Rp 0 (Belum ada transaksi pengeluaran operasional)",
-    },
-  ] : [
-    {
-      name: "Saldo Kas Tersedia",
-      percent: Math.max(1, Math.round((lmbCash / lmbTotalFunds) * 100)),
-      value: lmbCash,
-      color: "#10b981",
-      icon: PiggyBank,
-      desc: "Sisa saldo kas operasional aktif tersedia",
-    },
-    {
-      name: "Realisasi Pemeliharaan Pipa Transmisi",
-      percent: Math.round((lmbExpenses.maintenance / lmbTotalFunds) * 100),
+      name: "Perbaikan Pipa, Kran & Fitting",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.maintenance / lmbTotalFunds) * 100) : 0,
       value: lmbExpenses.maintenance,
       color: "#06b6d4",
       icon: Wrench,
-      desc: "Total belanja riil perbaikan pipa & bak",
+      desc: lmbExpenses.maintenance === 0 ? "Belum ada belanja pipa/fitting (Rp 0)" : "Total belanja riil perbaikan pipa & fitting",
     },
     {
-      name: "Realisasi Kaporitisasi & Filter Bak",
-      percent: Math.round((lmbExpenses.chemicals / lmbTotalFunds) * 100),
-      value: lmbExpenses.chemicals,
+      name: "Kaporit & Bahan Penjernih Air",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.bahan_kimia / lmbTotalFunds) * 100) : 0,
+      value: lmbExpenses.bahan_kimia,
       color: "#3b82f6",
       icon: Droplets,
-      desc: "Total belanja riil kaporit & penjernih",
+      desc: lmbExpenses.bahan_kimia === 0 ? "Belum ada belanja bahan kimia filter (Rp 0)" : "Total belanja riil kaporit & bahan penjernih",
     },
     {
-      name: "Realisasi Beban Operasional",
-      percent: Math.round((lmbExpenses.operational / lmbTotalFunds) * 100),
-      value: lmbExpenses.operational,
+      name: "Listrik PLN Pompa / BBM Solar Genset",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.operasional / lmbTotalFunds) * 100) : 0,
+      value: lmbExpenses.operasional,
       color: "#f59e0b",
+      icon: Zap,
+      desc: "Bebas biaya listrik PLN (100% Sistem Gravitasi Pegunungan)",
+    },
+    {
+      name: "Honor Petugas Lapangan & Pengurus",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.honor / lmbTotalFunds) * 100) : 0,
+      value: lmbExpenses.honor,
+      color: "#8b5cf6",
+      icon: Users2,
+      desc: lmbExpenses.honor === 0 ? "Belum ada pencairan honor petugas (Rp 0)" : "Total pencairan honor petugas & pengurus",
+    },
+    {
+      name: "ATK, Konsumsi & Musyawarah",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.atk_konsumsi / lmbTotalFunds) * 100) : 0,
+      value: lmbExpenses.atk_konsumsi,
+      color: "#f43f5e",
+      icon: FileText,
+      desc: lmbExpenses.atk_konsumsi === 0 ? "Belum ada belanja ATK/musyawarah (Rp 0)" : "Total belanja riil ATK & konsumsi musyawarah",
+    },
+    {
+      name: "Lain-lain",
+      percent: lmbTotalFunds > 0 ? Math.round((lmbExpenses.lainnya / lmbTotalFunds) * 100) : 0,
+      value: lmbExpenses.lainnya,
+      color: "#64748b",
       icon: ShieldCheck,
-      desc: "Total belanja riil operasional lapangan",
+      desc: lmbExpenses.lainnya === 0 ? "Belum ada pengeluaran tak terduga (Rp 0)" : "Total pengeluaran tak terduga lainnya",
     },
   ];
 
   const allTotalFunds = totalVillageCash + totalVillageExpenses;
-  const allAllocations: AllocationItem[] = totalVillageExpenses === 0 ? [
+  const allMaintenance = lmbExpenses.maintenance + lmtExpenses.maintenance + sr1Expenses.maintenance;
+  const allBahanKimia = lmbExpenses.bahan_kimia + lmtExpenses.bahan_kimia + sr1Expenses.bahan_kimia;
+  const allOperasional = lmbExpenses.operasional + lmtExpenses.operasional + sr1Expenses.operasional;
+  const allHonor = lmbExpenses.honor + lmtExpenses.honor + sr1Expenses.honor;
+  const allAtkKonsumsi = lmbExpenses.atk_konsumsi + lmtExpenses.atk_konsumsi + sr1Expenses.atk_konsumsi;
+  const allLainnya = lmbExpenses.lainnya + lmtExpenses.lainnya + sr1Expenses.lainnya;
+
+  const allAllocations: AllocationItem[] = [
     {
       name: "Total Saldo Kas Tersedia Utuh",
-      percent: 100,
+      percent: allTotalFunds > 0 ? (totalVillageExpenses === 0 ? 100 : Math.max(1, Math.round((totalVillageCash / allTotalFunds) * 100))) : 100,
       value: totalVillageCash,
       color: "#10b981",
       icon: PiggyBank,
-      desc: "Seluruh kas desa tersimpan utuh di kas pengurus",
+      desc: totalVillageExpenses === 0 ? "Seluruh kas desa tersimpan utuh di kas pengurus" : "Sisa kas konsolidasi desa yang belum terpakai",
     },
     {
-      name: "Realisasi Pemeliharaan Jaringan",
-      percent: 0,
-      value: 0,
+      name: "Perbaikan Pipa, Kran & Fitting",
+      percent: allTotalFunds > 0 ? Math.round((allMaintenance / allTotalFunds) * 100) : 0,
+      value: allMaintenance,
       color: "#06b6d4",
       icon: Wrench,
-      desc: "Rp 0 (Belum ada transaksi pengeluaran jaringan)",
+      desc: allMaintenance === 0 ? "Belum ada belanja pipa seluruh unit (Rp 0)" : "Pengeluaran riil perbaikan pipa seluruh unit",
     },
     {
-      name: "Realisasi Kaporitisasi & Filter",
-      percent: 0,
-      value: 0,
+      name: "Kaporit & Bahan Penjernih Air",
+      percent: allTotalFunds > 0 ? Math.round((allBahanKimia / allTotalFunds) * 100) : 0,
+      value: allBahanKimia,
       color: "#3b82f6",
       icon: Droplets,
-      desc: "Rp 0 (Belum ada transaksi pengeluaran bahan kimia)",
+      desc: allBahanKimia === 0 ? "Belum ada belanja bahan kimia (Rp 0)" : "Pengeluaran riil kaporit & bahan penjernih",
     },
     {
-      name: "Realisasi Biaya Operasional",
-      percent: 0,
-      value: 0,
+      name: "Listrik PLN Pompa / BBM Solar Genset",
+      percent: allTotalFunds > 0 ? Math.round((allOperasional / allTotalFunds) * 100) : 0,
+      value: allOperasional,
       color: "#f59e0b",
+      icon: Zap,
+      desc: allOperasional === 0 ? "0% biaya listrik (Unit aktif gravitasi pegunungan)" : "Pengeluaran riil listrik/BBM pompa",
+    },
+    {
+      name: "Honor Petugas Lapangan & Pengurus",
+      percent: allTotalFunds > 0 ? Math.round((allHonor / allTotalFunds) * 100) : 0,
+      value: allHonor,
+      color: "#8b5cf6",
+      icon: Users2,
+      desc: allHonor === 0 ? "Belum ada pencairan honor (Rp 0)" : "Pengeluaran riil honor petugas seluruh unit",
+    },
+    {
+      name: "ATK, Konsumsi & Musyawarah",
+      percent: allTotalFunds > 0 ? Math.round((allAtkKonsumsi / allTotalFunds) * 100) : 0,
+      value: allAtkKonsumsi,
+      color: "#f43f5e",
+      icon: FileText,
+      desc: allAtkKonsumsi === 0 ? "Belum ada biaya ATK/musyawarah (Rp 0)" : "Pengeluaran riil ATK & konsumsi musyawarah",
+    },
+    {
+      name: "Lain-lain",
+      percent: allTotalFunds > 0 ? Math.round((allLainnya / allTotalFunds) * 0) : 0,
+      value: allLainnya,
+      color: "#64748b",
       icon: ShieldCheck,
-      desc: "Rp 0 (Belum ada transaksi operasional desa)",
-    },
-  ] : [
-    {
-      name: "Total Saldo Kas Tersedia",
-      percent: Math.max(1, Math.round((totalVillageCash / allTotalFunds) * 100)),
-      value: totalVillageCash,
-      color: "#10b981",
-      icon: PiggyBank,
-      desc: "Sisa kas konsolidasi desa yang belum terpakai",
-    },
-    {
-      name: "Realisasi Pemeliharaan Jaringan",
-      percent: Math.round(((lmbExpenses.maintenance + lmtExpenses.maintenance + sr1Expenses.maintenance) / allTotalFunds) * 100),
-      value: lmbExpenses.maintenance + lmtExpenses.maintenance + sr1Expenses.maintenance,
-      color: "#06b6d4",
-      icon: Wrench,
-      desc: "Pengeluaran riil perbaikan pipa seluruh unit",
-    },
-    {
-      name: "Realisasi Kaporitisasi & Filter",
-      percent: Math.round(((lmbExpenses.chemicals + lmtExpenses.chemicals + sr1Expenses.chemicals) / allTotalFunds) * 100),
-      value: lmbExpenses.chemicals + lmtExpenses.chemicals + sr1Expenses.chemicals,
-      color: "#3b82f6",
-      icon: Droplets,
-      desc: "Pengeluaran riil kaporit seluruh unit",
-    },
-    {
-      name: "Realisasi Operasional",
-      percent: Math.round(((lmbExpenses.operational + lmtExpenses.operational + sr1Expenses.operational) / allTotalFunds) * 100),
-      value: lmbExpenses.operational + lmtExpenses.operational + sr1Expenses.operational,
-      color: "#f59e0b",
-      icon: ShieldCheck,
-      desc: "Pengeluaran riil operasional seluruh unit",
+      desc: allLainnya === 0 ? "Belum ada biaya lain-lain (Rp 0)" : "Pengeluaran riil biaya tak terduga lainnya",
     },
   ];
 
