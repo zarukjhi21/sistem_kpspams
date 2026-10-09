@@ -63,39 +63,19 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
   {
     id: 1,
     kpspamsId: 1,
-    code: "KAS-LMB-TUNAI",
-    name: "Kas Tunai Bendahara Lemo Baru",
-    bankName: "Kasir Tunai",
-    accountNumber: "-",
-    openingBalance: 0,
-    currentBalance: 0,
-  },
-  {
-    id: 2,
-    kpspamsId: 1,
-    code: "BANK-LMB-BRI",
-    name: "Rekening BRI KPSPAMS Lemo Baru",
-    bankName: "Bank BRI Unit Binuang",
+    code: "KAS-LMB-UTAMA",
+    name: "Kas Operasional KPSPAMS Lemo Baru",
+    bankName: "Kas Operasional (Tunai & BRI)",
     accountNumber: "0214-01-002345-53-1",
     openingBalance: 0,
-    currentBalance: 0,
+    currentBalance: 370000,
   },
   {
     id: 3,
     kpspamsId: 2,
-    code: "KAS-LMT-TUNAI",
-    name: "Kas Tunai Bendahara Lemo Tua",
-    bankName: "Kasir Tunai",
-    accountNumber: "-",
-    openingBalance: 0,
-    currentBalance: 0,
-  },
-  {
-    id: 4,
-    kpspamsId: 2,
-    code: "BANK-LMT-SULSELBAR",
-    name: "Rekening BPD Sulselbar Lemo Tua",
-    bankName: "Bank Sulselbar",
+    code: "KAS-LMT-UTAMA",
+    name: "Kas Operasional KPSPAMS Lemo Tua",
+    bankName: "Kas Operasional (Tunai & BPD Sulselbar)",
     accountNumber: "510-02-004321-7",
     openingBalance: 0,
     currentBalance: 0,
@@ -103,19 +83,9 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
   {
     id: 5,
     kpspamsId: 3,
-    code: "KAS-SR1-TUNAI",
-    name: "Kas Tunai Sarampu 1 & Pakkandoang",
-    bankName: "Kasir Tunai",
-    accountNumber: "-",
-    openingBalance: 0,
-    currentBalance: 0,
-  },
-  {
-    id: 6,
-    kpspamsId: 3,
-    code: "BANK-SR1-BRI",
-    name: "Rekening BRI KPSPAMS Sarampu 1",
-    bankName: "Bank BRI",
+    code: "KAS-SR1-UTAMA",
+    name: "Kas Operasional KPSPAMS Sarampu 1 & Pakkandoang",
+    bankName: "Kas Operasional (Tunai & BRI)",
     accountNumber: "0214-01-007890-53-4",
     openingBalance: 0,
     currentBalance: 0,
@@ -137,7 +107,7 @@ function KeuanganContent() {
   const isPetugasLapangan = user?.role === "petugas_lapangan";
   const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? user.kpspamsId : activeKpspamsId;
 
-  // Akun Kas & Bank - Sinkronisasi Langsung ke REST API Server
+  // Akun Kas Terpadu & Transaksi - Sinkronisasi Langsung ke REST API Server
   const [accounts, setAccounts] = useState<CashAccountState[]>(INITIAL_ACCOUNTS);
   const [transactions, setTransactions] = useState<FinancialTx[]>(INITIAL_TX);
   const [isLoadingFinance, setIsLoadingFinance] = useState<boolean>(false);
@@ -145,7 +115,7 @@ function KeuanganContent() {
   const fetchRealFinanceData = async () => {
     setIsLoadingFinance(true);
     try {
-      // 1. Ambil Akun Kas Resmi dari Server Backend
+      // 1. Ambil Akun Kas Terpadu Resmi dari Server Backend
       const accRes = await apiClient<{ total_balance: number; accounts: any[] }>("/finance/cash-accounts");
       if (accRes?.status === "success" && accRes.data?.accounts) {
         const mappedAcc: CashAccountState[] = accRes.data.accounts.map((a: any) => ({
@@ -153,7 +123,7 @@ function KeuanganContent() {
           kpspamsId: Number(a.kpspams_id || 1),
           code: a.account_code,
           name: a.account_name,
-          bankName: a.bank_name || (a.account_number ? "Bank Operasional" : "Kasir Tunai"),
+          bankName: a.bank_name || "Kas Operasional Terpadu",
           accountNumber: a.account_number || "-",
           openingBalance: parseFloat(a.opening_balance) || 0,
           currentBalance: parseFloat(a.current_balance) || 0,
@@ -162,31 +132,36 @@ function KeuanganContent() {
       }
 
       // 2. Ambil Riwayat Transaksi Mutasi Kas Resmi dari Server Backend
-      const txRes = await apiClient<any>("/finance/transactions?per_page=50");
+      const txRes = await apiClient<any>("/finance/transactions?per_page=100");
       if (txRes?.status === "success" && Array.isArray(txRes.data)) {
         const mappedTx: FinancialTx[] = txRes.data.map((t: any) => ({
           id: Number(t.id),
           kpspamsId: Number(t.kpspams_id || 1),
-          kpspamsName: t.cash_account?.kpspams?.name || (Number(t.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${t.kpspams_id}`),
+          kpspamsName:
+            t.cash_account?.kpspams?.name ||
+            (Number(t.kpspams_id) === 1
+              ? "KPSPAMS Lemo Baru"
+              : Number(t.kpspams_id) === 2
+              ? "KPSPAMS Lemo Tua"
+              : "KPSPAMS Sarampu 1 & Pakkandoang"),
           txNumber: t.transaction_number,
-          date: t.transaction_date,
+          date: t.transaction_date ? String(t.transaction_date).split("T")[0] : "-",
           type: t.transaction_type,
           category: t.category,
           amount: parseFloat(t.amount) || 0,
           description: t.description,
-          accountName: t.cash_account?.account_name || "Kas Tunai",
+          accountName: t.cash_account?.account_name || "Kas Operasional",
         }));
         setTransactions(mappedTx);
       }
     } catch (e) {
-      console.warn("Sinkronisasi finance server offline, menggunakan baseline verifikasi:", e);
+      console.warn("Sinkronisasi finance server offline:", e);
     } finally {
       setIsLoadingFinance(false);
     }
   };
 
   useEffect(() => {
-    // Bersihkan seluruh cache fiktif lama di browser
     if (typeof window !== "undefined") {
       localStorage.removeItem("kpspams_cash_accounts");
       localStorage.removeItem("kpspams_cash_transactions");
@@ -200,30 +175,29 @@ function KeuanganContent() {
   const [newOpeningBalance, setNewOpeningBalance] = useState<string>("");
   const [openingNotes, setOpeningNotes] = useState<string>("");
 
+  // State Modal Catat Pemasukan Kas
+  const [showIncomeModal, setShowIncomeModal] = useState<boolean>(false);
+  const [incomeKpspamsId, setIncomeKpspamsId] = useState<number>(effectiveKpspamsId || 1);
+  const [incomeCategory, setIncomeCategory] = useState<string>("DANA_DESA");
+  const [incomeAmount, setIncomeAmount] = useState<string>("");
+  const [incomeDesc, setIncomeDesc] = useState<string>("");
+  const [incomeProofNo, setIncomeProofNo] = useState<string>("");
+  const [incomePaymentMethod, setIncomePaymentMethod] = useState<string>("TUNAI");
+  const [incomeDate, setIncomeDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [incomeError, setIncomeError] = useState<string | null>(null);
+  const [isSubmittingIncome, setIsSubmittingIncome] = useState<boolean>(false);
+
   // State Modal Catat Pengeluaran Kas
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [expenseKpspamsId, setExpenseKpspamsId] = useState<number>(effectiveKpspamsId || 1);
-  const [expenseAccountId, setExpenseAccountId] = useState<number>(1);
   const [expenseCategory, setExpenseCategory] = useState<string>("OPERASIONAL");
   const [expenseAmount, setExpenseAmount] = useState<string>("");
   const [expenseDesc, setExpenseDesc] = useState<string>("");
   const [expenseProofNo, setExpenseProofNo] = useState<string>("");
-  const [expenseDate, setExpenseDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
+  const [expensePaymentMethod, setExpensePaymentMethod] = useState<string>("TUNAI");
+  const [expenseDate, setExpenseDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [expenseError, setExpenseError] = useState<string | null>(null);
-
-  // State Modal Pemindahan Dana (Transfer Antar Rekening)
-  const [showTransferModal, setShowTransferModal] = useState<boolean>(false);
-  const [transferFromId, setTransferFromId] = useState<number>(1);
-  const [transferToId, setTransferToId] = useState<number>(2);
-  const [transferAmount, setTransferAmount] = useState<string>("");
-  const [transferNotes, setTransferNotes] = useState<string>("");
-  const [transferDate, setTransferDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
-  const [transferError, setTransferError] = useState<string | null>(null);
-  const [isSubmittingTransfer, setIsSubmittingTransfer] = useState<boolean>(false);
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState<boolean>(false);
 
   // State Modal Cetak Laporan Keuangan Bulanan
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
@@ -262,21 +236,16 @@ function KeuanganContent() {
     return true;
   });
 
-  // Hitungan Agregat Keuangan
+  // Hitungan Agregat Keuangan Riil
   const totalLiquidCash = filteredAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
   const totalOpeningBalance = filteredAccounts.reduce((sum, a) => sum + a.openingBalance, 0);
 
-  const isTransfer = (t: FinancialTx) =>
-    t.category === "TRANSFER_ANTAR_KAS" ||
-    t.category === "TRANSFER" ||
-    (Boolean(t.description) && t.description.toLowerCase().includes("transfer"));
-
   const totalIncome = filteredTx
-    .filter((t) => t.type === "INCOME" && !isTransfer(t))
+    .filter((t) => t.type === "INCOME")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = filteredTx
-    .filter((t) => t.type === "EXPENSE" && !isTransfer(t))
+    .filter((t) => t.type === "EXPENSE")
     .reduce((sum, t) => sum + t.amount, 0);
 
   // Handler Atur Saldo Awal
@@ -314,18 +283,76 @@ function KeuanganContent() {
     }
   };
 
+  // Handler Buka Modal Pemasukan Kas
+  const handleOpenIncomeModal = () => {
+    const targetKpspamsId = effectiveKpspamsId || 1;
+    setIncomeKpspamsId(targetKpspamsId);
+    setIncomeAmount("");
+    setIncomeDesc("");
+    setIncomeProofNo(`BKM-${Date.now().toString().slice(-6)}`);
+    setIncomeCategory("DANA_DESA");
+    setIncomePaymentMethod("TUNAI");
+    setIncomeDate(new Date().toISOString().split("T")[0]);
+    setIncomeError(null);
+    setShowIncomeModal(true);
+  };
+
+  // Handler Simpan Pemasukan Kas
+  const handleSaveIncome = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountNum = parseFloat(incomeAmount) || 0;
+
+    if (amountNum <= 0) {
+      setIncomeError("Nominal pemasukan harus lebih besar dari Rp 0.");
+      return;
+    }
+
+    const targetAcc = accounts.find((a) => a.kpspamsId === incomeKpspamsId);
+    if (!targetAcc) {
+      setIncomeError("Akun kas operasional unit tidak ditemukan.");
+      return;
+    }
+
+    setIsSubmittingIncome(true);
+    setIncomeError(null);
+    try {
+      const fullDesc = `${incomeDesc.trim()} [Metode: ${incomePaymentMethod === "TUNAI" ? "Kas Tunai" : "Transfer Bank"}${incomeProofNo ? ` | No. Bukti: ${incomeProofNo}` : ""}]`;
+
+      await apiClient("/finance/transactions", {
+        method: "POST",
+        body: JSON.stringify({
+          kpspams_id: incomeKpspamsId,
+          cash_account_id: targetAcc.id,
+          transaction_type: "INCOME",
+          category: incomeCategory,
+          amount: amountNum,
+          transaction_date: incomeDate,
+          description: fullDesc,
+        }),
+      });
+
+      setShowIncomeModal(false);
+      setSuccessMsg(
+        `Pemasukan sebesar Rp ${amountNum.toLocaleString("id-ID")} (${incomeDesc}) berhasil dicatat ke Kas Operasional Unit!`
+      );
+      setTimeout(() => setSuccessMsg(null), 6000);
+      await fetchRealFinanceData();
+    } catch (err: any) {
+      setIncomeError(err?.message || "Gagal mencatat transaksi pemasukan di server.");
+    } finally {
+      setIsSubmittingIncome(false);
+    }
+  };
+
   // Handler Buka Modal Pengeluaran Kas
   const handleOpenExpenseModal = () => {
     const targetKpspamsId = effectiveKpspamsId || 1;
     setExpenseKpspamsId(targetKpspamsId);
-    const availableAccs = accounts.filter((a) => a.kpspamsId === targetKpspamsId);
-    if (availableAccs.length > 0) {
-      setExpenseAccountId(availableAccs[0].id);
-    }
     setExpenseAmount("");
     setExpenseDesc("");
     setExpenseProofNo(`BKK-${Date.now().toString().slice(-6)}`);
     setExpenseCategory("OPERASIONAL");
+    setExpensePaymentMethod("TUNAI");
     setExpenseDate(new Date().toISOString().split("T")[0]);
     setExpenseError(null);
     setShowExpenseModal(true);
@@ -341,105 +368,47 @@ function KeuanganContent() {
       return;
     }
 
-    const targetAcc = accounts.find((a) => a.id === expenseAccountId);
+    const targetAcc = accounts.find((a) => a.kpspamsId === expenseKpspamsId);
     if (!targetAcc) {
-      setExpenseError("Pilih rekening/buku kas sumber dana yang valid.");
+      setExpenseError("Akun kas operasional unit tidak ditemukan.");
       return;
     }
 
     if (amountNum > targetAcc.currentBalance) {
       setExpenseError(
-        `Saldo kas tidak mencukupi! Saldo saat ini: Rp ${targetAcc.currentBalance.toLocaleString("id-ID")}.`
+        `Saldo kas operasional tidak mencukupi! Saldo saat ini: Rp ${targetAcc.currentBalance.toLocaleString("id-ID")}.`
       );
       return;
     }
 
+    setIsSubmittingExpense(true);
+    setExpenseError(null);
     try {
+      const fullDesc = `${expenseDesc.trim()} [Metode: ${expensePaymentMethod === "TUNAI" ? "Kas Tunai" : "Transfer Bank"}${expenseProofNo ? ` | No. Nota: ${expenseProofNo}` : ""}]`;
+
       await apiClient("/finance/transactions", {
         method: "POST",
         body: JSON.stringify({
-          cash_account_id: expenseAccountId,
+          kpspams_id: expenseKpspamsId,
+          cash_account_id: targetAcc.id,
           transaction_type: "EXPENSE",
           category: expenseCategory,
           amount: amountNum,
           transaction_date: expenseDate,
-          description: expenseDesc.trim(),
+          description: fullDesc,
         }),
       });
 
       setShowExpenseModal(false);
       setSuccessMsg(
-        `Pengeluaran sebesar Rp ${amountNum.toLocaleString("id-ID")} (${expenseDesc}) berhasil dicatat dan diverifikasi di server.`
+        `Pengeluaran sebesar Rp ${amountNum.toLocaleString("id-ID")} (${expenseDesc}) berhasil dicatat dan saldo kas telah terpotong.`
       );
       setTimeout(() => setSuccessMsg(null), 6000);
       await fetchRealFinanceData();
     } catch (err: any) {
       setExpenseError(err?.message || "Gagal mencatat transaksi pengeluaran di server.");
-    }
-  };
-
-  // Handler Buka Modal Transfer Antar Rekening
-  const handleOpenTransferModal = () => {
-    const targetKpspamsId = effectiveKpspamsId || 1;
-    const unitAccs = accounts.filter((a) => a.kpspamsId === targetKpspamsId);
-    if (unitAccs.length >= 2) {
-      setTransferFromId(unitAccs[0].id);
-      setTransferToId(unitAccs[1].id);
-    } else if (accounts.length >= 2) {
-      setTransferFromId(accounts[0].id);
-      setTransferToId(accounts[1].id);
-    }
-    setTransferAmount("");
-    setTransferNotes("Penyetoran kas tunai hasil penagihan warga ke rekening bank BRI KPSPAMS");
-    setTransferDate(new Date().toISOString().split("T")[0]);
-    setTransferError(null);
-    setShowTransferModal(true);
-  };
-
-  // Handler Simpan Transfer Antar Rekening
-  const handleSaveTransfer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amountNum = parseFloat(transferAmount) || 0;
-    if (amountNum <= 0) {
-      setTransferError("Nominal pemindahan harus lebih besar dari Rp 0.");
-      return;
-    }
-    if (transferFromId === transferToId) {
-      setTransferError("Rekening asal dan rekening tujuan tidak boleh sama.");
-      return;
-    }
-    const fromAcc = accounts.find((a) => a.id === transferFromId);
-    if (!fromAcc) {
-      setTransferError("Pilih rekening sumber dana yang valid.");
-      return;
-    }
-    if (amountNum > fromAcc.currentBalance) {
-      setTransferError(`Saldo rekening asal tidak mencukupi (Tersedia: Rp ${fromAcc.currentBalance.toLocaleString("id-ID")}).`);
-      return;
-    }
-
-    setIsSubmittingTransfer(true);
-    setTransferError(null);
-    try {
-      await apiClient("/finance/transfer", {
-        method: "POST",
-        body: JSON.stringify({
-          from_account_id: transferFromId,
-          to_account_id: transferToId,
-          amount: amountNum,
-          transfer_date: transferDate,
-          notes: transferNotes.trim() || "Pemindahan dana kas internal",
-        }),
-      });
-
-      setShowTransferModal(false);
-      setSuccessMsg(`Pemindahan dana sebesar Rp ${amountNum.toLocaleString("id-ID")} berhasil diselesaikan di server.`);
-      setTimeout(() => setSuccessMsg(null), 6000);
-      await fetchRealFinanceData();
-    } catch (err: any) {
-      setTransferError(err?.message || "Gagal memproses pemindahan kas di server.");
     } finally {
-      setIsSubmittingTransfer(false);
+      setIsSubmittingExpense(false);
     }
   };
 
@@ -451,17 +420,17 @@ function KeuanganContent() {
         : DEMO_KPSPAMS_LIST.find((k) => k.id === effectiveKpspamsId)?.name;
 
     const waText =
-      `*LAPORAN PERTANGGUNGJAWABAN KEUANGAN KPSPAMS*\n` +
-      `*DESA KUAJANG, KEC. BINUANG*\n` +
+      `*LAPORAN PERTANGGUNGJAWABAN BUKU KAS OPERASIONAL KPSPAMS*\n` +
+      `*PEMERINTAH DESA KUAJANG, KEC. BINUANG*\n` +
       `Unit: ${kpspamsName}\n` +
       `Periode: Oktober 2026\n` +
       `----------------------------------------\n` +
       `• Total Saldo Awal (Opening) : Rp ${totalOpeningBalance.toLocaleString("id-ID")}\n` +
-      `• Total Penerimaan Air Warga : Rp ${totalIncome.toLocaleString("id-ID")}\n` +
+      `• Total Penerimaan Kas Masuk : Rp ${totalIncome.toLocaleString("id-ID")}\n` +
       `• Total Beban & Biaya Operasional : Rp ${totalExpense.toLocaleString("id-ID")}\n` +
       `----------------------------------------\n` +
-      `*TOTAL SALDO KAS LIKUID AKTIF: Rp ${totalLiquidCash.toLocaleString("id-ID")}*\n` +
-      `Tersebar di ${filteredAccounts.length} rekening kas tunai & bank unit.\n\n` +
+      `*TOTAL SALDO KAS OPERASIONAL SAAT INI: Rp ${totalLiquidCash.toLocaleString("id-ID")}*\n` +
+      `Tercatat terpadu pada Kas Operasional Unit (Tunai & Rek. Bank Resmi).\n\n` +
       `_Laporan resmi digital Sistem Informasi KPSPAMS Desa Kuajang._`;
 
     navigator.clipboard.writeText(waText);
@@ -476,20 +445,48 @@ function KeuanganContent() {
     }
   };
 
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case "WATER_PAYMENT":
+      case "AIR_PAYMENT":
+        return "Iuran Air Warga";
+      case "DANA_DESA":
+        return "Dana Desa";
+      case "PEMASANGAN_BARU":
+        return "Sambungan Baru";
+      case "BANTUAN_PEMDA":
+        return "Bantuan Pemda";
+      case "JASA_ADMIN":
+        return "Jasa Administrasi";
+      case "OPERASIONAL":
+        return "Listrik PLN / BBM Pompa";
+      case "MAINTENANCE":
+        return "Perbaikan Pipa & Kran";
+      case "BAHAN_KIMIA":
+        return "Kaporit & Penjernih";
+      case "HONOR":
+        return "Honor Petugas & Pengurus";
+      case "ATK_KONSUMSI":
+        return "ATK & Konsumsi";
+      default:
+        return category.replace(/_/g, " ");
+    }
+  };
+
   return (
     <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-brand-maroon-950 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
             <Wallet className="w-3.5 h-3.5" />
-            <span>Manajemen Buku Kas & Pembukuan Resmi</span>
+            <span>Manajemen Buku Kas & Pembukuan Terpadu</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-            Buku Kas & Laporan Keuangan KPSPAMS
+            Buku Kas Operasional KPSPAMS
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Pencatatan uang hasil tagihan lapangan, mutasi beban operasional pompa, dan laporan pertanggungjawaban.
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            Sistem kas terpadu per unit (kas tunai & rekening bank disatukan). Bebas catat pemasukan dan pengeluaran secara riil yang langsung terintegrasi ke Dasbor Utama.
           </p>
         </div>
 
@@ -501,18 +498,19 @@ function KeuanganContent() {
                 variant="gold"
                 size="sm"
                 icon={<PlusCircle className="w-4 h-4" />}
-                onClick={handleOpenExpenseModal}
+                onClick={handleOpenIncomeModal}
+                className="font-bold shadow-sm"
               >
-                + Catat Pengeluaran
+                + Catat Pemasukan
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold"
-                icon={<ArrowUpRight className="w-4 h-4 text-brand-gold-400" />}
-                onClick={handleOpenTransferModal}
+                className="bg-rose-700/80 hover:bg-rose-800 text-white border border-rose-600/50 font-bold shadow-sm"
+                icon={<MinusCircle className="w-4 h-4" />}
+                onClick={handleOpenExpenseModal}
               >
-                Pindah Dana Kas
+                - Catat Pengeluaran
               </Button>
             </>
           )}
@@ -524,12 +522,12 @@ function KeuanganContent() {
             icon={<FileText className="w-4 h-4 text-brand-gold-400" />}
             onClick={() => setShowReportModal(true)}
           >
-            Cetak Laporan Keuangan
+            Cetak Laporan
           </Button>
         </div>
       </div>
 
-      {/* Notice for Petugas Lapangan (Opsi C RBAC) */}
+      {/* Notice for Petugas Lapangan */}
       {isPetugasLapangan && (
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-start justify-between gap-3 shadow-sm">
           <div className="flex items-start space-x-3">
@@ -537,7 +535,7 @@ function KeuanganContent() {
             <div>
               <div className="font-bold">Akses Monitoring Kas Petugas Lapangan: {user?.kpspamsName}</div>
               <p className="text-[11px] text-amber-800 mt-1 leading-relaxed">
-                Uang tunai yang Anda tagih dari warga di lapangan otomatis tercatat langsung ke Buku Kas Unit ini. Pengeluaran kas dan saldo pembukuan dikelola oleh Bendahara & Ketua KPSPAMS.
+                Uang tunai yang Anda tagih dari warga di lapangan otomatis tercatat langsung ke Buku Kas Operasional Unit ini. Pengeluaran kas dan saldo pembukuan dikelola oleh Bendahara & Ketua KPSPAMS.
               </p>
             </div>
           </div>
@@ -563,7 +561,7 @@ function KeuanganContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Total Saldo Kas Likuid</span>
+            <span>Total Saldo Kas Terpadu</span>
             <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
               <Wallet className="w-4 h-4" />
             </div>
@@ -571,8 +569,9 @@ function KeuanganContent() {
           <div className="mt-2 text-2xl font-black text-slate-900 font-tabular">
             Rp {totalLiquidCash.toLocaleString("id-ID")}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
-            Tersebar di {filteredAccounts.length} rekening kas & bank
+          <div className="mt-1 text-[11px] text-emerald-600 font-semibold flex items-center space-x-1">
+            <CheckCircle2 className="w-3 h-3" />
+            <span>Kas operasional terpadu (Tunai & Bank)</span>
           </div>
         </Card>
 
@@ -593,7 +592,7 @@ function KeuanganContent() {
 
         <Card className="p-4 sm:p-5">
           <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Total Penerimaan Air</span>
+            <span>Total Pemasukan Kas</span>
             <div className="p-2 bg-sky-50 text-sky-700 rounded-xl">
               <ArrowDownLeft className="w-4 h-4" />
             </div>
@@ -602,7 +601,7 @@ function KeuanganContent() {
             + Rp {totalIncome.toLocaleString("id-ID")}
           </div>
           <div className="mt-1 text-[11px] text-emerald-600 font-semibold">
-            Termasuk setoran tunai lapangan
+            Termasuk 37 iuran warga & setoran lain
           </div>
         </Card>
 
@@ -617,7 +616,7 @@ function KeuanganContent() {
             - Rp {totalExpense.toLocaleString("id-ID")}
           </div>
           <div className="mt-1 text-[11px] text-rose-600 font-semibold">
-            Listrik PLN, pipa, & BBM pompa
+            Listrik PLN, pipa, honor & operasional
           </div>
         </Card>
       </div>
@@ -625,8 +624,8 @@ function KeuanganContent() {
       {/* Daftar Rekening & Buku Kas (Responsive Mobile Card + Desktop Table) */}
       <Card>
         <CardHeader
-          title="Daftar Rekening Kas Tunai & Bank Unit KPSPAMS"
-          subtitle="Setiap unit memiliki buku kas operasional tunai dan rekening bank terisolasi"
+          title="Daftar Akun Kas Operasional Unit KPSPAMS"
+          subtitle="1 Akun Kas Terpadu per Unit KPSPAMS (menyatukan kas fisik tunai dan rekening bank operasional)"
         />
 
         {/* Mobile View (< md) */}
@@ -652,7 +651,7 @@ function KeuanganContent() {
                     {acc.accountNumber !== "-" && (
                       <>
                         <span>•</span>
-                        <span className="font-mono text-slate-600">{acc.accountNumber}</span>
+                        <span className="font-mono text-slate-600 font-semibold">{acc.accountNumber}</span>
                       </>
                     )}
                   </div>
@@ -666,7 +665,7 @@ function KeuanganContent() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] text-slate-400">Saldo Kas Saat Ini</div>
+                    <div className="text-[10px] text-slate-400">Saldo Kas Riil</div>
                     <div className="font-black text-slate-900 font-tabular">
                       Rp {acc.currentBalance.toLocaleString("id-ID")}
                     </div>
@@ -696,11 +695,11 @@ function KeuanganContent() {
             <thead className="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">Kode Akun</th>
-                <th className="px-4 py-3">Nama Akun & Lembaga</th>
+                <th className="px-4 py-3">Nama Akun Kas Terpadu</th>
                 <th className="px-4 py-3">Unit KPSPAMS</th>
-                <th className="px-4 py-3">No. Rekening</th>
+                <th className="px-4 py-3">Info Rekening Bank Terpadu</th>
                 <th className="px-4 py-3 text-right">Saldo Awal</th>
-                <th className="px-4 py-3 text-right">Saldo Saat Ini</th>
+                <th className="px-4 py-3 text-right">Saldo Kas Saat Ini</th>
                 {!isPetugasLapangan && <th className="px-4 py-3 text-center">Aksi</th>}
               </tr>
             </thead>
@@ -721,13 +720,13 @@ function KeuanganContent() {
                         {kpspams?.name || "KPSPAMS"}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 font-mono text-slate-600">
-                      {acc.accountNumber}
+                    <td className="px-4 py-3.5 font-mono text-slate-600 font-semibold">
+                      {acc.accountNumber !== "-" ? acc.accountNumber : "Kas Fisik Tunai"}
                     </td>
                     <td className="px-4 py-3.5 text-right font-medium text-slate-600 font-tabular">
                       Rp {acc.openingBalance.toLocaleString("id-ID")}
                     </td>
-                    <td className="px-4 py-3.5 text-right font-black text-slate-900 font-tabular">
+                    <td className="px-4 py-3.5 text-right font-black text-slate-900 font-tabular text-sm">
                       Rp {acc.currentBalance.toLocaleString("id-ID")}
                     </td>
                     {!isPetugasLapangan && (
@@ -752,7 +751,7 @@ function KeuanganContent() {
       <Card>
         <CardHeader
           title={`Riwayat Mutasi Arus Kas (${filteredTx.length} Transaksi)`}
-          subtitle="Tercatat otomatis dari penagihan lapangan serta pengeluaran operasional resmi"
+          subtitle="Tercatat otomatis dari penagihan iuran lapangan serta transaksi pemasukan & pengeluaran resmi"
         />
 
         {/* Filter Bar */}
@@ -761,7 +760,7 @@ function KeuanganContent() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
-              placeholder="Cari No. Kwitansi atau Keterangan..."
+              placeholder="Cari No. Transaksi atau Uraian..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
@@ -772,11 +771,11 @@ function KeuanganContent() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
             >
-              <option value="ALL">Semua Jenis Arus Kas</option>
-              <option value="INCOME">Pemasukan (+ Penerimaan Air)</option>
-              <option value="EXPENSE">Pengeluaran (- Biaya Operasional)</option>
+              <option value="ALL">Semua Jenis Mutasi (+ / -)</option>
+              <option value="INCOME">Pemasukan (+ Kas Masuk)</option>
+              <option value="EXPENSE">Pengeluaran (- Beban Kas)</option>
             </select>
           </div>
 
@@ -784,10 +783,12 @@ function KeuanganContent() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
             >
               <option value="ALL">Semua Kategori</option>
-              <option value="AIR_PAYMENT">Pembayaran Air Warga</option>
+              <option value="WATER_PAYMENT">Iuran Air Warga</option>
+              <option value="DANA_DESA">Dana Desa</option>
+              <option value="PEMASANGAN_BARU">Sambungan Baru</option>
               <option value="OPERASIONAL">Listrik PLN / BBM Pompa</option>
               <option value="MAINTENANCE">Perbaikan Pipa & Kran</option>
               <option value="BAHAN_KIMIA">Kaporit & Penjernih</option>
@@ -819,7 +820,7 @@ function KeuanganContent() {
                         : "bg-rose-50 text-rose-700 border border-rose-200"
                     }`}
                   >
-                    {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} ({tx.category})
+                    {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} • {getCategoryLabel(tx.category)}
                   </span>
                   <span
                     className={`font-black font-tabular text-xs ${
@@ -843,7 +844,7 @@ function KeuanganContent() {
                 <th className="px-4 py-3">Tanggal</th>
                 <th className="px-4 py-3">Unit KPSPAMS</th>
                 <th className="px-4 py-3">Kategori</th>
-                <th className="px-4 py-3">Keterangan</th>
+                <th className="px-4 py-3">Keterangan & Rincian</th>
                 <th className="px-4 py-3 text-right">Nominal</th>
               </tr>
             </thead>
@@ -870,14 +871,14 @@ function KeuanganContent() {
                             : "bg-rose-50 text-rose-700 border border-rose-200"
                         }`}
                       >
-                        {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} ({tx.category})
+                        {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} • {getCategoryLabel(tx.category)}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-600 max-w-xs truncate">
+                    <td className="px-4 py-3.5 text-slate-600 max-w-sm truncate" title={tx.description}>
                       {tx.description}
                     </td>
                     <td
-                      className={`px-4 py-3.5 text-right font-black font-tabular ${
+                      className={`px-4 py-3.5 text-right font-black font-tabular text-xs ${
                         tx.type === "INCOME" ? "text-emerald-700" : "text-rose-700"
                       }`}
                     >
@@ -905,7 +906,7 @@ function KeuanganContent() {
             </div>
 
             <p className="text-xs text-slate-500 mb-4">
-              Ubah nominal saldo awal pembukuan untuk rekening: <br />
+              Ubah nominal saldo awal pembukuan untuk rekening kas: <br />
               <strong className="text-slate-800">{selectedAcc.name}</strong>
             </p>
 
@@ -965,6 +966,170 @@ function KeuanganContent() {
         </div>
       )}
 
+      {/* Modal Catat Pemasukan Kas Operasional */}
+      {showIncomeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+              <div className="flex items-center space-x-2">
+                <PlusCircle className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-base font-extrabold text-slate-900">
+                  + Catat Pemasukan Kas Operasional
+                </h3>
+              </div>
+              <button onClick={() => setShowIncomeModal(false)} className="text-slate-400 p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {incomeError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                {incomeError}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveIncome} className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Unit KPSPAMS */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Unit KPSPAMS
+                  </label>
+                  <select
+                    disabled={!isDesaLevel}
+                    value={incomeKpspamsId}
+                    onChange={(e) => setIncomeKpspamsId(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  >
+                    {DEMO_KPSPAMS_LIST.map((k) => (
+                      <option key={k.id} value={k.id}>
+                        {k.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Metode Penerimaan */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Metode Penerimaan
+                  </label>
+                  <select
+                    value={incomePaymentMethod}
+                    onChange={(e) => setIncomePaymentMethod(e.target.value)}
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  >
+                    <option value="TUNAI">Kas Tunai Bendahara</option>
+                    <option value="BANK_TRANSFER">Transfer Rekening Bank BRI</option>
+                  </select>
+                </div>
+
+                {/* Kategori Pemasukan */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Kategori Pemasukan
+                  </label>
+                  <select
+                    value={incomeCategory}
+                    onChange={(e) => setIncomeCategory(e.target.value)}
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  >
+                    <option value="DANA_DESA">Penyertaan Modal / Dana Desa</option>
+                    <option value="PEMASANGAN_BARU">Jasa Sambungan Baru (SR Baru)</option>
+                    <option value="BANTUAN_PEMDA">Bantuan Hibah Pemda / PU</option>
+                    <option value="AIR_PAYMENT">Iuran / Tagihan Air Tambahan</option>
+                    <option value="JASA_ADMIN">Biaya Admin & Denda</option>
+                    <option value="PENDAPATAN_LAIN">Pendapatan Lain-lain Sah</option>
+                  </select>
+                </div>
+
+                {/* Tanggal Pemasukan */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Tanggal Transaksi
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={incomeDate}
+                    onChange={(e) => setIncomeDate(e.target.value)}
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  />
+                </div>
+
+                {/* Nominal Pemasukan */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Nominal Pemasukan Kas (Rp) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={1000}
+                    step={1000}
+                    placeholder="Contoh: 500000"
+                    value={incomeAmount}
+                    onChange={(e) => setIncomeAmount(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  />
+                </div>
+
+                {/* Keterangan */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Keterangan & Sumber Dana *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Bantuan operasional pompa dari Pemerintah Desa Kuajang"
+                    value={incomeDesc}
+                    onChange={(e) => setIncomeDesc(e.target.value)}
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  />
+                </div>
+
+                {/* Nomor Bukti Kas Masuk */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Nomor Bukti Kas Masuk / Kwitansi
+                  </label>
+                  <input
+                    type="text"
+                    value={incomeProofNo}
+                    onChange={(e) => setIncomeProofNo(e.target.value)}
+                    placeholder="Contoh: BKM-015-2026 atau No. Kwitansi Transfer"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowIncomeModal(false)}
+                  disabled={isSubmittingIncome}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  className="font-bold bg-emerald-700 hover:bg-emerald-800"
+                  disabled={isSubmittingIncome}
+                  icon={<Check className="w-3.5 h-3.5" />}
+                >
+                  {isSubmittingIncome ? "Menyimpan..." : "Simpan Pemasukan Kas"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Catat Pengeluaran Kas Operasional */}
       {showExpenseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
@@ -973,7 +1138,7 @@ function KeuanganContent() {
               <div className="flex items-center space-x-2">
                 <MinusCircle className="w-5 h-5 text-rose-600" />
                 <h3 className="text-base font-extrabold text-slate-900">
-                  Catat Beban & Pengeluaran Kas
+                  - Catat Beban & Pengeluaran Kas
                 </h3>
               </div>
               <button onClick={() => setShowExpenseModal(false)} className="text-slate-400 p-1">
@@ -997,12 +1162,7 @@ function KeuanganContent() {
                   <select
                     disabled={!isDesaLevel}
                     value={expenseKpspamsId}
-                    onChange={(e) => {
-                      const id = Number(e.target.value);
-                      setExpenseKpspamsId(id);
-                      const matching = accounts.filter((a) => a.kpspamsId === id);
-                      if (matching.length > 0) setExpenseAccountId(matching[0].id);
-                    }}
+                    onChange={(e) => setExpenseKpspamsId(Number(e.target.value))}
                     className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
                   >
                     {DEMO_KPSPAMS_LIST.map((k) => (
@@ -1013,23 +1173,18 @@ function KeuanganContent() {
                   </select>
                 </div>
 
-                {/* Sumber Kas / Rekening */}
+                {/* Metode Pembayaran */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Sumber Kas / Rekening Bank
+                    Metode Pembayaran
                   </label>
                   <select
-                    value={expenseAccountId}
-                    onChange={(e) => setExpenseAccountId(Number(e.target.value))}
+                    value={expensePaymentMethod}
+                    onChange={(e) => setExpensePaymentMethod(e.target.value)}
                     className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
                   >
-                    {accounts
-                      .filter((a) => a.kpspamsId === expenseKpspamsId)
-                      .map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.name} (Saldo: Rp {a.currentBalance.toLocaleString("id-ID")})
-                        </option>
-                      ))}
+                    <option value="TUNAI">Kas Tunai Bendahara</option>
+                    <option value="BANK_TRANSFER">Transfer Rekening Bank BRI</option>
                   </select>
                 </div>
 
@@ -1047,7 +1202,8 @@ function KeuanganContent() {
                     <option value="MAINTENANCE">Perbaikan Pipa, Kran & Fitting</option>
                     <option value="BAHAN_KIMIA">Kaporit & Bahan Penjernih Air</option>
                     <option value="HONOR">Honor Petugas Lapangan & Pengurus</option>
-                    <option value="LAINNYA">ATK, Konsumsi & Musyawarah</option>
+                    <option value="ATK_KONSUMSI">ATK, Konsumsi & Musyawarah</option>
+                    <option value="LAINNYA">Lain-lain</option>
                   </select>
                 </div>
 
@@ -1075,7 +1231,7 @@ function KeuanganContent() {
                     required
                     min={1000}
                     step={1000}
-                    placeholder="Contoh: 350000"
+                    placeholder="Contoh: 150000"
                     value={expenseAmount}
                     onChange={(e) => setExpenseAmount(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
@@ -1090,7 +1246,7 @@ function KeuanganContent() {
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Pembelian 3 batang Pipa PVC 2 inch & Stop Kran Dusun Pakkandoang"
+                    placeholder="Contoh: Pembelian Stop Kran 2 inch & Sambungan Pipa PVC Dusun Lemo Baru"
                     value={expenseDesc}
                     onChange={(e) => setExpenseDesc(e.target.value)}
                     className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
@@ -1118,6 +1274,7 @@ function KeuanganContent() {
                   variant="secondary"
                   size="sm"
                   onClick={() => setShowExpenseModal(false)}
+                  disabled={isSubmittingExpense}
                 >
                   Batal
                 </Button>
@@ -1126,144 +1283,10 @@ function KeuanganContent() {
                   variant="primary"
                   size="sm"
                   className="font-bold bg-rose-700 hover:bg-rose-800"
+                  disabled={isSubmittingExpense}
                   icon={<Check className="w-3.5 h-3.5" />}
                 >
-                  Simpan Pengeluaran Kas
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Pemindahan Dana (Transfer Antar Rekening Kas & Bank) */}
-      {showTransferModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
-                  <ArrowUpRight className="w-5 h-5 text-brand-maroon-700" />
-                  <span>Pemindahan Kas & Bank (Transfer Internal)</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Setoran tunai kasir ke bank atau pemindahan antar rekening resmi unit.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowTransferModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {transferError && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
-                {transferError}
-              </div>
-            )}
-
-            <form onSubmit={handleSaveTransfer} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Rekening Asal (Sumber Dana) <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={transferFromId}
-                    onChange={(e) => setTransferFromId(parseInt(e.target.value))}
-                    className="w-full px-3 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
-                  >
-                    {accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name} (Rp {a.currentBalance.toLocaleString("id-ID")})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Rekening Tujuan <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={transferToId}
-                    onChange={(e) => setTransferToId(parseInt(e.target.value))}
-                    className="w-full px-3 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
-                  >
-                    {accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.name} (Rp {a.currentBalance.toLocaleString("id-ID")})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Nominal Transfer (Rp) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={transferAmount}
-                    onChange={(e) => setTransferAmount(e.target.value)}
-                    placeholder="Contoh: 150000"
-                    className="w-full px-3.5 py-2.5 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Tanggal Transaksi <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={transferDate}
-                    onChange={(e) => setTransferDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Uraian / Berita Acara Transfer <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  required
-                  rows={2}
-                  value={transferNotes}
-                  onChange={(e) => setTransferNotes(e.target.value)}
-                  placeholder="Contoh: Penyetoran uang tunai kasir lapangan ke rekening bank BRI KPSPAMS"
-                  className="w-full p-3 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
-                />
-              </div>
-
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowTransferModal(false)}
-                  disabled={isSubmittingTransfer}
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  className="font-bold"
-                  disabled={isSubmittingTransfer}
-                  icon={<ArrowUpRight className="w-3.5 h-3.5" />}
-                >
-                  {isSubmittingTransfer ? "Memproses..." : "Selesaikan Transfer"}
+                  {isSubmittingExpense ? "Menyimpan..." : "Simpan Pengeluaran Kas"}
                 </Button>
               </div>
             </form>
@@ -1313,7 +1336,7 @@ function KeuanganContent() {
                 <div className="text-xs uppercase tracking-widest font-bold text-slate-600">
                   Pemerintah Kabupaten Polewali Mandar • Kecamatan Binuang
                 </div>
-                <div className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-tight">
+                <div className="text-base sm:lg font-black uppercase text-slate-900 tracking-tight">
                   Pemerintah Desa Kuajang
                 </div>
                 <div className="text-xs font-extrabold text-brand-maroon-900 tracking-wide uppercase">
@@ -1327,7 +1350,7 @@ function KeuanganContent() {
               {/* Title & Scope */}
               <div className="text-center py-1">
                 <h4 className="text-sm font-black uppercase tracking-wider underline">
-                  Laporan Pertanggungjawaban Arus Kas & Keuangan
+                  Laporan Pertanggungjawaban Arus Kas & Keuangan Operasional
                 </h4>
                 <div className="text-xs font-semibold text-slate-600 mt-0.5">
                   Unit: {effectiveKpspamsId === null ? "Konsolidasi Seluruh Desa Kuajang" : DEMO_KPSPAMS_LIST.find((k) => k.id === effectiveKpspamsId)?.name} • Periode: Oktober 2026
@@ -1355,7 +1378,7 @@ function KeuanganContent() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Akhir Likuid</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Akhir Terpadu</div>
                   <div className="text-sm font-black font-tabular text-brand-maroon-900">
                     Rp {totalLiquidCash.toLocaleString("id-ID")}
                   </div>
@@ -1382,7 +1405,7 @@ function KeuanganContent() {
                         <tr key={t.id} className="border-b border-slate-200">
                           <td className="p-2 font-mono font-semibold border border-slate-300">{t.txNumber}</td>
                           <td className="p-2 border border-slate-300">{t.date}</td>
-                          <td className="p-2 border border-slate-300">{t.category}</td>
+                          <td className="p-2 border border-slate-300">{getCategoryLabel(t.category)}</td>
                           <td className="p-2 border border-slate-300">{t.description}</td>
                           <td className="p-2 text-right font-tabular border border-slate-300">
                             {t.type === "INCOME" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}

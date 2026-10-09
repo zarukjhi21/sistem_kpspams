@@ -840,6 +840,15 @@ export async function onRequest(context: any) {
           `, [amountPaid.toString(), invoiceId]);
         }
 
+        // Pastikan cash_account_id diarahkan ke akun kas operasional terpadu yang aktif untuk unit ini
+        let targetCashAccountId = cashAccountId;
+        const activeAcc = await sql.query(`SELECT id FROM cash_accounts WHERE CAST(kpspams_id AS integer) = $1 AND is_active = '1' ORDER BY id ASC LIMIT 1`, [parseInt(kpspamsId, 10)]);
+        if (activeAcc.length > 0) {
+          targetCashAccountId = activeAcc[0].id.toString();
+        } else if (!targetCashAccountId) {
+          targetCashAccountId = "1";
+        }
+
         const payResult = await sql.query(`
           INSERT INTO payments (
             kpspams_id, invoice_id, customer_id, cash_account_id, receipt_number,
@@ -847,7 +856,7 @@ export async function onRequest(context: any) {
           ) VALUES (
             $1, $2, $3, $4, $5, NOW(), $6, $7, $8, 'COMPLETED', 'Diterima tunai oleh petugas lapangan', NOW(), NOW()
           ) RETURNING *
-        `, [kpspamsId, invoiceId ? invoiceId.toString() : null, custId, cashAccountId, receiptNo, amountPaid.toString(), paymentMethod, referenceNo]);
+        `, [kpspamsId, invoiceId ? invoiceId.toString() : null, custId, targetCashAccountId, receiptNo, amountPaid.toString(), paymentMethod, referenceNo]);
 
         // Catat ke Buku Kas (financial_transactions)
         const txNumber = `TX/IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
@@ -859,15 +868,15 @@ export async function onRequest(context: any) {
             $1, $2, $3, NOW(), 'INCOME', 'WATER_PAYMENT', $4, 'INVOICE', $5,
             'Penerimaan tunai iuran air warga di lapangan', NOW(), NOW()
           )
-        `, [kpspamsId, cashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]);
+        `, [kpspamsId, targetCashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]);
 
-        // Sinkronkan saldo akun kas tunai di database
+        // Sinkronkan saldo akun kas operasional di database
         await sql.query(`
           UPDATE cash_accounts SET
             current_balance = (COALESCE(current_balance::numeric, 0) + $1)::text,
             updated_at = NOW()
           WHERE id = $2
-        `, [amountPaid, Number(cashAccountId)]);
+        `, [amountPaid, Number(targetCashAccountId)]);
 
         return jsonResponse({
           status: "success",
@@ -952,12 +961,20 @@ export async function onRequest(context: any) {
     if (path === "finance/transactions" || path === "financial-transactions" || path === "finances") {
       if (method === "POST") {
         const b = await request.json().catch(() => ({}));
-        const accountId = Number(b.cash_account_id) || 1;
+        let accountId = Number(b.cash_account_id);
+        const kId = b.kpspams_id ? Number(b.kpspams_id) : 1;
+
+        if (!accountId) {
+          const accList = await sql.query(`SELECT id FROM cash_accounts WHERE CAST(kpspams_id AS integer) = $1 AND is_active = '1' ORDER BY id ASC LIMIT 1`, [kId]);
+          accountId = accList.length > 0 ? Number(accList[0].id) : 1;
+        }
+
         const accRows = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [accountId]);
-        const kId = accRows.length > 0 ? (accRows[0].kpspams_id || "1") : "1";
-        const txType = b.transaction_type || "EXPENSE";
+        const finalKpspamsId = accRows.length > 0 ? (accRows[0].kpspams_id || kId.toString()) : kId.toString();
+        const txType = (b.transaction_type || "EXPENSE").toUpperCase();
         const amount = parseFloat(b.amount) || 0;
         const txNum = `TX/${txType === "INCOME" ? "IN" : "OUT"}/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+        const category = b.category || (txType === "INCOME" ? "PENDAPATAN_LAIN" : "OPERASIONAL");
 
         const txRes = await sql.query(`
           INSERT INTO financial_transactions (
@@ -967,9 +984,9 @@ export async function onRequest(context: any) {
             $1, $2, $3, $4, $5, $6, $7, 'MANUAL', $8, NOW(), NOW()
           ) RETURNING *
         `, [
-          kId.toString(), accountId.toString(), txNum,
+          finalKpspamsId.toString(), accountId.toString(), txNum,
           b.transaction_date || new Date().toISOString().split("T")[0],
-          txType, b.category || "OPERASIONAL", amount.toString(), b.description || ""
+          txType, category, amount.toString(), b.description || ""
         ]);
 
         const change = txType === "INCOME" ? amount : -amount;
@@ -982,7 +999,7 @@ export async function onRequest(context: any) {
 
         return jsonResponse({
           status: "success",
-          message: "Transaksi kas berhasil dicatat dan saldo kas telah diperbarui.",
+          message: `Transaksi ${txType === "INCOME" ? "pemasukan" : "pengeluaran"} sebesar Rp ${amount.toLocaleString("id-ID")} berhasil dicatat dan saldo kas diperbarui.`,
           data: txRes[0],
         }, 201);
       }
