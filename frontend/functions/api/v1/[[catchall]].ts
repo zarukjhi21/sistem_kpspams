@@ -1801,11 +1801,11 @@ export async function onRequest(context: any) {
           water_source: {
             name: "Mata Air Alami Pegunungan Lemo Baru",
             type: "BRONCAPTERING",
-            latitude: -3.4285,
-            longitude: 119.3725,
+            latitude: -3.416389,
+            longitude: 119.379694,
             flow_system: "GRAVITASI_MURNI",
             elevation_m: 145,
-            description: "Sumber mata air pegunungan alami Dusun Lemo Baru, dialirkan murni dengan gravitasi tanpa pompa listrik.",
+            description: "Sumber mata air pegunungan alami Dusun Lemo Baru (3°24'59.0\"S 119°22'46.9\"E), dialirkan murni dengan gravitasi tanpa pompa listrik.",
           },
           connections: conns.map((c: any) => ({
             id: Number(c.id),

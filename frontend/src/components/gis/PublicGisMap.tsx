@@ -105,20 +105,21 @@ const DEFAULT_CONNECTIONS: GisConnectionItem[] = [
 const DEFAULT_WATER_SOURCE: WaterSourceInfo = {
   name: "Mata Air Alami Pegunungan Lemo Baru",
   type: "BRONCAPTERING",
-  latitude: -3.4285,
-  longitude: 119.3725,
+  latitude: -3.416389,
+  longitude: 119.379694,
   flow_system: "GRAVITASI_MURNI",
   elevation_m: 145,
-  description: "Sumber mata air pegunungan alami Dusun Lemo Baru, dialirkan murni dengan gravitasi tanpa beban listrik PLN.",
+  description: "Sumber mata air pegunungan alami Dusun Lemo Baru (3°24'59.0\"S 119°22'46.9\"E), dialirkan murni dengan gravitasi tanpa beban listrik PLN.",
 };
 
 // Jalur simulasi pipa transmisi gravitasi utama dari mata air pegunungan ke pusat pemukiman
 const MAIN_GRAVITY_PIPELINE: [number, number][] = [
-  [-3.4285, 119.3725], // Hulu Mata Air Lemo Baru (Broncaptering)
-  [-3.4298, 119.3734], // Jalur Lembah Aliran
-  [-3.4311, 119.3742], // Bak Pelepas Tekanan / Percabangan Atas
-  [-3.4325, 119.3748], // Distribusi Utama Lemo Baru
-  [-3.4332, 119.3754], // Pemukiman Poros Utama
+  [-3.416389, 119.379694], // Hulu Mata Air Lemo Baru (Broncaptering) 3°24'59.0"S 119°22'46.9"E
+  [-3.421500, 119.379200], // Jalur Transmisi Pipa Pegunungan
+  [-3.426500, 119.378800], // Jalur Lembah Aliran Gravitasi
+  [-3.431124, 119.378249], // Bak Pelepas Tekanan / Percabangan Atas Lemo Baru
+  [-3.432540, 119.374800], // Distribusi Utama Dusun Lemo Baru
+  [-3.433259, 119.374700], // Pemukiman Poros Utama
 ];
 
 export function PublicGisMap() {
@@ -172,13 +173,13 @@ export function PublicGisMap() {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Center di Dusun Lemo Baru
-    const defaultCenterLat = -3.4325;
-    const defaultCenterLng = 119.3750;
+    // Center di antara Hulu Mata Air dan Pemukiman Warga Dusun Lemo Baru
+    const defaultCenterLat = -3.4248;
+    const defaultCenterLng = 119.3770;
 
     const map = L.map(mapContainerRef.current, {
       center: [defaultCenterLat, defaultCenterLng],
-      zoom: 16,
+      zoom: 15,
       zoomControl: false,
       scrollWheelZoom: false, // Aman saat scroll halaman web di HP
     });
@@ -722,12 +723,25 @@ export function PublicGisMap() {
                     <strong className="text-cyan-300">100% Gravitasi Bebas Listrik</strong>
                   </div>
                   <div className="flex justify-between text-slate-400">
+                    <span>Koordinat Lokasi:</span>
+                    <strong className="text-amber-300 font-mono text-[11px]">3°24&apos;59.0&quot;S 119°22&apos;46.9&quot;E</strong>
+                  </div>
+                  <div className="flex justify-between text-slate-400">
                     <span>Elevasi Hulu:</span>
                     <strong className="text-white">~145 mdpl</strong>
                   </div>
                   <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
                     {selectedItem.data.description}
                   </p>
+                  <a
+                    href="https://maps.google.com/?q=-3.416389,119.379694"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-bold pt-1"
+                  >
+                    <span>Buka Titik di Google Maps</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </>
               ) : (
                 <>
