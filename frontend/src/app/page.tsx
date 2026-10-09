@@ -180,39 +180,52 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-10 w-full space-y-8 sm:space-y-12">
-        {/* Modern Dual-Column Hero Section with Custom Illustrated Artwork */}
-        <section className="relative rounded-3xl overflow-hidden border border-slate-800/90 p-6 sm:p-10 lg:p-12 shadow-2xl bg-slate-950">
-          {/* Custom Illustration Artwork Layer */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* 1. Grand Panoramic Illustrated Banner Desa Kuajang (Utuh 100% Bebas Tertutup Teks) */}
+        <section className="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 group">
+          <div className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[480px]">
             <Image
               src="/hero-bg.jpg"
               alt="Ilustrasi KPSPAMS PAMSIMAS Desa Kuajang"
               fill
-              className="object-cover object-center transform scale-105 transition-transform duration-700 hover:scale-100"
               priority
+              className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
+              sizes="(max-width: 1280px) 100vw, 1280px"
             />
-            {/* Elegant Vignette & Dark Overlay untuk menjaga kontras dan kenyamanan membaca */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/85 sm:to-slate-950/75 backdrop-blur-[1px]" />
-            <div className="absolute inset-0 bg-slate-950/30" />
+            {/* Subtle bottom gradient to blend gently with frame */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+
+            {/* Floating Identity Badge in bottom-left */}
+            <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10 flex items-center space-x-2 bg-slate-950/85 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl border border-slate-700/80 shadow-xl text-xs sm:text-sm font-bold text-white">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>KPSPAMS - PAMSIMAS Desa Kuajang</span>
+              <span className="text-slate-400 hidden sm:inline">• Kec. Binuang, Polman</span>
+            </div>
           </div>
+        </section>
 
-          {/* Ambient Lighting Accents */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-maroon-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
-          <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-            {/* Left Column: Headline, Description & Cek Tagihan Kilat */}
-            <div className="lg:col-span-7 space-y-5">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight drop-shadow-md">
+        {/* 2. Interactive Control & Real-Time Operational Status Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+          {/* Left Column: Headline, Cek Tagihan & Quick Action */}
+          <div className="lg:col-span-7 rounded-3xl bg-slate-950/80 border border-slate-800/90 p-6 sm:p-8 lg:p-10 shadow-xl flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-gold-500/10 border border-brand-gold-500/30 text-brand-gold-400 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Sistem Informasi Air Bersih Desa Mandiri</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug sm:leading-tight">
                 Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
               </h1>
-
-              <p className="text-xs sm:text-base text-slate-200 leading-relaxed max-w-xl drop-shadow-sm font-medium">
+              <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-xl">
                 Sistem informasi pelayanan air bersih, pencatatan meter digital, dan transparansi kas warga Desa Kuajang.
               </p>
+            </div>
 
-              {/* Bar Pencarian Cek Tagihan Minimalis */}
-              <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2 max-w-lg pt-1">
+            {/* Bar Pencarian Cek Tagihan */}
+            <div className="space-y-3 pt-3 border-t border-slate-800/80">
+              <div className="text-xs font-bold text-slate-300">
+                Cek Tagihan Warga Mandiri:
+              </div>
+              <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2 max-w-lg">
                 <div className="relative flex-1">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -220,7 +233,7 @@ export default function HomePage() {
                     value={quickSearch}
                     onChange={(e) => setQuickSearch(e.target.value)}
                     placeholder="Cari nama warga atau No. Sambungan..."
-                    className="w-full pl-9 pr-3 py-3 rounded-2xl bg-slate-950/90 border border-slate-700 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-lg transition"
+                    className="w-full pl-9 pr-3 py-3 rounded-2xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-md transition"
                   />
                 </div>
                 <button
@@ -251,117 +264,117 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
+          </div>
 
-            {/* Right Column: Glassmorphism Live Stats Widget */}
-            <div className="lg:col-span-5">
-              <div className="rounded-3xl bg-slate-950/75 backdrop-blur-xl border border-slate-700/80 p-5 sm:p-6 shadow-2xl space-y-4 relative overflow-hidden">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">
-                      Status Operasional Riil
-                    </span>
+          {/* Right Column: Status Operasional Riil Widget */}
+          <div className="lg:col-span-5">
+            <div className="rounded-3xl bg-slate-950/80 border border-slate-800/90 p-5 sm:p-6 shadow-xl space-y-4 h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    Status Operasional Riil
+                  </span>
+                </div>
+                <span className="inline-flex items-center space-x-1 text-emerald-400 text-[11px] font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1" />
+                  <span>Live Database</span>
+                </span>
+              </div>
+
+              {/* Metric Panels: Clean & Direct */}
+              <div className="space-y-2.5">
+                {/* Metric 1: Kas Operasional */}
+                <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-400">Total Kas Operasional Riil</div>
+                    <div className="text-2xl font-black text-amber-400 mt-0.5">
+                      Rp {stats.lmbCash.toLocaleString("id-ID")}
+                    </div>
                   </div>
-                  <span className="inline-flex items-center space-x-1 text-emerald-400 text-[11px] font-bold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1" />
-                    <span>Live Database</span>
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
+                    100% Kas Utuh
                   </span>
                 </div>
 
-                {/* Metric Panels: Clean & Direct */}
-                <div className="space-y-2.5">
-                  {/* Metric 1: Kas Operasional */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-400">Total Kas Operasional Riil</div>
-                      <div className="text-2xl font-black text-amber-400 mt-0.5">
-                        Rp {stats.lmbCash.toLocaleString("id-ID")}
-                      </div>
+                {/* Metric 2: Sambungan Rumah */}
+                <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-400">Sambungan Rumah (SR) Terlayani</div>
+                    <div className="text-2xl font-black text-white mt-0.5">
+                      {stats.lmbCustomers} SR Aktif
                     </div>
-                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
-                      100% Kas Utuh
-                    </span>
                   </div>
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
+                    Lemo Baru
+                  </span>
+                </div>
 
-                  {/* Metric 2: Sambungan Rumah */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-400">Sambungan Rumah (SR) Terlayani</div>
-                      <div className="text-2xl font-black text-white mt-0.5">
-                        {stats.lmbCustomers} SR Aktif
+                {/* Metric 3 & 4 Grid: Pemakaian Air Bulan Ini & Stand Fisik Odometer */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                        Pakai Bulan Ini
+                      </span>
+                      <div className="p-1 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/60">
+                        <Activity className="w-3.5 h-3.5" />
                       </div>
                     </div>
-                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
-                      Lemo Baru
-                    </span>
-                  </div>
-
-                  {/* Metric 3 & 4 Grid: Pemakaian Air Bulan Ini & Stand Fisik Odometer */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                          Pakai Bulan Ini
-                        </span>
-                        <div className="p-1 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/60">
-                          <Activity className="w-3.5 h-3.5" />
-                        </div>
-                      </div>
-                      <div className="mt-1 flex items-baseline justify-between">
-                        <span className="text-lg sm:text-xl font-black text-white font-tabular">
-                          {stats.lmbUsageM3.toLocaleString("id-ID")}
-                          <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
-                        </span>
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">
-                          Bulan Ini
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                          Stand Fisik
-                        </span>
-                        <div className="p-1 rounded-lg bg-indigo-950 text-indigo-400 border border-indigo-800/60">
-                          <Gauge className="w-3.5 h-3.5" />
-                        </div>
-                      </div>
-                      <div className="mt-1 flex items-baseline justify-between">
-                        <span className="text-lg sm:text-xl font-black text-indigo-300 font-tabular truncate">
-                          {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-                          <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
-                        </span>
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
-                          Odometer
-                        </span>
-                      </div>
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <span className="text-lg sm:text-xl font-black text-white font-tabular">
+                        {stats.lmbUsageM3.toLocaleString("id-ID")}
+                        <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
+                      </span>
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">
+                        Bulan Ini
+                      </span>
                     </div>
                   </div>
 
-                  {/* Metric 5: Gravitasi Mata Air */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Lemo Baru</div>
-                      <div className="text-2xl font-black text-cyan-400 mt-0.5">
-                        ~12.100 L / Hari
+                  <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                        Stand Fisik
+                      </span>
+                      <div className="p-1 rounded-lg bg-indigo-950 text-indigo-400 border border-indigo-800/60">
+                        <Gauge className="w-3.5 h-3.5" />
                       </div>
                     </div>
-                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/80">
-                      0 Listrik PLN
-                    </span>
+                    <div className="mt-1 flex items-baseline justify-between">
+                      <span className="text-lg sm:text-xl font-black text-indigo-300 font-tabular truncate">
+                        {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                        <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
+                      </span>
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
+                        Odometer
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Progress Health Bar */}
-                <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-slate-400">Kelancaran Distribusi Jaringan:</span>
-                    <span className="font-bold text-emerald-400">99.4% Normal</span>
+                {/* Metric 5: Gravitasi Mata Air */}
+                <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Lemo Baru</div>
+                    <div className="text-2xl font-black text-cyan-400 mt-0.5">
+                      ~12.100 L / Hari
+                    </div>
                   </div>
-                  <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[99.4%]" />
-                  </div>
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/80">
+                    0 Listrik PLN
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Health Bar */}
+              <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Kelancaran Distribusi Jaringan:</span>
+                  <span className="font-bold text-emerald-400">99.4% Normal</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[99.4%]" />
                 </div>
               </div>
             </div>
