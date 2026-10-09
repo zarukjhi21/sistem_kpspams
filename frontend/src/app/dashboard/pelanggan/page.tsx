@@ -931,9 +931,325 @@ function PelangganContent() {
   };
 
   const handlePrintReport = () => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+
+    // Buat iframe terisolasi agar hasil cetak murni hanya dokumen A4 tanpa gangguan shell layout dashboard
+    const existingFrame = document.getElementById("print-customer-iframe");
+    if (existingFrame) existingFrame.remove();
+
+    const iframe = document.createElement("iframe");
+    iframe.id = "print-customer-iframe";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
       window.print();
+      return;
     }
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="id">
+        <head>
+          <title>Buku Register Pelanggan KPSPAMS Kuajang</title>
+          <meta charset="utf-8" />
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 10mm 12mm 12mm 12mm;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
+              font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              color: #0f172a;
+              background: #ffffff;
+              padding: 0;
+              font-size: 11px;
+              line-height: 1.4;
+            }
+            .kop-container {
+              text-align: center;
+              border-bottom: 2.5px solid #0f172a;
+              padding-bottom: 8px;
+              margin-bottom: 12px;
+            }
+            .kop-sub {
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              color: #475569;
+            }
+            .kop-desa {
+              font-size: 16px;
+              font-weight: 900;
+              text-transform: uppercase;
+              color: #0f172a;
+              margin: 2px 0;
+            }
+            .kop-kpspams {
+              font-size: 12px;
+              font-weight: 900;
+              color: #881337;
+              text-transform: uppercase;
+            }
+            .kop-sk {
+              font-size: 9px;
+              color: #64748b;
+              margin-top: 2px;
+            }
+            .kop-address {
+              font-size: 9px;
+              color: #64748b;
+            }
+            .doc-header {
+              text-align: center;
+              margin-bottom: 12px;
+            }
+            .doc-title {
+              font-size: 13px;
+              font-weight: 900;
+              text-transform: uppercase;
+              text-decoration: underline;
+              letter-spacing: 0.5px;
+            }
+            .doc-meta {
+              font-size: 10.5px;
+              font-weight: 600;
+              color: #475569;
+              margin-top: 3px;
+            }
+            .doc-date {
+              font-size: 10px;
+              color: #64748b;
+              margin-top: 2px;
+            }
+            .kpi-row {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              gap: 8px;
+              background-color: #f8fafc !important;
+              border: 1px solid #cbd5e1;
+              border-radius: 8px;
+              padding: 8px;
+              margin-bottom: 12px;
+              text-align: center;
+            }
+            .kpi-box {
+              border-right: 1px solid #e2e8f0;
+              padding: 0 4px;
+            }
+            .kpi-box:last-child {
+              border-right: none;
+            }
+            .kpi-title {
+              font-size: 8.5px;
+              font-weight: 700;
+              text-transform: uppercase;
+              color: #64748b;
+            }
+            .kpi-value {
+              font-size: 13px;
+              font-weight: 900;
+              margin-top: 2px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              font-size: 10px;
+              margin-bottom: 20px;
+            }
+            thead {
+              display: table-header-group;
+            }
+            tr {
+              page-break-inside: avoid;
+            }
+            th {
+              background-color: #f1f5f9 !important;
+              color: #1e293b;
+              font-weight: 800;
+              border: 1px solid #94a3b8;
+              padding: 5px 6px;
+              text-align: left;
+              text-transform: uppercase;
+              font-size: 9px;
+            }
+            td {
+              border: 1px solid #cbd5e1;
+              padding: 5px 6px;
+              color: #334155;
+            }
+            tr:nth-child(even) td {
+              background-color: #f8fafc !important;
+            }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+            .font-bold { font-weight: 700; }
+            .status-active { color: #047857; font-weight: 800; }
+            .status-sealed { color: #b45309; font-weight: 800; }
+            .status-disc { color: #b91c1c; font-weight: 800; }
+            
+            .sig-container {
+              page-break-inside: avoid;
+              margin-top: 28px;
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 16px;
+              text-align: center;
+              font-size: 11px;
+            }
+            .sig-space {
+              height: 55px;
+            }
+            .sig-name {
+              font-weight: 900;
+              text-decoration: underline;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .sig-role {
+              font-size: 9.5px;
+              color: #64748b;
+              margin-top: 2px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="kop-container">
+            <div class="kop-sub">Pemerintah Kabupaten Polewali Mandar • Kecamatan Binuang</div>
+            <div class="kop-desa">Pemerintah Desa Kuajang</div>
+            <div class="kop-kpspams">Pengurus KPSPAMS PAMSIMAS Desa Kuajang</div>
+            <div class="kop-sk">SK Kepala Desa Kuajang Nomor 19 Tahun 2026 Tanggal 30 Juni 2026 (Masa Bakti 2026–2029)</div>
+            <div class="kop-address">Sekretariat: Kantor Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar, Sulawesi Barat 91353</div>
+          </div>
+
+          <div class="doc-header">
+            <h2 class="doc-title">Buku Register Induk Sambungan Rumah (SR) &amp; Pelanggan Air Bersih</h2>
+            <div class="doc-meta">Unit: ${user?.kpspamsName || "KPSPAMS Lemo Baru"} • Wilayah: ${selectedDusun === "ALL" ? "Seluruh Dusun Layanan" : `Dusun ${selectedDusun}`}</div>
+            <div class="doc-date">Tanggal Dokumen: ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi-box">
+              <div class="kpi-title">Total Sambungan</div>
+              <div class="kpi-value">${filteredCustomers.length} SR</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">SR Aktif</div>
+              <div class="kpi-value" style="color: #047857;">${filteredCustomers.filter((c) => c.status === "ACTIVE").length} SR</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">SR Tersegel</div>
+              <div class="kpi-value" style="color: #b45309;">${filteredCustomers.filter((c) => c.status === "SEALED").length} SR</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-title">Stand Fisik Total</div>
+              <div class="kpi-value" style="color: #4338ca;">${filteredCustomers.reduce((acc, c) => acc + (c.lastReading || 0), 0).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 32px; text-align: center;">No</th>
+                <th style="width: 105px;">No. SR</th>
+                <th>Nama Pelanggan</th>
+                <th style="width: 130px;">NIK</th>
+                <th style="width: 110px;">Dusun / RT</th>
+                <th style="width: 95px;">Seri Meter</th>
+                <th style="width: 80px; text-align: right;">Stand (m³)</th>
+                <th style="width: 65px; text-align: center;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredCustomers
+                .map(
+                  (cust, idx) => `
+                <tr>
+                  <td class="text-center" style="color: #64748b;">${idx + 1}</td>
+                  <td class="font-mono font-bold" style="color: #0f172a; white-space: nowrap;">${cust.connectionNo}</td>
+                  <td class="font-bold" style="color: #1e293b;">${cust.name}</td>
+                  <td class="font-mono" style="color: #475569;">${cust.nik || "-"}</td>
+                  <td>${cust.dusun} ${cust.rtRw ? `(RT ${cust.rtRw})` : ""}</td>
+                  <td class="font-mono" style="color: #475569; white-space: nowrap;">${cust.meterSerial}</td>
+                  <td class="text-right font-mono font-bold" style="color: #0f172a;">${cust.lastReading.toFixed(2)}</td>
+                  <td class="text-center">
+                    <span class="${
+                      cust.status === "ACTIVE"
+                        ? "status-active"
+                        : cust.status === "SEALED"
+                        ? "status-sealed"
+                        : "status-disc"
+                    }">${cust.status === "ACTIVE" ? "AKTIF" : cust.status === "SEALED" ? "SEGEL" : "PUTUS"}</span>
+                  </td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+
+          <div class="sig-container">
+            <div>
+              <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">Mengetahui,</div>
+              <div style="font-weight: 700;">Kepala Desa Kuajang</div>
+              <div class="sig-space" style="display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: #94a3b8; font-style: italic;">
+                ( Tanda Tangan &amp; Cap )
+              </div>
+              <div class="sig-name">${signKades}</div>
+              <div class="sig-role">Pemerintah Desa Kuajang</div>
+            </div>
+
+            <div>
+              <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">Disahkan Oleh,</div>
+              <div style="font-weight: 700;">${defaultKetuaTitle}</div>
+              <div class="sig-space" style="display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: #94a3b8; font-style: italic;">
+                ( Tanda Tangan )
+              </div>
+              <div class="sig-name">${signKetua}</div>
+              <div class="sig-role">Pengurus KPSPAMS Desa Kuajang</div>
+            </div>
+
+            <div>
+              <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">
+                Kuajang, ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+              </div>
+              <div style="font-weight: 700;">Petugas Administrasi / Register</div>
+              <div class="sig-space" style="display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: #94a3b8; font-style: italic;">
+                ( Tanda Tangan )
+              </div>
+              <div class="sig-name">${signAdmin}</div>
+              <div class="sig-role">Sekretaris &amp; Administrasi KPSPAMS</div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    // Berikan jeda sejenak agar iframe selesai render DOM dan CSS
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        iframe.remove();
+      }, 2000);
+    }, 300);
   };
 
   return (
