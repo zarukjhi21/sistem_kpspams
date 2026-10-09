@@ -120,6 +120,10 @@ import {
   Trash2,
   AlertOctagon,
   Save,
+  Printer,
+  Download,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
 
 export default function PelangganPage() {
@@ -197,6 +201,7 @@ function PelangganContent() {
   const [selectedDusun, setSelectedDusun] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedCustomer, setSelectedCustomer] = useState<DemoCustomer | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Kunci scope KPSPAMS untuk petugas lapangan / non-desa
   const effectiveKpspamsId = !isDesaLevel && user?.kpspamsId ? Number(user.kpspamsId) : (activeKpspamsId !== null && activeKpspamsId !== undefined ? Number(activeKpspamsId) : 1);
@@ -837,6 +842,76 @@ function PelangganContent() {
     );
   };
 
+  // Handler Ekspor Excel (.csv dengan UTF-8 BOM & pemisah format resmi)
+  const handleExportExcel = () => {
+    if (filteredCustomers.length === 0) {
+      alert("Tidak ada data pelanggan yang cocok dengan filter saat ini.");
+      return;
+    }
+
+    const headers = [
+      "No",
+      "No Sambungan (SR)",
+      "Nama Pelanggan",
+      "NIK",
+      "No Telepon",
+      "Dusun Layanan",
+      "RT/RW",
+      "Alamat",
+      "Seri Meter",
+      "Stand Terakhir (m3)",
+      "Status Sambungan",
+      "Unit KPSPAMS",
+      "Jenis Tarif",
+    ];
+
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = filteredCustomers.map((c, idx) => [
+      idx + 1,
+      escapeCsv(c.connectionNo),
+      escapeCsv(c.name),
+      // Tanda petik tunggal agar Microsoft Excel tidak merusak angka 16 digit NIK menjadi notasi ilmiah eksponen
+      escapeCsv(`'${c.nik || ""}`),
+      escapeCsv(`'${c.phone || ""}`),
+      escapeCsv(c.dusun),
+      escapeCsv(c.rtRw || "-"),
+      escapeCsv(c.address || "-"),
+      escapeCsv(c.meterSerial),
+      escapeCsv(c.lastReading.toFixed(2)),
+      escapeCsv(c.status === "ACTIVE" ? "Aktif" : c.status === "SEALED" ? "Disegel" : "Diputus"),
+      escapeCsv(c.kpspamsName || "KPSPAMS Lemo Baru"),
+      escapeCsv(c.tariffType || "Rumah Tangga"),
+    ]);
+
+    const csvContent =
+      "sep=,\n" +
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.join(",")).join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const dStr = new Date().toISOString().slice(0, 10);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Register_Pelanggan_KPSPAMS_Kuajang_${dStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrintReport = () => {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  };
+
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Title & Action Banner */}
@@ -850,14 +925,34 @@ function PelangganContent() {
           </p>
         </div>
 
-        <Button
-          variant="gold"
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-          onClick={handleOpenCreateModal}
-        >
-          + Tambah Pelanggan & SR Baru
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowPrintModal(true)}
+            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center space-x-1.5 border border-white/20 shadow-sm active:scale-95"
+            title="Cetak Buku Register Pelanggan Resmi (A4 / PDF)"
+          >
+            <Printer className="w-3.5 h-3.5 text-brand-gold-400" />
+            <span>Cetak PDF</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleExportExcel}
+            className="px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 text-xs font-bold transition flex items-center space-x-1.5 border border-emerald-500/40 shadow-sm active:scale-95"
+            title="Unduh Data Pelanggan ke Format Spreadsheet Excel (.csv)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Unduh Excel</span>
+          </button>
+          <Button
+            variant="gold"
+            size="sm"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={handleOpenCreateModal}
+          >
+            + Tambah Pelanggan &amp; SR Baru
+          </Button>
+        </div>
       </div>
 
       {/* Success Notification Alert */}
@@ -942,8 +1037,28 @@ function PelangganContent() {
 
       {/* Mobile Card View (< md) */}
       <div className="md:hidden space-y-3">
-        <div className="text-xs text-slate-500 px-1 font-medium">
-          Menampilkan <strong>{filteredCustomers.length}</strong> sambungan pelanggan
+        <div className="flex items-center justify-between text-xs text-slate-500 px-1 font-medium">
+          <div>
+            Menampilkan <strong>{filteredCustomers.length}</strong> sambungan
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <button
+              type="button"
+              onClick={() => setShowPrintModal(true)}
+              className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center space-x-1 text-[11px] font-bold border border-slate-200"
+            >
+              <Printer className="w-3 h-3 text-slate-500" />
+              <span>PDF</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center space-x-1 text-[11px] font-bold border border-emerald-200"
+            >
+              <FileSpreadsheet className="w-3 h-3 text-emerald-600" />
+              <span>Excel</span>
+            </button>
+          </div>
         </div>
 
         {filteredCustomers.length === 0 ? (
@@ -1047,6 +1162,28 @@ function PelangganContent() {
           <CardHeader
             title={`Daftar Sambungan (${filteredCustomers.length} Terpilih)`}
             subtitle="Data register terhubung ke multi-tenant KPSPAMS aktif"
+            action={
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPrintModal(true)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition shadow-sm active:scale-95"
+                  title="Cetak Buku Register Pelanggan (A4 / PDF)"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Cetak PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center space-x-1.5 transition shadow-sm active:scale-95"
+                  title="Unduh Data Format Excel (.csv)"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Ekspor Excel</span>
+                </button>
+              </div>
+            }
           />
 
           <div className="overflow-x-auto">
@@ -2298,6 +2435,226 @@ function PelangganContent() {
               >
                 Batal
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pratinjau & Cetak Buku Register Pelanggan Resmi (A4 & PDF) */}
+      {showPrintModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-6 sm:p-8 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            {/* Header Modal & Tombol Aksi (print:hidden) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-6 gap-3 print:hidden">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-brand-maroon-100 text-brand-maroon-800">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">
+                    Buku Register Data Pelanggan Resmi (A4)
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Mencetak {filteredCustomers.length} pelanggan terpilih • Siap simpan ke PDF atau cetak ke kertas
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="px-3.5 py-2 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Unduh Excel</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintReport}
+                  className="px-4 py-2 rounded-xl bg-brand-maroon-800 hover:bg-brand-maroon-900 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak / Simpan PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPrintModal(false)}
+                  className="text-slate-400 p-2 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Official Report Document Body (A4 Ready) */}
+            <div id="printable-customer-report" className="space-y-5 text-slate-900 text-xs p-2 sm:p-4 bg-white">
+              {/* Kop Surat Resmi */}
+              <div className="text-center pb-4 border-b-2 border-slate-900 space-y-1">
+                <div className="text-xs uppercase tracking-widest font-bold text-slate-600">
+                  Pemerintah Kabupaten Polewali Mandar • Kecamatan Binuang
+                </div>
+                <div className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-tight">
+                  Pemerintah Desa Kuajang
+                </div>
+                <div className="text-xs sm:text-sm font-extrabold text-brand-maroon-900 tracking-wide uppercase">
+                  Pengurus KPSPAMS PAMSIMAS Desa Kuajang
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  SK Kepala Desa Kuajang Nomor 19 Tahun 2026 Tanggal 30 Juni 2026 (Masa Bakti 2026–2029)
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Sekretariat: Kantor Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar, Sulawesi Barat 91353
+                </div>
+              </div>
+
+              {/* Title & Metadata Dokumen */}
+              <div className="text-center py-1">
+                <h4 className="text-sm font-black uppercase tracking-wider underline">
+                  Buku Register Induk Sambungan Rumah (SR) &amp; Pelanggan Air Bersih
+                </h4>
+                <div className="text-xs font-semibold text-slate-600 mt-1">
+                  Unit: {user?.kpspamsName || "KPSPAMS Lemo Baru"} • Wilayah: {selectedDusun === "ALL" ? "Seluruh Dusun Layanan" : `Dusun ${selectedDusun}`}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  Tanggal Dokumen: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                </div>
+              </div>
+
+              {/* Ringkasan Statistik Eksekutif */}
+              <div className="grid grid-cols-4 gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="text-center">
+                  <div className="text-[9px] uppercase font-bold text-slate-500">Total Sambungan</div>
+                  <div className="text-sm font-black text-slate-800 mt-0.5">{filteredCustomers.length} SR</div>
+                </div>
+                <div className="text-center border-l border-slate-200">
+                  <div className="text-[9px] uppercase font-bold text-slate-500">SR Aktif</div>
+                  <div className="text-sm font-black text-emerald-700 mt-0.5">
+                    {filteredCustomers.filter((c) => c.status === "ACTIVE").length} SR
+                  </div>
+                </div>
+                <div className="text-center border-l border-slate-200">
+                  <div className="text-[9px] uppercase font-bold text-slate-500">SR Tersegel</div>
+                  <div className="text-sm font-black text-amber-700 mt-0.5">
+                    {filteredCustomers.filter((c) => c.status === "SEALED").length} SR
+                  </div>
+                </div>
+                <div className="text-center border-l border-slate-200">
+                  <div className="text-[9px] uppercase font-bold text-slate-500">Stand Fisik Total</div>
+                  <div className="text-sm font-black text-indigo-700 mt-0.5 font-tabular">
+                    {filteredCustomers.reduce((acc, c) => acc + (c.lastReading || 0), 0).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabel Register Pelanggan */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse border border-slate-300 text-[11px]">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
+                      <th className="py-2 px-2.5 border-r border-slate-300 text-center w-8">No</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300">No. SR</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300">Nama Pelanggan</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300">NIK</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300">Dusun / RT</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300">Seri Meter</th>
+                      <th className="py-2 px-2.5 border-r border-slate-300 text-right">Stand (m³)</th>
+                      <th className="py-2 px-2.5 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCustomers.map((cust, idx) => (
+                      <tr key={cust.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/60"}>
+                        <td className="py-1.5 px-2 border border-slate-300 text-center text-slate-500">{idx + 1}</td>
+                        <td className="py-1.5 px-2 border border-slate-300 font-mono font-bold text-slate-900 whitespace-nowrap">
+                          {cust.connectionNo}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 font-semibold text-slate-800">
+                          {cust.name}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 font-mono text-slate-600">
+                          {cust.nik || "-"}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 text-slate-700">
+                          {cust.dusun} {cust.rtRw ? `(RT ${cust.rtRw})` : ""}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 font-mono text-slate-600 whitespace-nowrap">
+                          {cust.meterSerial}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 text-right font-mono font-bold text-slate-900">
+                          {cust.lastReading.toFixed(2)}
+                        </td>
+                        <td className="py-1.5 px-2 border border-slate-300 text-center font-bold">
+                          <span className={cust.status === "ACTIVE" ? "text-emerald-700" : cust.status === "SEALED" ? "text-amber-700" : "text-rose-700"}>
+                            {cust.status === "ACTIVE" ? "AKTIF" : cust.status === "SEALED" ? "SEGEL" : "PUTUS"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Kolom Tanda Tangan & Pengesahan Dokumen */}
+              <div className="pt-8 grid grid-cols-3 gap-6 text-center text-xs text-slate-800 break-inside-avoid">
+                <div>
+                  <div className="text-[11px] text-slate-500 mb-1">Mengetahui,</div>
+                  <div className="font-bold">Kepala Desa Kuajang</div>
+                  <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
+                    ( Tanda Tangan &amp; Cap )
+                  </div>
+                  <div className="font-extrabold underline uppercase">MUHAMMAD DAHLAN</div>
+                  <div className="text-[10px] text-slate-500">Pemerintah Desa Kuajang</div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] text-slate-500 mb-1">Disahkan Oleh,</div>
+                  <div className="font-bold">Ketua KPSPAMS Unit</div>
+                  <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
+                    ( Tanda Tangan )
+                  </div>
+                  <div className="font-extrabold underline uppercase">PENGURUS KPSPAMS</div>
+                  <div className="text-[10px] text-slate-500">Unit Pengelola Air Bersih</div>
+                </div>
+
+                <div>
+                  <div className="text-[11px] text-slate-500 mb-1">
+                    Kuajang, {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </div>
+                  <div className="font-bold">Petugas Administrasi / Register</div>
+                  <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
+                    ( Tanda Tangan )
+                  </div>
+                  <div className="font-extrabold underline uppercase">{user?.name || "ADMINISTRATOR"}</div>
+                  <div className="text-[10px] text-slate-500">Petugas Pendataan Pelanggan</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls (print:hidden) */}
+            <div className="mt-6 flex items-center justify-between pt-4 border-t border-slate-200 print:hidden">
+              <span className="text-xs text-slate-500">
+                Gunakan pengaturan <strong>Save as PDF</strong> atau pilih printer A4 pada dialog cetak.
+              </span>
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowPrintModal(false)}
+                >
+                  Tutup
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  icon={<Printer className="w-4 h-4" />}
+                  onClick={handlePrintReport}
+                >
+                  Cetak / Simpan PDF
+                </Button>
+              </div>
             </div>
           </div>
         </div>

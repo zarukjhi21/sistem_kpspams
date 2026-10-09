@@ -76,3 +76,36 @@ body {
   border-top-color: #334155 !important;
 }
 
+/* Print optimization for official A4 reports (Customer & Financial Reports) */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printable-customer-report,
+  #printable-customer-report *,
+  #printable-financial-report,
+  #printable-financial-report * {
+    visibility: visible !important;
+  }
+  #printable-customer-report,
+  #printable-financial-report {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+}
+
