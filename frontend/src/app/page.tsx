@@ -272,178 +272,146 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 3 Unit KPSPAMS Grid (Dengan Indikator Visual Kesiapan Jaringan) */}
+        {/* 3 Unit KPSPAMS Grid */}
         <section id="unit-pengelola" className="scroll-mt-28 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800/80 pb-3">
-            <div>
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                3 Unit Pengelola KPSPAMS Desa Kuajang
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-400">
-                Setiap unit mengelola sumber air, pembukuan kas, serta sambungan rumah secara otonom dan transparan.
-              </p>
-            </div>
-            <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-800 self-start sm:self-auto">
-              1 Unit Aktif Operasi • 2 Tahap Persiapan
-            </span>
+          <div className="border-b border-slate-800/80 pb-3">
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              3 Unit Pengelola KPSPAMS Desa Kuajang
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              Pembagian wilayah pelayanan air bersih mandiri berdasarkan sumber air per unit desa.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Unit 1: LMB (Operasional Aktif Penuh) */}
-            <div className="p-5 rounded-3xl border-2 border-emerald-500/50 bg-gradient-to-b from-emerald-950/30 to-slate-900/60 shadow-xl space-y-4 relative group">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-900 text-emerald-200 border border-emerald-600 shadow-sm">
-                  Unit 1 (LMB)
-                </span>
-                <span className="text-xs text-emerald-400 font-extrabold flex items-center space-x-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>100% Beroperasi</span>
-                </span>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-black text-white group-hover:text-emerald-300 transition-colors">
-                  KPSPAMS &quot;Wai Kaili&quot; Lemo Baru
-                </h4>
-                <p className="text-xs text-slate-300 mt-1">
-                  Sumber Air: <strong className="text-emerald-400">Mata Air Alami Pegunungan</strong> (Gravitasi)
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Wilayah: Dusun Lemo Baru &amp; Batu Miallo
-                </p>
-              </div>
-
-              {/* Progress Kesiapan Jaringan */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Status Jaringan Distribusi:</span>
-                  <span className="font-bold text-emerald-400">100% Berjalan</span>
+            <div className="p-5 rounded-3xl border-2 border-emerald-500/50 bg-gradient-to-b from-emerald-950/30 to-slate-900/60 shadow-xl space-y-4 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-900 text-emerald-200 border border-emerald-600 shadow-sm">
+                    Unit 1 (LMB)
+                  </span>
+                  <span className="text-xs text-emerald-400 font-extrabold flex items-center space-x-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Aktif Beroperasi</span>
+                  </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-full" />
-                </div>
-              </div>
 
-              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
-                <div className="flex justify-between text-slate-400">
-                  <span>Pelanggan Terlayani:</span>
-                  <strong className="text-emerald-400 font-bold">37 SR (Aktif Verifikasi)</strong>
+                <div>
+                  <h4 className="text-lg font-black text-white">
+                    KPSPAMS &quot;Wai Kaili&quot; Lemo Baru
+                  </h4>
+                  <p className="text-xs text-emerald-400 font-medium mt-1">
+                    Wilayah Layanan: Dusun Lemo Baru
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Mata Air Pegunungan (100% Gravitasi Alami)
+                  </p>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Kas Terhimpun:</span>
-                  <strong className="text-amber-400 font-bold">Rp 30.136.000</strong>
+
+                <div className="pt-3 border-t border-slate-800/80 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-slate-400">
+                    <span>Pelanggan Terlayani:</span>
+                    <strong className="text-white font-extrabold text-sm">37 Sambungan</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-400">
+                    <span>Kas Operasional:</span>
+                    <strong className="text-amber-400 font-extrabold text-sm">Rp 30.136.000</strong>
+                  </div>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => scrollToSection("peta-gis")}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition flex items-center justify-center space-x-1"
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition flex items-center justify-center space-x-1 mt-2"
               >
                 <span>Lihat Sebaran di Peta GIS</span>
                 <ArrowDown className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Unit 2: LMT (Tahap 2) */}
-            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-85">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                  Unit 2 (LMT)
-                </span>
-                <span className="text-xs text-amber-400 font-bold flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                  <span>Tahap 2 Persiapan</span>
-                </span>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-black text-slate-200">
-                  KPSPAMS Lemo Tua
-                </h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Sumber Air: <strong className="text-slate-300">Sumur Bor Dalam &amp; Mata Air Sekunder</strong>
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Wilayah: Dusun Lemo Tua &amp; Kandang Tedong
-                </p>
-              </div>
-
-              {/* Progress Kesiapan Jaringan */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Survey Teknis &amp; Sumber Air:</span>
-                  <span className="font-bold text-amber-400">25% Tahap Awal</span>
+            {/* Unit 2: LMT (Tahap Persiapan) */}
+            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-90 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    Unit 2 (LMT)
+                  </span>
+                  <span className="text-xs text-amber-400 font-bold flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span>Tahap Persiapan</span>
+                  </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full w-1/4" />
-                </div>
-              </div>
 
-              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
-                <div className="flex justify-between text-slate-500">
-                  <span>Pelanggan Terdaftar:</span>
-                  <strong className="text-slate-400 font-bold">0 SR (Target ~80 SR)</strong>
+                <div>
+                  <h4 className="text-lg font-black text-slate-200">
+                    KPSPAMS Lemo Tua
+                  </h4>
+                  <p className="text-xs text-slate-400 font-medium mt-1">
+                    Wilayah Layanan: Dusun Lemo Tua
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Sumur Bor &amp; Sumber Air Baku
+                  </p>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Kas Operasional:</span>
-                  <strong className="text-slate-400 font-bold">Rp 0 (Belum Iuran)</strong>
+
+                <div className="pt-3 border-t border-slate-800/80 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-slate-500">
+                    <span>Pelanggan Terdaftar:</span>
+                    <strong className="text-slate-400 font-extrabold text-sm">0 Sambungan</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-500">
+                    <span>Kas Operasional:</span>
+                    <strong className="text-slate-400 font-extrabold text-sm">Rp 0</strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="py-2 text-center text-[11px] text-slate-400 italic bg-slate-950/40 rounded-xl border border-slate-800/60">
-                Pencatatan meter &amp; iuran akan diaktifkan setelah uji debit air selesai.
+              <div className="py-2.5 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800/60 mt-2 font-medium">
+                Penyusunan Jaringan Air Bersih
               </div>
             </div>
 
-            {/* Unit 3: SRP (Tahap 2) */}
-            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-85">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                  Unit 3 (SRP)
-                </span>
-                <span className="text-xs text-cyan-400 font-bold flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                  <span>Tahap 2 Persiapan</span>
-                </span>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-black text-slate-200">
-                  KPSPAMS Sarampu 1
-                </h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Sumber Air: <strong className="text-slate-300">Pipa Gravitasi &amp; Bak Penampung</strong>
-                </p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Wilayah: Dusun Sarampu 1 &amp; Pakkandoang
-                </p>
-              </div>
-
-              {/* Progress Kesiapan Jaringan */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Perencanaan Jaringan Pipa:</span>
-                  <span className="font-bold text-cyan-400">15% Tahap Desain</span>
+            {/* Unit 3: SRP (Tahap Persiapan) */}
+            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-90 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    Unit 3 (SRP)
+                  </span>
+                  <span className="text-xs text-cyan-400 font-bold flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                    <span>Tahap Persiapan</span>
+                  </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-cyan-500 rounded-full w-[15%]" />
-                </div>
-              </div>
 
-              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
-                <div className="flex justify-between text-slate-500">
-                  <span>Pelanggan Terdaftar:</span>
-                  <strong className="text-slate-400 font-bold">0 SR (Target ~65 SR)</strong>
+                <div>
+                  <h4 className="text-lg font-black text-slate-200">
+                    KPSPAMS Sarampu 1
+                  </h4>
+                  <p className="text-xs text-slate-400 font-medium mt-1">
+                    Wilayah Layanan: Dusun Sarampu 1 &amp; Pakkandoang
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Jaringan Pipa &amp; Bak Penampung
+                  </p>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Kas Operasional:</span>
-                  <strong className="text-slate-400 font-bold">Rp 0 (Belum Iuran)</strong>
+
+                <div className="pt-3 border-t border-slate-800/80 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-slate-500">
+                    <span>Pelanggan Terdaftar:</span>
+                    <strong className="text-slate-400 font-extrabold text-sm">0 Sambungan</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-500">
+                    <span>Kas Operasional:</span>
+                    <strong className="text-slate-400 font-extrabold text-sm">Rp 0</strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="py-2 text-center text-[11px] text-slate-400 italic bg-slate-950/40 rounded-xl border border-slate-800/60">
-                Penyambungan pipa tersier sedang dalam tahap pemetaan teknis lapangan.
+              <div className="py-2.5 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800/60 mt-2 font-medium">
+                Penyusunan Jaringan Air Bersih
               </div>
             </div>
           </div>

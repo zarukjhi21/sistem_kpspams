@@ -1336,8 +1336,8 @@ export async function onRequest(context: any) {
       `);
 
       const unitDusunsMap: Record<number, string[]> = {
-        1: ["Lemo Baru", "Batu Miallo"],
-        2: ["Lemo Tua", "Kandang Tedong"],
+        1: ["Lemo Baru"],
+        2: ["Lemo Tua"],
         3: ["Sarampu 1", "Pakkandoang"],
       };
 
