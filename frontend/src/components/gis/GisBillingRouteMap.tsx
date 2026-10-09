@@ -12,6 +12,8 @@ import {
   Activity,
   ArrowRight,
   Shield,
+  Radio,
+  Crosshair,
 } from "lucide-react";
 import L from "leaflet";
 
@@ -33,10 +35,15 @@ export function GisBillingRouteMap({
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const myLocationMarkerRef = useRef<L.Marker | null>(null);
+  const myLocationAccuracyCircleRef = useRef<L.Circle | null>(null);
+  const watchIdRef = useRef<number | null>(null);
 
   const [mapType, setMapType] = useState<"google-hybrid" | "google-streets">("google-hybrid");
-  const [activePopupCustomer, setActivePopupCustomer] = useState<DemoCustomer | null>(null);
   const [trackingGps, setTrackingGps] = useState(false);
+  const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [officerCoords, setOfficerCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
 
   // Compute map center from customers
   const validCoords = customers.filter((c) => c.latitude && c.longitude);
@@ -44,6 +51,22 @@ export function GisBillingRouteMap({
     validCoords.length > 0 ? validCoords[0].latitude! : -3.4582;
   const defaultCenterLng =
     validCoords.length > 0 ? validCoords[0].longitude! : 119.3415;
+
+  // Haversine formula to calculate distance in meters
+  const calculateDistanceMeters = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return Math.round(R * c);
+  };
 
   // Initialize Map
   useEffect(() => {
@@ -95,7 +118,6 @@ export function GisBillingRouteMap({
       const isSelected = cust.id === selectedCustomerId;
 
       // Determine pin color based on billing status
-      // Green = PAID, Red = UNPAID, Yellow = SEALED
       const isPaid = cust.billingStatus === "PAID";
       const isSealed = cust.status === "SEALED";
 
@@ -140,10 +162,37 @@ export function GisBillingRouteMap({
 
       const marker = L.marker([lat, lng], { icon: pinIcon });
 
+      const popupHtml = `
+        <div style="font-family: inherit; font-size: 12px; min-width: 170px; padding: 2px;">
+          <div style="font-weight: 800; color: #0f172a; font-size: 13px;">${cust.name}</div>
+          <div style="font-size: 10px; color: #64748b; font-family: monospace; margin-top: 2px;">
+            ${cust.connectionNo} • ${cust.dusun}
+          </div>
+          <div style="margin-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: ${
+              isPaid ? '#d1fae5; color: #065f46;' : isSealed ? '#fef3c7; color: #92400e;' : '#fee2e2; color: #991b1b;'
+            }">
+              ${isPaid ? '✓ Sudah Lunas' : isSealed ? '⚠ Disegel' : '● Belum Bayar'}
+            </span>
+            <span style="font-size: 11px; font-weight: 800; font-family: monospace; color: #0f172a;">
+              ${cust.lastReading.toFixed(1)} m³
+            </span>
+          </div>
+          <div style="font-size: 10px; color: #2563eb; font-weight: 700; margin-top: 6px; text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
+            Data lengkap di bawah peta ↓
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, {
+        offset: [0, -28],
+        closeButton: true,
+      });
+
       marker.on("click", () => {
         onSelectCustomer(cust);
-        setActivePopupCustomer(cust);
-        mapInstanceRef.current?.setView([lat, lng], 17, { animate: true });
+        marker.openPopup();
+        mapInstanceRef.current?.setView([lat, lng], 18, { animate: true });
       });
 
       markersLayer.addLayer(marker);
@@ -154,10 +203,9 @@ export function GisBillingRouteMap({
   useEffect(() => {
     const selected = customers.find((c) => c.id === selectedCustomerId);
     if (selected && selected.latitude && selected.longitude && mapInstanceRef.current) {
-      mapInstanceRef.current.setView([selected.latitude, selected.longitude], 17, {
+      mapInstanceRef.current.setView([selected.latitude, selected.longitude], 18, {
         animate: true,
       });
-      setActivePopupCustomer(selected);
     }
   }, [selectedCustomerId, customers]);
 
@@ -182,85 +230,158 @@ export function GisBillingRouteMap({
     tileLayerRef.current = newLayer;
   };
 
-  // Track Officer GPS Location on map
+  // Update Officer Location on map with satellite accuracy circle
+  const updateOfficerPosition = (lat: number, lng: number, accuracy: number) => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    setOfficerCoords({ lat, lng });
+    setGpsAccuracy(Math.round(accuracy));
+    setGpsError(null);
+
+    // 1. Update Officer Marker
+    if (myLocationMarkerRef.current) {
+      myLocationMarkerRef.current.setLatLng([lat, lng]);
+    } else {
+      const officerIcon = L.divIcon({
+        className: "officer-location-pin",
+        html: `
+          <div style="position: relative; width: 28px; height: 28px;">
+            <div style="position: absolute; top: -6px; left: -6px; width: 40px; height: 40px; border-radius: 50%; background: rgba(37, 99, 235, 0.3); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="width: 28px; height: 28px; background: #2563EB; border: 3px solid #FFFFFF; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
+              <div style="width: 8px; height: 8px; background: #FFFFFF; border-radius: 50%;"></div>
+            </div>
+          </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      });
+
+      myLocationMarkerRef.current = L.marker([lat, lng], {
+        icon: officerIcon,
+        zIndexOffset: 1000,
+      }).addTo(map);
+    }
+
+    // 2. Update Accuracy Circle (visual radius)
+    if (myLocationAccuracyCircleRef.current) {
+      myLocationAccuracyCircleRef.current.setLatLng([lat, lng]);
+      myLocationAccuracyCircleRef.current.setRadius(accuracy);
+    } else {
+      myLocationAccuracyCircleRef.current = L.circle([lat, lng], {
+        radius: accuracy,
+        color: "#2563EB",
+        weight: 1.5,
+        fillColor: "#3B82F6",
+        fillOpacity: 0.15,
+      }).addTo(map);
+    }
+
+    myLocationMarkerRef.current.bindPopup(`
+      <div style="font-family: inherit; font-size: 12px; line-height: 1.4; padding: 2px;">
+        <div style="font-weight: 800; color: #1e3a8a;">📍 Posisi Petugas Lapangan</div>
+        <div style="font-size: 11px; color: #16a34a; font-weight: 700; margin-top: 3px;">
+          ✓ Sinyal GPS Terkunci
+        </div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
+          Radius Akurasi: ±${Math.round(accuracy)} meter
+        </div>
+      </div>
+    `);
+  };
+
+  // High Accuracy Hardware Geolocation (No Stale Cache, No Fake Coordinates)
   const handleTrackMyLocation = () => {
+    if (!("geolocation" in navigator)) {
+      setGpsError("Browser di perangkat ini tidak mendukung sensor GPS.");
+      return;
+    }
+
     setTrackingGps(true);
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
+    setGpsError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setTrackingGps(false);
+        updateOfficerPosition(latitude, longitude, accuracy);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([latitude, longitude], 18, { animate: true });
+        }
+      },
+      (err) => {
+        setTrackingGps(false);
+        let msg = "Gagal membaca sinyal GPS.";
+        if (err.code === 1) {
+          msg = "Izin lokasi GPS belum diizinkan. Silakan aktifkan izin lokasi di pengaturan browser HP.";
+        } else if (err.code === 2) {
+          msg = "Sinyal satelit GPS tidak terdeteksi. Pastikan GPS HP aktif dan Anda berada di area terbuka.";
+        } else if (err.code === 3) {
+          msg = "Waktu pencarian satelit habis (timeout). Silakan ketuk tombol Lokasi Saya kembali.";
+        }
+        setGpsError(msg);
+      },
+      {
+        enableHighAccuracy: true, // Forces phone's real GNSS/GPS chipset!
+        timeout: 20000,
+        maximumAge: 0, // Never use stale cache!
+      }
+    );
+  };
+
+  // Toggle Live Tracking (Continuous GPS Watch while walking in the field)
+  const toggleLiveTracking = () => {
+    if (isLiveTracking) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      setIsLiveTracking(false);
+    } else {
+      if (!("geolocation" in navigator)) {
+        setGpsError("Browser ini tidak mendukung sensor GPS.");
+        return;
+      }
+      setIsLiveTracking(true);
+      setGpsError(null);
+
+      const id = navigator.geolocation.watchPosition(
         (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setTrackingGps(false);
-
-          if (!mapInstanceRef.current) return;
-
-          if (myLocationMarkerRef.current) {
-            myLocationMarkerRef.current.setLatLng([lat, lng]);
-          } else {
-            const officerIcon = L.divIcon({
-              className: "officer-location-pin",
-              html: `
-                <div style="
-                  width: 22px;
-                  height: 22px;
-                  background: #2563EB;
-                  border: 3px solid #FFFFFF;
-                  border-radius: 50%;
-                  box-shadow: 0 0 14px #2563EB;
-                "></div>
-              `,
-              iconSize: [22, 22],
-              iconAnchor: [11, 11],
-            });
-            myLocationMarkerRef.current = L.marker([lat, lng], {
-              icon: officerIcon,
-            })
-              .addTo(mapInstanceRef.current)
-              .bindPopup("<b>Posisi Petugas Lapangan</b>")
-              .openPopup();
-          }
-
-          mapInstanceRef.current.setView([lat, lng], 18, { animate: true });
+          updateOfficerPosition(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
         },
-        () => {
-          // Fallback simulation near Lemo Baru
-          setTrackingGps(false);
-          const simLat = -3.4585;
-          const simLng = 119.3408;
-
-          if (mapInstanceRef.current) {
-            if (myLocationMarkerRef.current) {
-              myLocationMarkerRef.current.setLatLng([simLat, simLng]);
-            } else {
-              const officerIcon = L.divIcon({
-                className: "officer-location-pin",
-                html: `
-                  <div style="
-                    width: 22px;
-                    height: 22px;
-                    background: #2563EB;
-                    border: 3px solid #FFFFFF;
-                    border-radius: 50%;
-                    box-shadow: 0 0 14px #2563EB;
-                  "></div>
-                `,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11],
-              });
-              myLocationMarkerRef.current = L.marker([simLat, simLng], {
-                icon: officerIcon,
-              })
-                .addTo(mapInstanceRef.current)
-                .bindPopup("<b>Posisi Petugas (Simulasi Lapangan)</b>")
-                .openPopup();
-            }
-            mapInstanceRef.current.setView([simLat, simLng], 18, { animate: true });
-          }
+        (err) => {
+          console.warn("Live watch GPS warning:", err);
         },
-        { enableHighAccuracy: true }
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 25000,
+        }
       );
+      watchIdRef.current = id;
     }
   };
+
+  // Cleanup watch on unmount
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
+  // Calculate distance from officer to currently selected customer
+  const selectedCust = customers.find((c) => c.id === selectedCustomerId);
+  const distanceToTarget =
+    officerCoords && selectedCust?.latitude && selectedCust?.longitude
+      ? calculateDistanceMeters(
+          officerCoords.lat,
+          officerCoords.lng,
+          selectedCust.latitude,
+          selectedCust.longitude
+        )
+      : null;
 
   // Compute status summary counts
   const totalPaid = customers.filter((c) => c.billingStatus === "PAID").length;
@@ -292,7 +413,7 @@ export function GisBillingRouteMap({
         </div>
 
         {/* Controls */}
-        <div className="flex items-center space-x-2 self-end sm:self-auto">
+        <div className="flex items-center flex-wrap gap-2 self-start sm:self-auto">
           {/* Layer Toggle */}
           <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold">
             <button
@@ -321,7 +442,37 @@ export function GisBillingRouteMap({
             </button>
           </div>
 
-          {/* GPS My Location */}
+          {/* Distance Indicator to selected customer */}
+          {distanceToTarget !== null && (
+            <div
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center space-x-1.5 shadow-sm ${
+                distanceToTarget <= 25
+                  ? "bg-emerald-50 border-emerald-300 text-emerald-800 animate-pulse"
+                  : "bg-blue-50 border-blue-300 text-blue-800"
+              }`}
+              title="Perkiraan jarak dari posisi petugas ke rumah pelanggan terpilih"
+            >
+              <Crosshair className="w-3.5 h-3.5 text-blue-600" />
+              <span>
+                {distanceToTarget <= 25
+                  ? `Di Lokasi (±${distanceToTarget}m)`
+                  : `Jarak: ${distanceToTarget}m`}
+              </span>
+            </div>
+          )}
+
+          {/* GPS Accuracy Pill */}
+          {gpsAccuracy !== null && (
+            <div
+              className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-semibold flex items-center space-x-1"
+              title="Radius akurasi pembacaan satelit GPS saat ini"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>±{gpsAccuracy}m</span>
+            </div>
+          )}
+
+          {/* GPS My Location Button */}
           <button
             type="button"
             onClick={handleTrackMyLocation}
@@ -329,84 +480,50 @@ export function GisBillingRouteMap({
             className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow transition flex items-center space-x-1 active:scale-95 disabled:opacity-50"
           >
             <Navigation className={`w-3.5 h-3.5 ${trackingGps ? "animate-spin" : ""}`} />
-            <span>Lokasi Saya</span>
+            <span>{trackingGps ? "Mencari GPS..." : "Lokasi Saya"}</span>
+          </button>
+
+          {/* Live Tracking Toggle (Walking Mode) */}
+          <button
+            type="button"
+            onClick={toggleLiveTracking}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 border shadow-xs ${
+              isLiveTracking
+                ? "bg-emerald-600 text-white border-emerald-500 shadow-md animate-pulse"
+                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+            }`}
+            title={isLiveTracking ? "Matikan Mode Lacak Langkah" : "Aktifkan Mode Lacak Langkah (Otomatis Ikuti Pergerakan Petugas)"}
+          >
+            <Radio className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isLiveTracking ? "Lacak Aktif" : "Lacak Bergerak"}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Map Viewport */}
+      {/* GPS Error Alert */}
+      {gpsError && (
+        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-sm animate-in fade-in">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+            <span>{gpsError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setGpsError(null)}
+            className="text-xs text-rose-500 hover:text-rose-800 font-bold ml-3 px-2 py-0.5 rounded hover:bg-rose-100"
+          >
+            ✕ Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Main Map Viewport - 100% Clean & Touch-Friendly without any blocking overlay */}
       <div className="relative rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-900">
         <div
           ref={mapContainerRef}
-          className="w-full h-80 sm:h-96 z-10"
-          style={{ minHeight: "320px" }}
+          className="w-full h-[420px] sm:h-[480px] lg:h-[520px] z-10"
+          style={{ minHeight: "400px" }}
         />
-
-        {/* Floating Active House Card on Map */}
-        {activePopupCustomer && (
-          <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-sm z-20 animate-in slide-in-from-bottom duration-200">
-            <div className="p-4 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border-2 border-slate-200 text-slate-800 space-y-2.5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                      {activePopupCustomer.connectionNo}
-                    </span>
-                    <span
-                      className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${
-                        activePopupCustomer.billingStatus === "PAID"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : activePopupCustomer.status === "SEALED"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-rose-100 text-rose-800"
-                      }`}
-                    >
-                      {activePopupCustomer.billingStatus === "PAID"
-                        ? "✓ SUDAH LUNAS"
-                        : activePopupCustomer.status === "SEALED"
-                        ? "DISEGEL"
-                        : "● BELUM BAYAR"}
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-black text-slate-900 mt-0.5">
-                    {activePopupCustomer.name}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    {activePopupCustomer.dusun} • Seri: {activePopupCustomer.meterSerial}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-xs font-black font-tabular text-slate-800">
-                    {activePopupCustomer.lastReading.toFixed(2)} m³
-                  </div>
-                  <div className="text-[9px] text-slate-400">Stand Lalu</div>
-                </div>
-              </div>
-
-              {/* Action Button to Proceed to meter reading & collection */}
-              {onProceedToRecord && (
-                <button
-                  type="button"
-                  onClick={() => onProceedToRecord(activePopupCustomer)}
-                  className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center space-x-1.5 active:scale-95 ${
-                    activePopupCustomer.billingStatus === "PAID"
-                      ? "bg-slate-800 hover:bg-slate-900 text-white"
-                      : "bg-brand-maroon-800 hover:bg-brand-maroon-900 text-white shadow-brand-maroon-900/30"
-                  }`}
-                >
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>
-                    {activePopupCustomer.billingStatus === "PAID"
-                      ? "Lihat / Catat Ulang Meter"
-                      : "Catat Meter & Tagih Rumah Ini"}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
