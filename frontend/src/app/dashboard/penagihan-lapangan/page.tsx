@@ -1055,15 +1055,28 @@ function PenagihanLapanganContent() {
               >
                 &larr; Ganti Warga
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="font-bold shadow-lg"
-                icon={<ArrowRight className="w-4 h-4" />}
-              >
-                Lanjut: Terima Pembayaran Tunai &rarr;
-              </Button>
+              {selectedCustomer.billingStatus === "PAID" ? (
+                <Button
+                  type="button"
+                  variant="gold"
+                  size="lg"
+                  className="font-bold shadow-lg"
+                  onClick={() => setCurrentStep(4)}
+                  icon={<CheckCircle2 className="w-4 h-4" />}
+                >
+                  Warga Sudah Lunas &rarr; Lihat Struk WA
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="font-bold shadow-lg"
+                  icon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Lanjut: Terima Pembayaran Tunai &rarr;
+                </Button>
+              )}
             </div>
           </form>
         </Card>
@@ -1080,6 +1093,18 @@ function PenagihanLapanganContent() {
           />
 
           <div className="space-y-4">
+            {selectedCustomer.billingStatus === "PAID" && (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center space-x-3 shadow-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <div>
+                  <div className="font-bold text-sm">Warga Ini Sudah LUNAS untuk Periode Berjalan</div>
+                  <p className="text-[11px] text-emerald-700 mt-0.5">
+                    Tagihan warga {selectedCustomer.name} ({selectedCustomer.connectionNo}) sudah lunas tercatat di buku kas. Klik tombol di bawah untuk melihat/mengirim struk WhatsApp tanpa mencatat pembayaran ganda.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Total Due Big Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white text-center space-y-1">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-300">
@@ -1175,16 +1200,29 @@ function PenagihanLapanganContent() {
               >
                 &larr; Koreksi Stand Meter
               </Button>
-              <Button
-                type="button"
-                variant="gold"
-                size="lg"
-                className="font-bold shadow-lg"
-                onClick={handleConfirmPayment}
-                icon={<Check className="w-4 h-4" />}
-              >
-                Konfirmasi Lunas & Kirim Struk WA
-              </Button>
+              {selectedCustomer.billingStatus === "PAID" ? (
+                <Button
+                  type="button"
+                  variant="gold"
+                  size="lg"
+                  className="font-bold shadow-lg"
+                  onClick={() => setCurrentStep(4)}
+                  icon={<CheckCircle2 className="w-4 h-4" />}
+                >
+                  Sudah Lunas &rarr; Kirim Ulang Struk WA
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="gold"
+                  size="lg"
+                  className="font-bold shadow-lg"
+                  onClick={handleConfirmPayment}
+                  icon={<Check className="w-4 h-4" />}
+                >
+                  Konfirmasi Lunas & Kirim Struk WA
+                </Button>
+              )}
             </div>
           </div>
         </Card>
