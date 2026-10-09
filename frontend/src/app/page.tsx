@@ -208,10 +208,6 @@ export default function HomePage() {
           {/* Left Column: Headline, Cek Tagihan & Quick Action */}
           <div className="lg:col-span-7 rounded-3xl bg-slate-950/80 border border-slate-800/90 p-6 sm:p-8 lg:p-10 shadow-xl flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-gold-500/10 border border-brand-gold-500/30 text-brand-gold-400 text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Sistem Informasi Air Bersih Desa Mandiri</span>
-              </div>
               <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-snug sm:leading-tight">
                 Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
               </h1>
