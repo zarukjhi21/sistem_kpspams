@@ -33,7 +33,7 @@ export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
     totalBilled: 370000,
     totalCollected: 370000,
     outstandingArrears: 0,
-    cashBalance: 370000,
+    cashBalance: 30136000, // Rp 29.766.000 saldo awal + Rp 370.000 iuran 37 SR
     activeComplaints: 0,
     systemType: 'GRAVITASI',
     waterSource: 'Mata Air Alami Pegunungan (Sistem Gravitasi Murni - Tanpa Pompa Listrik)',

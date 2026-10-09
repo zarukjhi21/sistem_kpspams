@@ -1572,7 +1572,7 @@ export async function onRequest(context: any) {
         meterMap[Number(r.kid)] = Number(r.usage_m3) || 0;
       });
 
-      const lmbCash = cashMap[1] !== undefined ? cashMap[1] : 370000;
+      const lmbCash = cashMap[1] !== undefined ? cashMap[1] : 30136000;
       const lmtCash = cashMap[2] !== undefined ? cashMap[2] : 0;
       const sr1Cash = cashMap[3] !== undefined ? cashMap[3] : 0;
 
