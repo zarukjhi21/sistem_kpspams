@@ -381,13 +381,9 @@ export function PublicGisMap() {
 
   return (
     <section className="space-y-4">
-      {/* Header & Badges */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs font-bold mb-2">
-            <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Peta Geospasial Interaktif Jaringan Air Bersih</span>
-          </div>
           <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Peta Sebaran Jaringan Pipa &amp; Sambungan Rumah (SR)
           </h3>

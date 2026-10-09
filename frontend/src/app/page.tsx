@@ -106,11 +106,6 @@ export default function HomePage() {
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             {/* Left Column: Headline, Description & Cek Tagihan Kilat */}
             <div className="lg:col-span-7 space-y-5">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-maroon-900/80 border border-brand-maroon-700/80 text-brand-gold-400 text-xs font-bold shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-brand-gold-400" />
-                <span>Multi-Tenant 3 Unit KPSPAMS Desa Kuajang</span>
-              </div>
-
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight">
                 Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
               </h1>
@@ -306,10 +301,6 @@ export default function HomePage() {
         <section id="unit-pengelola" className="scroll-mt-28 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800/80 pb-3">
             <div>
-              <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-extrabold uppercase tracking-wider mb-1.5">
-                <Building2 className="w-3 h-3 text-slate-400" />
-                <span>Desentralisasi Mandiri Per Wilayah</span>
-              </div>
               <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 3 Unit Pengelola KPSPAMS Desa Kuajang
               </h3>
@@ -559,9 +550,6 @@ export default function HomePage() {
         <section id="pusat-bantuan" className="scroll-mt-28 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-6 sm:p-8 shadow-xl">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
             <div className="space-y-1">
-              <span className="text-xs font-bold text-blue-400 bg-blue-950/80 px-2.5 py-0.5 rounded-full border border-blue-800">
-                Pusat Pelayanan &amp; Respon Cepat Desa
-              </span>
               <h3 className="text-xl sm:text-2xl font-black text-white">
                 Pusat Bantuan &amp; Pengaduan Gangguan Air
               </h3>

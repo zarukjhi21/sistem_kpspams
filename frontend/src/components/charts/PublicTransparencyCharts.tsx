@@ -371,10 +371,6 @@ export function PublicTransparencyCharts() {
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-800/80 text-cyan-300 text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Transparansi Publik & Akuntabilitas Warga</span>
-          </div>
           <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Transparansi Penyaluran Air & Akuntabilitas Dana Desa
           </h3>
