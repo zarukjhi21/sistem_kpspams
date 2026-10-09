@@ -182,6 +182,18 @@ function PelangganContent() {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   const [selectedDusun, setSelectedDusun] = useState("ALL");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedCustomer, setSelectedCustomer] = useState<DemoCustomer | null>(null);
@@ -751,17 +763,17 @@ function PelangganContent() {
     setTimeout(() => setSuccessMessage(null), 6000);
   };
 
-  // Filter customers based on search, active KPSPAMS context, dusun, and status
+  // Filter customers based on debouncedSearch, active KPSPAMS context, dusun, and status
   const filteredCustomers = customers.filter((c) => {
     // Multi-tenant isolation: Petugas hanya melihat pelanggan di unitnya
     if (effectiveKpspamsId !== null && Number(c.kpspamsId) !== Number(effectiveKpspamsId)) {
       return false;
     }
     if (
-      searchTerm &&
-      !c.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !c.connectionNo.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !c.nik.includes(searchTerm)
+      debouncedSearch &&
+      !c.name.toLowerCase().includes(debouncedSearch.toLowerCase()) &&
+      !c.connectionNo.toLowerCase().includes(debouncedSearch.toLowerCase()) &&
+      !c.nik.includes(debouncedSearch)
     ) {
       return false;
     }
@@ -773,6 +785,57 @@ function PelangganContent() {
     }
     return true;
   });
+
+  const totalPages = Math.ceil(filteredCustomers.length / pageSize) || 1;
+  const paginatedCustomers = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredCustomers.slice(start, start + pageSize);
+  }, [filteredCustomers, currentPage, pageSize]);
+
+  const renderPaginationControls = () => {
+    if (filteredCustomers.length === 0) return null;
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 px-1 text-xs text-slate-500 border-t border-slate-200">
+        <div>
+          Menampilkan <strong>{(currentPage - 1) * pageSize + 1}</strong> -{" "}
+          <strong>{Math.min(filteredCustomers.length, currentPage * pageSize)}</strong> dari{" "}
+          <strong>{filteredCustomers.length}</strong> sambungan
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-sm transition"
+          >
+            « Sebelumnya
+          </button>
+          <span className="font-semibold text-slate-700 px-1">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-sm transition"
+          >
+            Berikutnya »
+          </button>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="ml-2 px-2 py-1 text-xs border border-slate-200 rounded-lg bg-white font-medium"
+          >
+            <option value={15}>15 / hal</option>
+            <option value={25}>25 / hal</option>
+            <option value={50}>50 / hal</option>
+            <option value={100}>Semua</option>
+          </select>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -888,90 +951,93 @@ function PelangganContent() {
             Tidak ada pelanggan yang sesuai dengan filter.
           </div>
         ) : (
-          filteredCustomers.map((cust) => (
-            <div
-              key={cust.id}
-              className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3"
-            >
-              {/* Header row: Connection No & Status */}
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
-                  {cust.connectionNo}
-                </span>
-                {cust.status === "ACTIVE" ? (
-                  <Badge variant="success" size="sm">Aktif</Badge>
-                ) : cust.status === "SEALED" ? (
-                  <Badge variant="warning" size="sm">Disegel</Badge>
-                ) : (
-                  <Badge variant="danger" size="sm">Diputus</Badge>
-                )}
-              </div>
-
-              {/* Customer Info */}
-              <div>
-                <div className="font-bold text-slate-900 text-sm">{cust.name}</div>
-                <div className="text-[11px] text-slate-500 font-mono mt-0.5">NIK: {cust.nik}</div>
-                <div className="text-[11px] text-slate-600 mt-1 flex items-center space-x-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span>{cust.dusun}</span>
-                  <span className="text-slate-300">•</span>
-                  <span className="text-slate-500">{cust.kpspamsName}</span>
+          <>
+            {paginatedCustomers.map((cust) => (
+              <div
+                key={cust.id}
+                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3"
+              >
+                {/* Header row: Connection No & Status */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                    {cust.connectionNo}
+                  </span>
+                  {cust.status === "ACTIVE" ? (
+                    <Badge variant="success" size="sm">Aktif</Badge>
+                  ) : cust.status === "SEALED" ? (
+                    <Badge variant="warning" size="sm">Disegel</Badge>
+                  ) : (
+                    <Badge variant="danger" size="sm">Diputus</Badge>
+                  )}
                 </div>
-              </div>
 
-              {/* Meter Info Box */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                {/* Customer Info */}
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-slate-400">Seri Meter Fisik</div>
-                  <div className="font-mono font-bold text-xs text-slate-700">{cust.meterSerial}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] uppercase font-bold text-slate-400">Stand Terakhir</div>
-                  <div className="font-tabular font-black text-sm text-slate-900">
-                    {cust.lastReading.toFixed(2)} m³
+                  <div className="font-bold text-slate-900 text-sm">{cust.name}</div>
+                  <div className="text-[11px] text-slate-500 font-mono mt-0.5">NIK: {cust.nik}</div>
+                  <div className="text-[11px] text-slate-600 mt-1 flex items-center space-x-1">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <span>{cust.dusun}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-slate-500">{cust.kpspamsName}</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Direct Actions: Clean 2-tier buttons without overlap */}
-              <div className="pt-2 space-y-2 border-t border-slate-100">
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="w-full text-[11px] px-1.5"
-                    onClick={() => setSelectedCustomer(cust)}
-                    icon={<Eye className="w-3.5 h-3.5" />}
-                  >
-                    Detail
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-[11px] px-1.5 text-amber-700 border-amber-300 hover:bg-amber-50"
-                    onClick={() => handleOpenEditModal(cust)}
-                    icon={<Pencil className="w-3.5 h-3.5 text-amber-600" />}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-[11px] px-1.5 text-rose-700 border-rose-300 hover:bg-rose-50"
-                    onClick={() => handleOpenActionModal(cust)}
-                    icon={<Trash2 className="w-3.5 h-3.5 text-rose-600" />}
-                  >
-                    Tindakan
-                  </Button>
+                {/* Meter Info Box */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] uppercase font-bold text-slate-400">Seri Meter Fisik</div>
+                    <div className="font-mono font-bold text-xs text-slate-700">{cust.meterSerial}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] uppercase font-bold text-slate-400">Stand Terakhir</div>
+                    <div className="font-tabular font-black text-sm text-slate-900">
+                      {cust.lastReading.toFixed(2)} m³
+                    </div>
+                  </div>
                 </div>
-                <Link href="/dashboard/penagihan-lapangan" className="block w-full">
-                  <Button variant="primary" size="sm" className="w-full font-bold shadow-sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
-                    Catat & Tagih Warga Ini
-                  </Button>
-                </Link>
+
+                {/* Direct Actions: Clean 2-tier buttons without overlap */}
+                <div className="pt-2 space-y-2 border-t border-slate-100">
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full text-[11px] px-1.5"
+                      onClick={() => setSelectedCustomer(cust)}
+                      icon={<Eye className="w-3.5 h-3.5" />}
+                    >
+                      Detail
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-[11px] px-1.5 text-amber-700 border-amber-300 hover:bg-amber-50"
+                      onClick={() => handleOpenEditModal(cust)}
+                      icon={<Pencil className="w-3.5 h-3.5 text-amber-600" />}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-[11px] px-1.5 text-rose-700 border-rose-300 hover:bg-rose-50"
+                      onClick={() => handleOpenActionModal(cust)}
+                      icon={<Trash2 className="w-3.5 h-3.5 text-rose-600" />}
+                    >
+                      Tindakan
+                    </Button>
+                  </div>
+                  <Link href="/dashboard/penagihan-lapangan" className="block w-full">
+                    <Button variant="primary" size="sm" className="w-full font-bold shadow-sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
+                      Catat & Tagih Warga Ini
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+            {renderPaginationControls()}
+          </>
         )}
       </div>
 
@@ -1004,7 +1070,7 @@ function PelangganContent() {
                     </td>
                   </tr>
                 ) : (
-                  filteredCustomers.map((cust) => (
+                  paginatedCustomers.map((cust) => (
                     <tr key={cust.id} className="hover:bg-slate-50/80 transition">
                       <td className="py-3.5 px-4 font-mono font-bold text-brand-maroon-900">
                         {cust.connectionNo}
@@ -1073,6 +1139,9 @@ function PelangganContent() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="p-4 border-t border-slate-100">
+            {renderPaginationControls()}
           </div>
         </Card>
       </div>

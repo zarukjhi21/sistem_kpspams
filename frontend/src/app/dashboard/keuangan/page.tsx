@@ -205,6 +205,18 @@ function KeuanganContent() {
 
   // State Pencarian & Filter Mutasi
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setCurrentPage(1);
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -227,14 +239,65 @@ function KeuanganContent() {
       return false;
     }
     if (
-      searchQuery &&
-      !tx.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !tx.txNumber.toLowerCase().includes(searchQuery.toLowerCase())
+      debouncedQuery &&
+      !tx.description.toLowerCase().includes(debouncedQuery.toLowerCase()) &&
+      !tx.txNumber.toLowerCase().includes(debouncedQuery.toLowerCase())
     ) {
       return false;
     }
     return true;
   });
+
+  const totalTxPages = Math.ceil(filteredTx.length / pageSize) || 1;
+  const paginatedTx = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredTx.slice(start, start + pageSize);
+  }, [filteredTx, currentPage, pageSize]);
+
+  const renderTxPaginationControls = () => {
+    if (filteredTx.length === 0) return null;
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 px-1 text-xs text-slate-500 border-t border-slate-200">
+        <div>
+          Menampilkan <strong>{(currentPage - 1) * pageSize + 1}</strong> -{" "}
+          <strong>{Math.min(filteredTx.length, currentPage * pageSize)}</strong> dari{" "}
+          <strong>{filteredTx.length}</strong> transaksi mutasi
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-sm transition"
+          >
+            « Sebelumnya
+          </button>
+          <span className="font-semibold text-slate-700 px-1">
+            {currentPage} / {totalTxPages}
+          </span>
+          <button
+            disabled={currentPage >= totalTxPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalTxPages, p + 1))}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-sm transition"
+          >
+            Berikutnya »
+          </button>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="ml-2 px-2 py-1 text-xs border border-slate-200 rounded-lg bg-white font-medium"
+          >
+            <option value={15}>15 / hal</option>
+            <option value={25}>25 / hal</option>
+            <option value={50}>50 / hal</option>
+            <option value={100}>Semua</option>
+          </select>
+        </div>
+      </div>
+    );
+  };
 
   // Hitungan Agregat Keuangan Riil
   const totalLiquidCash = filteredAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
@@ -805,33 +868,36 @@ function KeuanganContent() {
               Belum ada mutasi transaksi yang sesuai dengan filter.
             </div>
           ) : (
-            filteredTx.map((tx) => (
-              <div key={tx.id} className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-mono font-bold text-slate-700">{tx.txNumber}</span>
-                  <span className="text-slate-400 text-[10px]">{tx.date}</span>
+            <>
+              {paginatedTx.map((tx) => (
+                <div key={tx.id} className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono font-bold text-slate-700">{tx.txNumber}</span>
+                    <span className="text-slate-400 text-[10px]">{tx.date}</span>
+                  </div>
+                  <div className="font-semibold text-slate-900 text-xs">{tx.description}</div>
+                  <div className="flex items-center justify-between pt-1">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        tx.type === "INCOME"
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
+                      }`}
+                    >
+                      {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} • {getCategoryLabel(tx.category)}
+                    </span>
+                    <span
+                      className={`font-black font-tabular text-xs ${
+                        tx.type === "INCOME" ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {tx.type === "INCOME" ? "+" : "-"} Rp {tx.amount.toLocaleString("id-ID")}
+                    </span>
+                  </div>
                 </div>
-                <div className="font-semibold text-slate-900 text-xs">{tx.description}</div>
-                <div className="flex items-center justify-between pt-1">
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      tx.type === "INCOME"
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}
-                  >
-                    {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} • {getCategoryLabel(tx.category)}
-                  </span>
-                  <span
-                    className={`font-black font-tabular text-xs ${
-                      tx.type === "INCOME" ? "text-emerald-700" : "text-rose-700"
-                    }`}
-                  >
-                    {tx.type === "INCOME" ? "+" : "-"} Rp {tx.amount.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-            ))
+              ))}
+              {renderTxPaginationControls()}
+            </>
           )}
         </div>
 
@@ -856,7 +922,7 @@ function KeuanganContent() {
                   </td>
                 </tr>
               ) : (
-                filteredTx.map((tx) => (
+                paginatedTx.map((tx) => (
                   <tr key={tx.id} className="hover:bg-slate-50/60 transition">
                     <td className="px-4 py-3.5 font-mono text-[11px] font-semibold text-slate-800">
                       {tx.txNumber}
@@ -889,6 +955,9 @@ function KeuanganContent() {
               )}
             </tbody>
           </table>
+          <div className="p-4 border-t border-slate-100">
+            {renderTxPaginationControls()}
+          </div>
         </div>
       </Card>
 
