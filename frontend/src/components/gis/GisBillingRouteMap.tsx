@@ -390,42 +390,17 @@ export function GisBillingRouteMap({
     };
   }, []);
 
-  // Resize Leaflet map when toggling fullscreen & force tile redraw
+  // Resize Leaflet map when toggling fullscreen
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
 
-    const refreshMap = () => {
-      // 1. Invalidate size with pan: false to recalculate container bounds without offset errors
-      map.invalidateSize({ pan: false });
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
 
-      // 2. Re-center on selected customer or current center with reset: true
-      const selected = customers.find((c) => c.id === selectedCustomerId);
-      if (selected && selected.latitude && selected.longitude) {
-        map.setView([selected.latitude, selected.longitude], map.getZoom(), { animate: false });
-      } else {
-        map.setView(map.getCenter(), map.getZoom(), { animate: false });
-      }
-
-      // 3. Force tile layer to clear cache and reload all visible satellite tiles
-      if (tileLayerRef.current) {
-        tileLayerRef.current.redraw();
-      }
-
-      // 4. Dispatch native window resize event to notify Leaflet internals
-      window.dispatchEvent(new Event("resize"));
-    };
-
-    const t1 = setTimeout(refreshMap, 50);
-    const t2 = setTimeout(refreshMap, 200);
-    const t3 = setTimeout(refreshMap, 500);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [isFullscreen, selectedCustomerId, customers]);
+    return () => clearTimeout(timer);
+  }, [isFullscreen]);
 
   // Lock body scroll and listen for Escape key in fullscreen
   useEffect(() => {
@@ -647,21 +622,12 @@ export function GisBillingRouteMap({
         className={
           isFullscreen
             ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 mt-1"
-            : "relative rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-900"
+            : "relative rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-900 h-[420px] sm:h-[480px] lg:h-[520px]"
         }
       >
         <div
           ref={mapContainerRef}
-          className={
-            isFullscreen
-              ? "absolute inset-0 w-full h-full z-10"
-              : "w-full h-[420px] sm:h-[480px] lg:h-[520px] z-10"
-          }
-          style={
-            isFullscreen
-              ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }
-              : { minHeight: "400px" }
-          }
+          className="w-full h-full"
         />
 
         {/* Floating Quick Fullscreen Toggle Button on Top-Right of Map Canvas */}

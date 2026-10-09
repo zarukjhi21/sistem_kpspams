@@ -387,34 +387,17 @@ export function PublicGisMap() {
     }
   };
 
-  // Resize Leaflet map when toggling fullscreen & force tile redraw
+  // Resize Leaflet map when toggling fullscreen
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
 
-    const refreshMap = () => {
-      map.invalidateSize({ pan: false });
-      if (selectedItem && selectedItem.data.latitude && selectedItem.data.longitude) {
-        map.setView([selectedItem.data.latitude, selectedItem.data.longitude], map.getZoom(), { animate: false });
-      } else {
-        map.setView(map.getCenter(), map.getZoom(), { animate: false });
-      }
-      if (tileLayerRef.current) {
-        tileLayerRef.current.redraw();
-      }
-      window.dispatchEvent(new Event("resize"));
-    };
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
 
-    const t1 = setTimeout(refreshMap, 50);
-    const t2 = setTimeout(refreshMap, 200);
-    const t3 = setTimeout(refreshMap, 500);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [isFullscreen, selectedItem]);
+    return () => clearTimeout(timer);
+  }, [isFullscreen]);
 
   // Lock body scroll and listen for Escape key in fullscreen
   useEffect(() => {
@@ -587,7 +570,7 @@ export function PublicGisMap() {
         className={
           isFullscreen
             ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 mt-1"
-            : "relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950"
+            : "relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 h-[460px] sm:h-[540px]"
         }
       >
         {/* Floating Search Bar */}
@@ -646,16 +629,7 @@ export function PublicGisMap() {
         {/* Map Container */}
         <div
           ref={mapContainerRef}
-          className={
-            isFullscreen
-              ? "absolute inset-0 w-full h-full z-0 focus:outline-none"
-              : "w-full h-[460px] sm:h-[540px] z-0 focus:outline-none"
-          }
-          style={
-            isFullscreen
-              ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }
-              : undefined
-          }
+          className="w-full h-full z-0 focus:outline-none"
         />
 
         {/* Floating Quick Fullscreen Toggle Button on Top-Right */}
