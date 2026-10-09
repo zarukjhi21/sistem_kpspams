@@ -232,8 +232,8 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     lastReading: 142.50,
     status: 'ACTIVE',
     tariffType: 'Rumah Tangga',
-    latitude: -3.4578,
-    longitude: 119.3412,
+    latitude: -3.4349,
+    longitude: 119.3768,
     billingStatus: 'UNPAID',
   },
 ];

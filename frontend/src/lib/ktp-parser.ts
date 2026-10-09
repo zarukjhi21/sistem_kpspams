@@ -42,8 +42,8 @@ export function parseKtpRawText(rawText: string): ParsedKtpData {
     religion: 'ISLAM',
     maritalStatus: '',
     occupation: '',
-    suggestedLat: -3.4565,
-    suggestedLng: 119.3435,
+    suggestedLat: -3.4349,
+    suggestedLng: 119.3768,
   };
 
   const lines = rawText
@@ -231,20 +231,20 @@ export function parseKtpRawText(rawText: string): ParsedKtpData {
   // 9. Dusun di Desa Kuajang & GIS Coordinates
   if (/LEMO\s*BARU|LEMOBARU/i.test(rawText)) {
     result.dusun = 'Lemo Baru';
-    result.suggestedLat = -3.4565;
-    result.suggestedLng = 119.3435;
+    result.suggestedLat = -3.4349;
+    result.suggestedLng = 119.3768;
   } else if (/LEMO\s*TUA|LEMOTUA/i.test(rawText)) {
     result.dusun = 'Lemo Tua';
-    result.suggestedLat = -3.4592;
-    result.suggestedLng = 119.3392;
+    result.suggestedLat = -3.4285;
+    result.suggestedLng = 119.3725;
   } else if (/SARAMPU\s*1|SARAMPU/i.test(rawText)) {
     result.dusun = 'Sarampu 1';
-    result.suggestedLat = -3.4541;
-    result.suggestedLng = 119.3488;
+    result.suggestedLat = -3.4385;
+    result.suggestedLng = 119.3850;
   } else if (/PAKKANDOANG/i.test(rawText)) {
     result.dusun = 'Pakkandoang';
-    result.suggestedLat = -3.4615;
-    result.suggestedLng = 119.3365;
+    result.suggestedLat = -3.4410;
+    result.suggestedLng = 119.3890;
   }
 
   // 10. Agama

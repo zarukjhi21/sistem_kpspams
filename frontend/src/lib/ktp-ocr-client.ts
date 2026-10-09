@@ -105,17 +105,17 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
     }
   }
 
-  let suggestedLat = -3.4565;
-  let suggestedLng = 119.3435;
+  let suggestedLat = -3.4349;
+  let suggestedLng = 119.3768;
   if (/LEMO\s*TUA/i.test(dusunResult)) {
-    suggestedLat = -3.4592;
-    suggestedLng = 119.3392;
+    suggestedLat = -3.4285;
+    suggestedLng = 119.3725;
   } else if (/SARAMPU/i.test(dusunResult)) {
-    suggestedLat = -3.4541;
-    suggestedLng = 119.3488;
+    suggestedLat = -3.4385;
+    suggestedLng = 119.3850;
   } else if (/PAKKANDOANG/i.test(dusunResult)) {
-    suggestedLat = -3.4615;
-    suggestedLng = 119.3365;
+    suggestedLat = -3.4410;
+    suggestedLng = 119.3890;
   }
 
   return {

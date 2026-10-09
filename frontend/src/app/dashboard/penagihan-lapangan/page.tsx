@@ -50,8 +50,18 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     lastReading: isNaN(lastReadingNum) ? 0 : lastReadingNum,
     status: ((item.connection_status || item.status) === "ACTIVE" ? "ACTIVE" : (item.connection_status || item.status) === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
-    latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
-    longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452),
+    latitude: (() => {
+      const rawLat = item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : null);
+      const rawLng = item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : null);
+      if (rawLat === null || rawLng === null || rawLat === 0 || rawLng === 0 || (rawLat <= -3.45 && rawLng <= 119.35)) return -3.4349;
+      return rawLat;
+    })(),
+    longitude: (() => {
+      const rawLat = item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : null);
+      const rawLng = item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : null);
+      if (rawLat === null || rawLng === null || rawLat === 0 || rawLng === 0 || (rawLat <= -3.45 && rawLng <= 119.35)) return 119.3768;
+      return rawLng;
+    })(),
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
   };

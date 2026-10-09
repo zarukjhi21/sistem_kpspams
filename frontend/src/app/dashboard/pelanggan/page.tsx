@@ -12,6 +12,21 @@ import { useAuth } from "@/context/AuthContext";
 import dynamic from "next/dynamic";
 import { scanKtpImage } from "@/lib/ktp-ocr-client";
 
+const KUAJANG_DUSUN_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Lemo Baru": { lat: -3.4349, lng: 119.3768 },
+  "Lemo Tua": { lat: -3.4285, lng: 119.3725 },
+  "Sarampu 1": { lat: -3.4385, lng: 119.3850 },
+  "Sarampu 2": { lat: -3.4410, lng: 119.3890 },
+  "Pakkandoang": { lat: -3.4410, lng: 119.3890 },
+};
+
+const isInvalidSeaCoord = (lat?: number | null, lng?: number | null) => {
+  if (lat === null || lat === undefined || lng === null || lng === undefined) return true;
+  if (lat === 0 || lng === 0) return true;
+  if (lat <= -3.45 && lng <= 119.35) return true;
+  return false;
+};
+
 const mapApiCustomerToDemo = (item: any): DemoCustomer => {
   const primaryConn = item.connections?.[0];
   const rawReading =
@@ -28,6 +43,13 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
       : 0;
   const lastReadingNum = Number(rawReading);
 
+  const dName = item.dusun || primaryConn?.dusun?.name || "Lemo Baru";
+  const defaultCoords = KUAJANG_DUSUN_COORDS[dName] || { lat: -3.4349, lng: 119.3768 };
+  const rawLat = item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : null);
+  const rawLng = item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : null);
+  const safeLat = !isInvalidSeaCoord(rawLat, rawLng) ? rawLat! : defaultCoords.lat;
+  const safeLng = !isInvalidSeaCoord(rawLat, rawLng) ? rawLng! : defaultCoords.lng;
+
   return {
     id: item.id,
     connectionNo: primaryConn?.connection_no || primaryConn?.connection_number || item.connection_no || item.code || `SR-${item.id}`,
@@ -43,15 +65,15 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     maritalStatus: item.marital_status,
     occupation: item.occupation,
     phone: item.phone,
-    dusun: item.dusun || primaryConn?.dusun?.name || "Lemo Baru",
+    dusun: dName,
     kpspamsId: Number(item.kpspams_id || item.kpspams?.id || 1),
     kpspamsName: item.kpspams_name || item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
     meterSerial: item.meter_serial || primaryConn?.meter?.serial_number || "MTR-1001",
     lastReading: isNaN(lastReadingNum) ? 0 : lastReadingNum,
     status: ((item.connection_status || item.status) === "ACTIVE" ? "ACTIVE" : (item.connection_status || item.status) === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
-    latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
-    longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452),
+    latitude: safeLat,
+    longitude: safeLng,
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
   };
@@ -195,8 +217,8 @@ function PelangganContent() {
   const [newMeterSerial, setNewMeterSerial] = useState("");
   const [newInitialReading, setNewInitialReading] = useState("0.00");
   const [newTariffType, setNewTariffType] = useState("Rumah Tangga");
-  const [newLatitude, setNewLatitude] = useState<number>(-3.4582);
-  const [newLongitude, setNewLongitude] = useState<number>(119.3415);
+  const [newLatitude, setNewLatitude] = useState<number>(-3.4349);
+  const [newLongitude, setNewLongitude] = useState<number>(119.3768);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -220,8 +242,8 @@ function PelangganContent() {
   const [editLastReading, setEditLastReading] = useState("0.00");
   const [editTariffType, setEditTariffType] = useState("Rumah Tangga");
   const [editStatus, setEditStatus] = useState<"ACTIVE" | "SEALED" | "DISCONNECTED">("ACTIVE");
-  const [editLatitude, setEditLatitude] = useState<number>(-3.4582);
-  const [editLongitude, setEditLongitude] = useState<number>(119.3415);
+  const [editLatitude, setEditLatitude] = useState<number>(-3.4349);
+  const [editLongitude, setEditLongitude] = useState<number>(119.3768);
   const [editError, setEditError] = useState<string | null>(null);
 
   // Modal State Hapus / Segel Pelanggan
@@ -266,8 +288,9 @@ function PelangganContent() {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     setNewMeterSerial(`MTR-${kInfo.codePrefix}-${randomSuffix}`);
     setNewInitialReading("0.00");
-    setNewLatitude(-3.4582);
-    setNewLongitude(119.3415);
+    const targetCoords = KUAJANG_DUSUN_COORDS[defaultDusun] || { lat: -3.4349, lng: 119.3768 };
+    setNewLatitude(targetCoords.lat);
+    setNewLongitude(targetCoords.lng);
     setErrorMessage(null);
     setOcrError(null);
     setOcrEngine(null);
@@ -594,8 +617,11 @@ function PelangganContent() {
     setEditLastReading(String(cust.lastReading));
     setEditTariffType(cust.tariffType);
     setEditStatus(cust.status);
-    setEditLatitude(cust.latitude || -3.4582);
-    setEditLongitude(cust.longitude || 119.3415);
+    const dTarget = KUAJANG_DUSUN_COORDS[cust.dusun] || { lat: -3.4349, lng: 119.3768 };
+    const safeLat = !isInvalidSeaCoord(cust.latitude, cust.longitude) ? cust.latitude! : dTarget.lat;
+    const safeLng = !isInvalidSeaCoord(cust.latitude, cust.longitude) ? cust.longitude! : dTarget.lng;
+    setEditLatitude(safeLat);
+    setEditLongitude(safeLng);
     setEditError(null);
     setEditModalOpen(true);
   };
@@ -1455,6 +1481,9 @@ function PelangganContent() {
                         setNewDusun(d);
                         const kInfo = getKpspamsByDusun(d);
                         setNewMeterSerial(`MTR-${kInfo.codePrefix}-${Math.floor(1000 + Math.random() * 9000)}`);
+                        const targetCoords = KUAJANG_DUSUN_COORDS[d] || { lat: -3.4349, lng: 119.3768 };
+                        setNewLatitude(targetCoords.lat);
+                        setNewLongitude(targetCoords.lng);
                       }}
                       className={`w-full px-3.5 py-2.5 text-xs font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 ${
                         !isDesaLevel
@@ -1976,7 +2005,15 @@ function PelangganContent() {
                     </label>
                     <select
                       value={editDusun}
-                      onChange={(e) => setEditDusun(e.target.value)}
+                      onChange={(e) => {
+                        const d = e.target.value;
+                        setEditDusun(d);
+                        if (isInvalidSeaCoord(editLatitude, editLongitude)) {
+                          const targetCoords = KUAJANG_DUSUN_COORDS[d] || { lat: -3.4349, lng: 119.3768 };
+                          setEditLatitude(targetCoords.lat);
+                          setEditLongitude(targetCoords.lng);
+                        }
+                      }}
                       className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
                     >
                       {allowedDusuns.map((d) => (

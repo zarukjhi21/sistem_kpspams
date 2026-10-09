@@ -45,12 +45,19 @@ export function GisBillingRouteMap({
   const [officerCoords, setOfficerCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
-  // Compute map center from customers
-  const validCoords = customers.filter((c) => c.latitude && c.longitude);
+  const isInvalidSeaCoord = (lat?: number | null, lng?: number | null) => {
+    if (lat === null || lat === undefined || lng === null || lng === undefined) return true;
+    if (lat === 0 || lng === 0) return true;
+    if (lat <= -3.45 && lng <= 119.35) return true;
+    return false;
+  };
+
+  // Compute map center from customers (excluding sea coordinates)
+  const validCoords = customers.filter((c) => c.latitude && c.longitude && !isInvalidSeaCoord(c.latitude, c.longitude));
   const defaultCenterLat =
-    validCoords.length > 0 ? validCoords[0].latitude! : -3.4582;
+    validCoords.length > 0 ? validCoords[0].latitude! : -3.4349;
   const defaultCenterLng =
-    validCoords.length > 0 ? validCoords[0].longitude! : 119.3415;
+    validCoords.length > 0 ? validCoords[0].longitude! : 119.3768;
 
   // Haversine formula to calculate distance in meters
   const calculateDistanceMeters = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -113,8 +120,11 @@ export function GisBillingRouteMap({
     markersLayer.clearLayers();
 
     customers.forEach((cust) => {
-      const lat = cust.latitude || -3.4582;
-      const lng = cust.longitude || 119.3415;
+      const rawLat = cust.latitude;
+      const rawLng = cust.longitude;
+      const isSea = isInvalidSeaCoord(rawLat, rawLng);
+      const lat = !isSea ? rawLat! : -3.4349;
+      const lng = !isSea ? rawLng! : 119.3768;
       const isSelected = cust.id === selectedCustomerId;
 
       // Determine pin color based on billing status

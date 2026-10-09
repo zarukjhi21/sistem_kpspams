@@ -351,8 +351,8 @@ export async function onRequest(context: any) {
           meterId,
           connNo,
           b.identity_address || `Dusun ${b.dusun || 'Lemo Baru'}`,
-          Number(b.latitude) || -3.4215,
-          Number(b.longitude) || 119.3452
+          Number(b.latitude) || -3.4349,
+          Number(b.longitude) || 119.3768
         ]);
 
         return jsonResponse({
@@ -580,7 +580,7 @@ export async function onRequest(context: any) {
             ) RETURNING *
           `, [
             Number(b.kpspams_id) || 1, custId.toString(), Number(b.dusun_id) || 3, meterId, connNo,
-            b.address_detail || "Desa Kuajang", Number(b.latitude) || -3.4215, Number(b.longitude) || 119.3452
+            b.address_detail || "Desa Kuajang", Number(b.latitude) || -3.4349, Number(b.longitude) || 119.3768
           ]);
           return jsonResponse({ status: "success", data: inserted[0] }, 201);
         }

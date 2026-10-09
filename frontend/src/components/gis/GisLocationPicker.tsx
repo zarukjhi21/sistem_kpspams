@@ -11,6 +11,14 @@ interface GisLocationPickerProps {
   dusunName?: string;
 }
 
+const KUAJANG_DUSUN_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Lemo Baru": { lat: -3.4349, lng: 119.3768 },
+  "Lemo Tua": { lat: -3.4285, lng: 119.3725 },
+  "Sarampu 1": { lat: -3.4385, lng: 119.3850 },
+  "Sarampu 2": { lat: -3.4410, lng: 119.3890 },
+  "Pakkandoang": { lat: -3.4410, lng: 119.3890 },
+};
+
 export function GisLocationPicker({
   latitude,
   longitude,
@@ -26,9 +34,16 @@ export function GisLocationPicker({
   const [isLocating, setIsLocating] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<string | null>(null);
 
-  // Default coordinate if 0: Kuajang center
-  const currentLat = latitude !== 0 ? latitude : -3.4582;
-  const currentLng = longitude !== 0 ? longitude : 119.3415;
+  // Validate coordinates: prevent sea coordinates (<= -3.45 and <= 119.35)
+  const isInvalidSeaCoord = (lat: number, lng: number) => {
+    if (lat === 0 || lng === 0) return true;
+    if (lat <= -3.45 && lng <= 119.35) return true;
+    return false;
+  };
+
+  const dusunTarget = KUAJANG_DUSUN_COORDS[dusunName] || { lat: -3.4349, lng: 119.3768 };
+  const currentLat = !isInvalidSeaCoord(latitude, longitude) ? latitude : dusunTarget.lat;
+  const currentLng = !isInvalidSeaCoord(latitude, longitude) ? longitude : dusunTarget.lng;
 
   // Initialize Map
   useEffect(() => {
@@ -86,7 +101,13 @@ export function GisLocationPicker({
       icon: customIcon,
     }).addTo(map);
 
-    marker.bindPopup(`<b>Titik Sambungan Meter</b><br>${dusunName}`).openPopup();
+    // Bind popup without auto-opening to prevent covering satellite view
+    marker.bindPopup(`<b>Titik Sambungan Meter</b><br>Dusun ${dusunName}`);
+
+    // If initial coordinate was invalid or 0, synchronize parent with real land coordinate
+    if (isInvalidSeaCoord(latitude, longitude)) {
+      onChange(currentLat, currentLng);
+    }
 
     // Marker drag event
     marker.on("dragend", () => {
@@ -118,13 +139,25 @@ export function GisLocationPicker({
   // Update marker if lat/lng props change from outside
   useEffect(() => {
     if (markerRef.current && mapInstanceRef.current && latitude !== 0 && longitude !== 0) {
-      const currentPos = markerRef.current.getLatLng();
-      if (currentPos.lat !== latitude || currentPos.lng !== longitude) {
-        markerRef.current.setLatLng([latitude, longitude]);
-        mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom());
+      if (!isInvalidSeaCoord(latitude, longitude)) {
+        const currentPos = markerRef.current.getLatLng();
+        if (currentPos.lat !== latitude || currentPos.lng !== longitude) {
+          markerRef.current.setLatLng([latitude, longitude]);
+          mapInstanceRef.current.setView([latitude, longitude], mapInstanceRef.current.getZoom());
+        }
       }
     }
   }, [latitude, longitude]);
+
+  // When Dusun changes from parent, adjust default position if currently at sea or zero
+  useEffect(() => {
+    if (markerRef.current && mapInstanceRef.current && isInvalidSeaCoord(latitude, longitude)) {
+      const target = KUAJANG_DUSUN_COORDS[dusunName] || { lat: -3.4349, lng: 119.3768 };
+      markerRef.current.setLatLng([target.lat, target.lng]);
+      mapInstanceRef.current.setView([target.lat, target.lng], 18);
+      onChange(target.lat, target.lng);
+    }
+  }, [dusunName]);
 
   // Toggle Map Layer (Google Hybrid vs Google Streets)
   const toggleMapLayer = (type: "google-hybrid" | "google-streets") => {
@@ -167,9 +200,10 @@ export function GisLocationPicker({
           }
         },
         () => {
-          // Fallback simulation for local/testing without GPS hardware
-          const simLat = parseFloat((-3.4582 + (Math.random() - 0.5) * 0.003).toFixed(6));
-          const simLng = parseFloat((119.3415 + (Math.random() - 0.5) * 0.003).toFixed(6));
+          // Fallback simulation for local/testing without GPS hardware: use real Kuajang dusun coordinates
+          const target = KUAJANG_DUSUN_COORDS[dusunName] || { lat: -3.4349, lng: 119.3768 };
+          const simLat = parseFloat((target.lat + (Math.random() - 0.5) * 0.0008).toFixed(6));
+          const simLng = parseFloat((target.lng + (Math.random() - 0.5) * 0.0008).toFixed(6));
           onChange(simLat, simLng);
           setGpsAccuracy("±4m (Simulasi GPS HP)");
           setIsLocating(false);
