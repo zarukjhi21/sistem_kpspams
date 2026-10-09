@@ -407,7 +407,7 @@ function PenggunaContent() {
         </div>
       )}
 
-      {/* Struktur Pengurus KPSPAMS Wai Kaili Lemo Baru Berdasarkan SK No. 19 Tahun 2026 */}
+      {/* Struktur Pengurus KPSPAMS Lemo Baru Berdasarkan SK No. 19 Tahun 2026 */}
       <Card className="p-4 sm:p-5 bg-gradient-to-br from-amber-50/60 via-white to-slate-50 border border-amber-200/80 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-amber-200/60">
           <div>
@@ -416,7 +416,7 @@ function PenggunaContent() {
               <span>SK Pengukuhan Resmi Masa Bakti 2026–2029</span>
             </div>
             <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
-              Struktur Pengurus KPSPAMS &quot;Wai Kaili&quot; Lemo Baru Desa Kuajang
+              Struktur Pengurus KPSPAMS Lemo Baru Desa Kuajang
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Keputusan Kepala Desa Kuajang Nomor 19 Tahun 2026 tanggal 30 Juni 2026 • Ditetapkan oleh: <strong>H. MUHAMMAD S.</strong> (Kepala Desa Kuajang)

@@ -235,7 +235,7 @@ function buildSystemAllocation(
       label: "Lemo Baru (Gravitasi)",
       tabIcon: Mountain,
       activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
-      title: 'KPSPAMS "Wai Kaili" Lemo Baru (Aktif)',
+      title: "KPSPAMS Lemo Baru (Aktif)",
       subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi (37 SR)",
       totalMonthly: lmbCash,
       totalExpense: lmbExpenses.total,
@@ -565,7 +565,7 @@ export function PublicTransparencyCharts() {
                 </div>
                 <div className="min-w-0">
                   <div className="text-[10px] text-slate-400 font-medium">Sumber Mata Air</div>
-                  <div className="text-xs font-bold text-white truncate">Wai Kaili (Gravitasi)</div>
+                  <div className="text-xs font-bold text-white truncate">Mata Air Lemo Baru (Gravitasi)</div>
                   <div className="text-[10px] text-emerald-400 font-medium mt-0.5">100% Bebas Biaya Listrik PLN</div>
                 </div>
               </div>

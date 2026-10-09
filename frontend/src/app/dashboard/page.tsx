@@ -134,10 +134,17 @@ function DashboardContent() {
     filteredCustomers.length;
   const totalCustomers = realCustomerCount;
 
+  const dusunSumUsage = overviewData?.dusun_breakdown?.reduce(
+    (acc: number, curr: any) => acc + (Number(curr.total_usage_m3) || 0),
+    0
+  );
+
   const totalUsage =
-    overviewData?.kpi?.total_usage_m3 ??
-    (overviewData as any)?.total_consumption_m3 ??
-    currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
+    dusunSumUsage && dusunSumUsage > 0
+      ? dusunSumUsage
+      : overviewData?.kpi?.total_usage_m3 ??
+        (overviewData as any)?.total_consumption_m3 ??
+        currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
 
   const totalBilled =
     overviewData?.kpi?.total_billed ??

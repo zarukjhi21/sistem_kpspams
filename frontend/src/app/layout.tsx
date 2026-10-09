@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     "Desa Kuajang",
     "Air Bersih",
     "Lemo Baru",
-    "Wai Kaili",
     "Polewali Mandar",
     "Transparansi Kas",
     "Cek Tagihan Air",
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "SI-KPSPAMS KUAJANG • Layanan Air Bersih Desa Kuajang",
-    description: "Cek tagihan warga mandiri, pantau transparansi kas riil, dan debit air pegunungan Wai Kaili Desa Kuajang.",
+    description: "Cek tagihan warga mandiri, pantau transparansi kas riil, dan debit air pegunungan alami Dusun Lemo Baru Desa Kuajang.",
     images: ["/logo.jpg"],
   },
   manifest: "/manifest.json",

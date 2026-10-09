@@ -25,11 +25,11 @@ export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
   {
     id: 1,
     code: 'KP-LMB',
-    name: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    name: 'KPSPAMS Lemo Baru',
     dusuns: ['Dusun Lemo Baru'],
     head: 'Fadli',
     activeCustomers: 37, // 37 SR Aktif Terverifikasi Server
-    waterUsageThisMonth: 353,
+    waterUsageThisMonth: 271,
     totalBilled: 370000,
     totalCollected: 370000,
     outstandingArrears: 0,
@@ -124,7 +124,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'ketua_kpspams',
     roleLabel: 'Ketua KPSPAMS',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000001',
   },
   {
@@ -134,7 +134,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'admin_kpspams',
     roleLabel: 'Sekretaris KPSPAMS',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000002',
   },
   {
@@ -144,7 +144,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'bendahara_kpspams',
     roleLabel: 'Bendahara KPSPAMS',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000003',
   },
   {
@@ -154,7 +154,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'petugas_lapangan',
     roleLabel: 'Koordinator Penagihan',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000004',
   },
   {
@@ -164,7 +164,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'petugas_lapangan',
     roleLabel: 'Koordinator Pemeliharaan',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000005',
   },
   {
@@ -174,7 +174,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'petugas_lapangan',
     roleLabel: 'Anggota Pengurus',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000006',
   },
   {
@@ -184,7 +184,7 @@ export const DEMO_USERS: DemoUser[] = [
     role: 'petugas_lapangan',
     roleLabel: 'Anggota Pengurus',
     kpspamsId: 1,
-    kpspamsName: 'KPSPAMS "Wai Kaili" Lemo Baru',
+    kpspamsName: 'KPSPAMS Lemo Baru',
     phone: '082100000007',
   },
 ];

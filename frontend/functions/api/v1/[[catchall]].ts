@@ -1640,8 +1640,8 @@ export async function onRequest(context: any) {
             LMB: {
               cash: lmbCash,
               customers: custMap[1] || 37,
-              usage_m3: meterMap[1] || 353,
-              name: 'KPSPAMS "Wai Kaili" Lemo Baru',
+              usage_m3: meterMap[1] || 271,
+              name: "KPSPAMS Lemo Baru",
               expenses: lmbExp,
             },
             LMT: {
@@ -1662,7 +1662,7 @@ export async function onRequest(context: any) {
           total_cash: lmbCash + lmtCash + sr1Cash,
           total_expenses: lmbExp.total + lmtExp.total + sr1Exp.total,
           total_customers: (custMap[1] || 37) + (custMap[2] || 0) + (custMap[3] || 0),
-          total_usage_m3: (meterMap[1] || 353) + (meterMap[2] || 0) + (meterMap[3] || 0),
+          total_usage_m3: (meterMap[1] || 271) + (meterMap[2] || 0) + (meterMap[3] || 0),
         },
       });
     }
@@ -1694,13 +1694,13 @@ export async function onRequest(context: any) {
         status: "success",
         data: {
           water_source: {
-            name: 'Mata Air Alami Pegunungan "Wai Kaili"',
+            name: "Mata Air Alami Pegunungan Lemo Baru",
             type: "BRONCAPTERING",
             latitude: -3.4285,
             longitude: 119.3725,
             flow_system: "GRAVITASI_MURNI",
             elevation_m: 145,
-            description: "Sumber mata air pegunungan alami Lemo Baru, dialirkan murni dengan gravitasi tanpa pompa listrik.",
+            description: "Sumber mata air pegunungan alami Dusun Lemo Baru, dialirkan murni dengan gravitasi tanpa pompa listrik.",
           },
           connections: conns.map((c: any) => ({
             id: Number(c.id),

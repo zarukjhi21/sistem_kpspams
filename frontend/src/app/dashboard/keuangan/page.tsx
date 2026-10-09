@@ -64,7 +64,7 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
     id: 1,
     kpspamsId: 1,
     code: "KAS-LMB-UTAMA",
-    name: 'Kas Operasional KPSPAMS "Wai Kaili" Lemo Baru',
+    name: "Kas Operasional KPSPAMS Lemo Baru",
     bankName: "Kas Operasional (Tunai & BRI)",
     accountNumber: "0214-01-002345-53-1",
     openingBalance: 29766000,
@@ -1340,7 +1340,7 @@ function KeuanganContent() {
                   Pemerintah Desa Kuajang
                 </div>
                 <div className="text-xs font-extrabold text-brand-maroon-900 tracking-wide uppercase">
-                  Pengurus KPSPAMS &quot;Wai Kaili&quot; Lemo Baru Desa Kuajang
+                  Pengurus KPSPAMS Lemo Baru Desa Kuajang
                 </div>
                 <div className="text-[10px] text-slate-500">
                   SK Kepala Desa Kuajang Nomor 19 Tahun 2026 Tanggal 30 Juni 2026 (Masa Bakti 2026–2029)
@@ -1456,7 +1456,7 @@ function KeuanganContent() {
                     {effectiveKpspamsId === 1 ? "FADLI" : effectiveKpspamsId === 2 ? "Abdul Rauf" : "Drs. Usman Ali"}
                   </div>
                   <div className="text-[10px] text-slate-500">
-                    {effectiveKpspamsId === 1 ? "Ketua KPSPAMS \"Wai Kaili\"" : "Ketua Pengelola"}
+                    {effectiveKpspamsId === 1 ? "Ketua KPSPAMS Lemo Baru" : "Ketua Pengelola"}
                   </div>
                 </div>
 

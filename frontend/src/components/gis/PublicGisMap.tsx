@@ -102,18 +102,18 @@ const DEFAULT_CONNECTIONS: GisConnectionItem[] = [
 ];
 
 const DEFAULT_WATER_SOURCE: WaterSourceInfo = {
-  name: 'Mata Air Alami Pegunungan "Wai Kaili"',
+  name: "Mata Air Alami Pegunungan Lemo Baru",
   type: "BRONCAPTERING",
   latitude: -3.4285,
   longitude: 119.3725,
   flow_system: "GRAVITASI_MURNI",
   elevation_m: 145,
-  description: "Sumber mata air pegunungan alami Lemo Baru, dialirkan murni dengan gravitasi tanpa beban listrik PLN.",
+  description: "Sumber mata air pegunungan alami Dusun Lemo Baru, dialirkan murni dengan gravitasi tanpa beban listrik PLN.",
 };
 
 // Jalur simulasi pipa transmisi gravitasi utama dari mata air pegunungan ke pusat pemukiman
 const MAIN_GRAVITY_PIPELINE: [number, number][] = [
-  [-3.4285, 119.3725], // Hulu Mata Air Wai Kaili (Broncaptering)
+  [-3.4285, 119.3725], // Hulu Mata Air Lemo Baru (Broncaptering)
   [-3.4298, 119.3734], // Jalur Lembah Aliran
   [-3.4311, 119.3742], // Bak Pelepas Tekanan / Percabangan Atas
   [-3.4325, 119.3748], // Distribusi Utama Lemo Baru
@@ -233,7 +233,7 @@ export function PublicGisMap() {
 
     markersLayer.addLayer(pipelinePolyline);
 
-    // 2. Pin Hulu Mata Air Pegunungan Wai Kaili (Ikon Khusus Emas-Cyan dengan Animasi Denyut)
+    // 2. Pin Hulu Mata Air Pegunungan Lemo Baru (Ikon Khusus Emas-Cyan dengan Animasi Denyut)
     const sourceLat = waterSource.latitude;
     const sourceLng = waterSource.longitude;
 
@@ -388,7 +388,7 @@ export function PublicGisMap() {
             Peta Sebaran Jaringan Pipa &amp; Sambungan Rumah (SR)
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Visualisasi spasial 37 titik sambungan warga Dusun Lemo Baru dan hulu mata air pegunungan alami &quot;Wai Kaili&quot;.
+            Visualisasi spasial 37 titik sambungan warga Dusun Lemo Baru dan hulu mata air pegunungan alami Dusun Lemo Baru.
           </p>
         </div>
 
@@ -452,7 +452,7 @@ export function PublicGisMap() {
           </div>
           <div>
             <div className="text-base font-black text-white">1 Titik Hulu</div>
-            <div className="text-[11px] text-slate-400">Mata Air Wai Kaili</div>
+            <div className="text-[11px] text-slate-400">Mata Air Lemo Baru</div>
           </div>
         </div>
 
@@ -548,7 +548,7 @@ export function PublicGisMap() {
           </div>
           <div className="flex items-center space-x-2 text-[11px] text-slate-300">
             <span className="text-sm">🏔️</span>
-            <span>Hulu Mata Air Wai Kaili</span>
+            <span>Hulu Mata Air Lemo Baru</span>
           </div>
           <div className="flex items-center space-x-2 text-[11px] text-slate-300">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />

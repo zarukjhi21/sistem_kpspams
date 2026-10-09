@@ -204,7 +204,7 @@ export default function HomePage() {
                   {/* Metric 3: Gravitasi Mata Air */}
                   <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
                     <div>
-                      <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Wai Kaili</div>
+                      <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Lemo Baru</div>
                       <div className="text-2xl font-black text-cyan-400 mt-0.5">
                         ~12.100 L / Hari
                       </div>
@@ -257,7 +257,7 @@ export default function HomePage() {
 
                 <div>
                   <h4 className="text-lg font-black text-white">
-                    KPSPAMS &quot;Wai Kaili&quot; Lemo Baru
+                    KPSPAMS Lemo Baru
                   </h4>
                   <p className="text-xs text-emerald-400 font-medium mt-1">
                     Wilayah Layanan: Dusun Lemo Baru
@@ -375,7 +375,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Public Interactive GIS Map (Dusun Lemo Baru & Wai Kaili Spring) */}
+        {/* Public Interactive GIS Map (Dusun Lemo Baru) */}
         <div id="peta-gis" className="scroll-mt-28">
           <PublicGisMapSection />
         </div>
