@@ -27,7 +27,22 @@ import {
   Smartphone,
   RefreshCw,
 } from "lucide-react";
-import { DashboardAnalyticsCharts } from "@/components/charts/DashboardAnalyticsCharts";
+import dynamic from "next/dynamic";
+
+const DashboardAnalyticsCharts = dynamic(
+  () => import("@/components/charts/DashboardAnalyticsCharts").then((m) => m.DashboardAnalyticsCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full animate-pulse bg-slate-900/40 rounded-2xl flex items-center justify-center border border-slate-800">
+        <div className="flex flex-col items-center gap-2 text-slate-400">
+          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs">Memuat grafik analitik performa KPSPAMS...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface OverviewApiData {
   context: {

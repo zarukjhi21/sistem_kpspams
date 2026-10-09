@@ -3,8 +3,12 @@ import bcrypt from "bcryptjs";
 
 const NEON_DB_URL = "postgresql://neondb_owner:npg_xXdSNh8Jf2Hw@ep-red-morning-azj1g0gk-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require";
 
-function getSql() {
-  return neon(NEON_DB_URL);
+let cachedSql: any = null;
+function getSql(): any {
+  if (!cachedSql) {
+    cachedSql = neon(NEON_DB_URL);
+  }
+  return cachedSql;
 }
 
 function corsHeaders() {
@@ -16,10 +20,13 @@ function corsHeaders() {
   };
 }
 
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(data: any, status = 200, extraHeaders?: Record<string, string>) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: corsHeaders(),
+    headers: {
+      ...corsHeaders(),
+      ...(extraHeaders || {}),
+    },
   });
 }
 
@@ -59,7 +66,7 @@ export async function onRequest(context: any) {
         database: {
           connected: true,
           region: "aws-ap-southeast-1",
-          stats: stats[0],
+          stats: (stats as any)[0],
         },
         timestamp: new Date().toISOString(),
       });
@@ -244,7 +251,9 @@ export async function onRequest(context: any) {
     // 8. Billing Periods
     if (path === "billing-periods") {
       const rows = await sql`SELECT * FROM billing_periods ORDER BY id DESC`;
-      return jsonResponse({ status: "success", data: rows });
+      return jsonResponse({ status: "success", data: rows }, 200, {
+        "Cache-Control": "public, max-age=10, stale-while-revalidate=30",
+      });
     }
 
     // 9. Customers (CRUD)
@@ -498,8 +507,10 @@ export async function onRequest(context: any) {
 
     if (path.startsWith("customers/") && method === "DELETE") {
       const custId = parseInt(path.split("/")[1], 10);
-      await sql.query(`UPDATE connections SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE CAST(customer_id AS text) = $1`, [custId.toString()]);
-      await sql.query(`UPDATE customers SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE id = $1`, [custId]);
+      await Promise.all([
+        sql.query(`UPDATE connections SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE CAST(customer_id AS text) = $1`, [custId.toString()]),
+        sql.query(`UPDATE customers SET deleted_at = NOW(), status = 'DISCONNECTED' WHERE id = $1`, [custId]),
+      ]);
       return jsonResponse({ status: "success", message: "Data pelanggan berhasil dihapus." });
     }
 
@@ -633,13 +644,20 @@ export async function onRequest(context: any) {
         const isInitialSetup = Boolean(b.is_initial_setup);
         const notes = b.notes || (isInitialSetup ? "Pencatatan perdana stand awal" : "Pencatatan meter lapangan");
 
-        const connRows = await sql.query(`
-          SELECT c.*, cust.id as cust_id, cust.kpspams_id as cust_kpspams_id
-          FROM connections c
-          LEFT JOIN customers cust ON CAST(c.customer_id AS integer) = cust.id
-          WHERE c.id = $1 OR CAST(c.customer_id AS text) = $2
-          LIMIT 1
-        `, [Number(connId) || 0, connId]);
+        const [connRows, lastMr] = await Promise.all([
+          sql.query(`
+            SELECT c.*, cust.id as cust_id, cust.kpspams_id as cust_kpspams_id
+            FROM connections c
+            LEFT JOIN customers cust ON CAST(c.customer_id AS integer) = cust.id
+            WHERE c.id = $1 OR CAST(c.customer_id AS text) = $2
+            LIMIT 1
+          `, [Number(connId) || 0, connId]),
+          sql.query(`
+            SELECT current_reading FROM meter_readings 
+            WHERE connection_id = $1 OR CAST(connection_id AS text) = $2
+            ORDER BY id DESC LIMIT 1
+          `, [connId, connId]),
+        ]);
 
         const kId = connRows.length > 0 ? (connRows[0].kpspams_id || connRows[0].cust_kpspams_id || "1") : (b.kpspams_id ? b.kpspams_id.toString() : "1");
         const meterId = connRows.length > 0 ? connRows[0].meter_id : null;
@@ -655,13 +673,6 @@ export async function onRequest(context: any) {
           `, [kId.toString()]);
           billingPeriodId = bpRows.length > 0 ? bpRows[0].id.toString() : (kId === "1" ? "6" : kId === "2" ? "12" : "18");
         }
-
-        // Ambil stand sebelumnya dari meter_readings atau tabel meters
-        const lastMr = await sql.query(`
-          SELECT current_reading FROM meter_readings 
-          WHERE connection_id = $1 OR CAST(connection_id AS text) = $2
-          ORDER BY id DESC LIMIT 1
-        `, [connId, connId]);
 
         let prevReading = 0;
         if (lastMr.length > 0) {
@@ -858,25 +869,25 @@ export async function onRequest(context: any) {
           ) RETURNING *
         `, [kpspamsId, invoiceId ? invoiceId.toString() : null, custId, targetCashAccountId, receiptNo, amountPaid.toString(), paymentMethod, referenceNo]);
 
-        // Catat ke Buku Kas (financial_transactions)
+        // Catat ke Buku Kas (financial_transactions) dan Sinkronkan Saldo Kas secara paralel
         const txNumber = `TX/IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
-        await sql.query(`
-          INSERT INTO financial_transactions (
-            kpspams_id, cash_account_id, transaction_number, transaction_date,
-            transaction_type, category, amount, reference_type, reference_id, description, created_at, updated_at
-          ) VALUES (
-            $1, $2, $3, NOW(), 'INCOME', 'WATER_PAYMENT', $4, 'INVOICE', $5,
-            'Penerimaan tunai iuran air warga di lapangan', NOW(), NOW()
-          )
-        `, [kpspamsId, targetCashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]);
-
-        // Sinkronkan saldo akun kas operasional di database
-        await sql.query(`
-          UPDATE cash_accounts SET
-            current_balance = (COALESCE(current_balance::numeric, 0) + $1)::text,
-            updated_at = NOW()
-          WHERE id = $2
-        `, [amountPaid, Number(targetCashAccountId)]);
+        await Promise.all([
+          sql.query(`
+            INSERT INTO financial_transactions (
+              kpspams_id, cash_account_id, transaction_number, transaction_date,
+              transaction_type, category, amount, reference_type, reference_id, description, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, NOW(), 'INCOME', 'WATER_PAYMENT', $4, 'INVOICE', $5,
+              'Penerimaan tunai iuran air warga di lapangan', NOW(), NOW()
+            )
+          `, [kpspamsId, targetCashAccountId, txNumber, amountPaid.toString(), invoiceId ? invoiceId.toString() : null]),
+          sql.query(`
+            UPDATE cash_accounts SET
+              current_balance = (COALESCE(current_balance::numeric, 0) + $1)::text,
+              updated_at = NOW()
+            WHERE id = $2
+          `, [amountPaid, Number(targetCashAccountId)]),
+        ]);
 
         return jsonResponse({
           status: "success",
@@ -1063,8 +1074,10 @@ export async function onRequest(context: any) {
         return jsonResponse({ status: "fail", message: "Parameter rekening asal dan tujuan tidak valid." }, 400);
       }
 
-      const fromAcc = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [fromId]);
-      const toAcc = await sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [toId]);
+      const [fromAcc, toAcc] = await Promise.all([
+        sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [fromId]),
+        sql.query(`SELECT * FROM cash_accounts WHERE id = $1 LIMIT 1`, [toId]),
+      ]);
 
       if (fromAcc.length === 0 || toAcc.length === 0) {
         return jsonResponse({ status: "fail", message: "Buku kas atau rekening bank tidak ditemukan." }, 404);
@@ -1074,29 +1087,31 @@ export async function onRequest(context: any) {
       const txNumOut = `TX/TRF-OUT/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
       const txNumIn = `TX/TRF-IN/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
 
-      // Catat mutasi keluar dari rekening asal
-      await sql.query(`
-        INSERT INTO financial_transactions (
-          kpspams_id, cash_account_id, transaction_number, transaction_date,
-          transaction_type, category, amount, reference_type, description, created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, 'EXPENSE', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
-        )
-      `, [kId.toString(), fromId.toString(), txNumOut, date, amount.toString(), `Transfer ke ${toAcc[0].account_name}: ${notes}`]);
+      // Catat mutasi keluar dan masuk secara paralel
+      await Promise.all([
+        sql.query(`
+          INSERT INTO financial_transactions (
+            kpspams_id, cash_account_id, transaction_number, transaction_date,
+            transaction_type, category, amount, reference_type, description, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, 'EXPENSE', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
+          )
+        `, [kId.toString(), fromId.toString(), txNumOut, date, amount.toString(), `Transfer ke ${toAcc[0].account_name}: ${notes}`]),
+        sql.query(`
+          INSERT INTO financial_transactions (
+            kpspams_id, cash_account_id, transaction_number, transaction_date,
+            transaction_type, category, amount, reference_type, description, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, $4, 'INCOME', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
+          )
+        `, [toAcc[0].kpspams_id || kId.toString(), toId.toString(), txNumIn, date, amount.toString(), `Terima transfer dari ${fromAcc[0].account_name}: ${notes}`]),
+      ]);
 
-      // Catat mutasi masuk ke rekening tujuan
-      await sql.query(`
-        INSERT INTO financial_transactions (
-          kpspams_id, cash_account_id, transaction_number, transaction_date,
-          transaction_type, category, amount, reference_type, description, created_at, updated_at
-        ) VALUES (
-          $1, $2, $3, $4, 'INCOME', 'TRANSFER', $5, 'TRANSFER', $6, NOW(), NOW()
-        )
-      `, [toAcc[0].kpspams_id || kId.toString(), toId.toString(), txNumIn, date, amount.toString(), `Terima transfer dari ${fromAcc[0].account_name}: ${notes}`]);
-
-      // Perbarui saldo rekening asal dan tujuan
-      await sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) - $1)::text, updated_at = NOW() WHERE id = $2`, [amount, fromId]);
-      await sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) + $1)::text, updated_at = NOW() WHERE id = $2`, [amount, toId]);
+      // Perbarui saldo rekening asal dan tujuan secara paralel
+      await Promise.all([
+        sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) - $1)::text, updated_at = NOW() WHERE id = $2`, [amount, fromId]),
+        sql.query(`UPDATE cash_accounts SET current_balance = (CAST(current_balance AS numeric) + $1)::text, updated_at = NOW() WHERE id = $2`, [amount, toId]),
+      ]);
 
       return jsonResponse({
         status: "success",
@@ -1256,18 +1271,12 @@ export async function onRequest(context: any) {
         cashParams.push(kId);
       }
 
-      const custCount = await sql.query(custQuery, queryParams);
-      const invStats = await sql.query(invQuery, queryParams);
-      const cashRes = await sql.query(cashQuery, cashParams);
-      const kpspamsCount = await sql`SELECT count(*)::int as count FROM kpspams`;
-
       let meterQuery = "SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings";
       const meterParams: any[] = [];
       if (kId) {
         meterQuery += " WHERE CAST(kpspams_id AS integer) = $1";
         meterParams.push(kId);
       }
-      const meterUsage = await sql.query(meterQuery, meterParams);
 
       let compQuery = "SELECT count(*)::int as count FROM complaints WHERE status NOT IN ('RESOLVED', 'REJECTED')";
       const compParams: any[] = [];
@@ -1275,30 +1284,12 @@ export async function onRequest(context: any) {
         compQuery += " AND CAST(kpspams_id AS integer) = $1";
         compParams.push(kId);
       }
-      const complaintsCount = await sql.query(compQuery, compParams);
 
-      const billed = Number(invStats[0]?.total_billed) || 0;
-      const collected = Number(invStats[0]?.total_collected) || 0;
-      const arrears = Number(invStats[0]?.total_unpaid) || 0;
-      const rate = billed > 0 ? Number(((collected / billed) * 100).toFixed(1)) : 100;
-      const activeCust = Number(custCount[0]?.count) || 0;
-      const totalCashBalance = Number(cashRes[0]?.balance) || 0;
-
-      const activeBp = await sql.query(`
+      const activeBpQuery = `
         SELECT name FROM billing_periods WHERE status = 'OPEN' ORDER BY id DESC LIMIT 1
-      `);
-      const periodLabel = activeBp.length > 0 ? activeBp[0].name : "Periode Berjalan";
+      `;
 
-      let scopeLabel = "Konsolidasi Seluruh Desa Kuajang";
-      if (kId === 1) scopeLabel = "KPSPAMS Lemo Baru";
-      else if (kId === 2) scopeLabel = "KPSPAMS Lemo Tua";
-      else if (kId === 3) scopeLabel = "KPSPAMS Sarampu 1";
-      else if (kId) {
-        const kRow = await sql.query("SELECT name FROM kpspams WHERE id = $1 LIMIT 1", [kId]);
-        if (kRow.length > 0) scopeLabel = kRow[0].name;
-      }
-
-      const unitBreakdownRows = await sql.query(`
+      const unitBreakdownQuery = `
         SELECT 
           k.id as kpspams_id,
           k.code,
@@ -1333,7 +1324,63 @@ export async function onRequest(context: any) {
           GROUP BY CAST(kpspams_id AS integer)
         ) ca ON k.id = ca.kid
         ORDER BY k.id ASC
-      `);
+      `;
+
+      const dusunQuery = `
+        SELECT 
+          d.id as dusun_id, 
+          d.code, 
+          d.name, 
+          count(DISTINCT conn.id)::int as total_connections,
+          COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage_m3
+        FROM dusun d
+        LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE'
+        LEFT JOIN meter_readings mr ON CAST(mr.connection_id AS text) = CAST(conn.id AS text)
+        GROUP BY d.id, d.code, d.name
+        ORDER BY d.id ASC
+      `;
+
+      // Eksekusi seluruh 9 query independen secara paralel dengan Promise.all
+      const [
+        custCount,
+        invStats,
+        cashRes,
+        kpspamsCount,
+        meterUsage,
+        complaintsCount,
+        activeBp,
+        unitBreakdownRows,
+        dusunRows,
+        kRow,
+      ] = await Promise.all([
+        sql.query(custQuery, queryParams),
+        sql.query(invQuery, queryParams),
+        sql.query(cashQuery, cashParams),
+        sql`SELECT count(*)::int as count FROM kpspams`,
+        sql.query(meterQuery, meterParams),
+        sql.query(compQuery, compParams),
+        sql.query(activeBpQuery),
+        sql.query(unitBreakdownQuery),
+        sql.query(dusunQuery),
+        kId && kId > 3 ? sql.query("SELECT name FROM kpspams WHERE id = $1 LIMIT 1", [kId]) : Promise.resolve([]),
+      ]);
+
+      const billed = Number(invStats[0]?.total_billed) || 0;
+      const collected = Number(invStats[0]?.total_collected) || 0;
+      const arrears = Number(invStats[0]?.total_unpaid) || 0;
+      const rate = billed > 0 ? Number(((collected / billed) * 100).toFixed(1)) : 100;
+      const activeCust = Number(custCount[0]?.count) || 0;
+      const totalCashBalance = Number(cashRes[0]?.balance) || 0;
+
+      const periodLabel = activeBp.length > 0 ? activeBp[0].name : "Periode Berjalan";
+
+      let scopeLabel = "Konsolidasi Seluruh Desa Kuajang";
+      if (kId === 1) scopeLabel = "KPSPAMS Lemo Baru";
+      else if (kId === 2) scopeLabel = "KPSPAMS Lemo Tua";
+      else if (kId === 3) scopeLabel = "KPSPAMS Sarampu 1";
+      else if (kId && kRow && kRow.length > 0) {
+        scopeLabel = kRow[0].name;
+      }
 
       const unitDusunsMap: Record<number, string[]> = {
         1: ["Lemo Baru"],
@@ -1352,20 +1399,6 @@ export async function onRequest(context: any) {
         total_arrears: Number(u.total_arrears) || 0,
         cash_balance: Number(u.cash_balance) || 0,
       }));
-
-      const dusunRows = await sql.query(`
-        SELECT 
-          d.id as dusun_id, 
-          d.code, 
-          d.name, 
-          count(DISTINCT conn.id)::int as total_connections,
-          COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as total_usage_m3
-        FROM dusun d
-        LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE'
-        LEFT JOIN meter_readings mr ON CAST(mr.connection_id AS text) = CAST(conn.id AS text)
-        GROUP BY d.id, d.code, d.name
-        ORDER BY d.id ASC
-      `);
 
       return jsonResponse({
         status: "success",
@@ -1439,25 +1472,25 @@ export async function onRequest(context: any) {
       const custIdStr = cust.id.toString();
       const connIdStr = cust.connection_id ? cust.connection_id.toString() : "0";
 
-      // Ambil tagihan terbaru
-      const invRows = await sql.query(`
-        SELECT inv.*, bp.name as period_name, bp.due_date
-        FROM invoices inv
-        LEFT JOIN billing_periods bp ON CAST(inv.billing_period_id AS integer) = bp.id
-        WHERE CAST(inv.customer_id AS text) = $1 OR inv.connection_id = $2
-        ORDER BY inv.id DESC LIMIT 1
-      `, [custIdStr, connIdStr]);
+      // Ambil tagihan terbaru dan riwayat pemakaian meter secara paralel
+      const [invRows, mrRows] = await Promise.all([
+        sql.query(`
+          SELECT inv.*, bp.name as period_name, bp.due_date
+          FROM invoices inv
+          LEFT JOIN billing_periods bp ON CAST(inv.billing_period_id AS integer) = bp.id
+          WHERE CAST(inv.customer_id AS text) = $1 OR inv.connection_id = $2
+          ORDER BY inv.id DESC LIMIT 1
+        `, [custIdStr, connIdStr]),
+        sql.query(`
+          SELECT mr.*, bp.name as period_name
+          FROM meter_readings mr
+          LEFT JOIN billing_periods bp ON CAST(mr.billing_period_id AS integer) = bp.id
+          WHERE CAST(mr.connection_id AS text) = $1
+          ORDER BY mr.id DESC LIMIT 6
+        `, [connIdStr]),
+      ]);
 
       const latestInv = invRows[0];
-
-      // Ambil riwayat pemakaian meter
-      const mrRows = await sql.query(`
-        SELECT mr.*, bp.name as period_name
-        FROM meter_readings mr
-        LEFT JOIN billing_periods bp ON CAST(mr.billing_period_id AS integer) = bp.id
-        WHERE CAST(mr.connection_id AS text) = $1
-        ORDER BY mr.id DESC LIMIT 6
-      `, [connIdStr]);
 
       const maskedNik = cust.nik && cust.nik.length >= 8
         ? cust.nik.substring(0, 6) + "******" + cust.nik.substring(cust.nik.length - 4)
@@ -1534,53 +1567,56 @@ export async function onRequest(context: any) {
 
     // 16c. Portal Transparency Data (Public)
     if (path === "portal/transparency") {
-      const cashRows = await sql.query(`
-        SELECT 
-          CAST(kpspams_id AS integer) as kid,
-          COALESCE(sum(CAST(current_balance AS numeric)), 0)::numeric as balance
-        FROM cash_accounts
-        WHERE is_active = '1'
-        GROUP BY CAST(kpspams_id AS integer)
-      `);
+      const [cashRows, custRows, meterRows, expenseRows] = await Promise.all([
+        sql.query(`
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            COALESCE(sum(CAST(current_balance AS numeric)), 0)::numeric as balance
+          FROM cash_accounts
+          WHERE is_active = '1'
+          GROUP BY CAST(kpspams_id AS integer)
+        `),
+        sql.query(`
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            count(*)::int as count
+          FROM customers
+          WHERE (status = 'ACTIVE' OR status = 'active') AND deleted_at IS NULL
+          GROUP BY CAST(kpspams_id AS integer)
+        `),
+        sql.query(`
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as usage_m3
+          FROM meter_readings
+          GROUP BY CAST(kpspams_id AS integer)
+        `),
+        sql.query(`
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            category,
+            COALESCE(SUM(CAST(amount AS numeric)), 0)::numeric as total
+          FROM financial_transactions
+          WHERE transaction_type = 'EXPENSE'
+          GROUP BY CAST(kpspams_id AS integer), category
+        `),
+      ]);
+
       const cashMap: Record<number, number> = {};
       cashRows.forEach((r: any) => {
         cashMap[Number(r.kid)] = Number(r.balance) || 0;
       });
 
-      const custRows = await sql.query(`
-        SELECT 
-          CAST(kpspams_id AS integer) as kid,
-          count(*)::int as count
-        FROM customers
-        WHERE (status = 'ACTIVE' OR status = 'active') AND deleted_at IS NULL
-        GROUP BY CAST(kpspams_id AS integer)
-      `);
       const custMap: Record<number, number> = {};
       custRows.forEach((r: any) => {
         custMap[Number(r.kid)] = Number(r.count) || 0;
       });
 
-      const meterRows = await sql.query(`
-        SELECT 
-          CAST(kpspams_id AS integer) as kid,
-          COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as usage_m3
-        FROM meter_readings
-        GROUP BY CAST(kpspams_id AS integer)
-      `);
       const meterMap: Record<number, number> = {};
       meterRows.forEach((r: any) => {
         meterMap[Number(r.kid)] = Number(r.usage_m3) || 0;
       });
 
-      const expenseRows = await sql.query(`
-        SELECT 
-          CAST(kpspams_id AS integer) as kid,
-          category,
-          COALESCE(SUM(CAST(amount AS numeric)), 0)::numeric as total
-        FROM financial_transactions
-        WHERE transaction_type = 'EXPENSE'
-        GROUP BY CAST(kpspams_id AS integer), category
-      `);
       const expenseMap: Record<number, {
         operasional: number;
         maintenance: number;
@@ -1664,6 +1700,8 @@ export async function onRequest(context: any) {
           total_customers: (custMap[1] || 37) + (custMap[2] || 0) + (custMap[3] || 0),
           total_usage_m3: (meterMap[1] || 271) + (meterMap[2] || 0) + (meterMap[3] || 0),
         },
+      }, 200, {
+        "Cache-Control": "public, max-age=15, stale-while-revalidate=60",
       });
     }
 
@@ -1719,6 +1757,8 @@ export async function onRequest(context: any) {
             flow_rate_lpd: 12100,
           },
         },
+      }, 200, {
+        "Cache-Control": "public, max-age=30, stale-while-revalidate=120",
       });
     }
 

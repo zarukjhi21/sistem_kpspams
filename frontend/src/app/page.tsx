@@ -28,8 +28,37 @@ import {
   MapPin,
   TrendingUp,
 } from "lucide-react";
-import { PublicTransparencyCharts } from "@/components/charts/PublicTransparencyCharts";
-import { PublicGisMapSection } from "@/components/gis/PublicGisMapSection";
+import dynamic from "next/dynamic";
+
+const PublicTransparencyCharts = dynamic(
+  () => import("@/components/charts/PublicTransparencyCharts").then((m) => m.PublicTransparencyCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-80 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
+        <div className="flex flex-col items-center gap-2 text-slate-400">
+          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs">Memuat visualisasi keuangan transparansi...</span>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const PublicGisMapSection = dynamic(
+  () => import("@/components/gis/PublicGisMapSection").then((m) => m.PublicGisMapSection),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
+        <div className="flex flex-col items-center gap-2 text-slate-400">
+          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs">Memuat peta satelit GIS sambungan air...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 export default function HomePage() {
   const router = useRouter();

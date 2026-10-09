@@ -157,6 +157,7 @@ export function GisLocationPicker({
       mapInstanceRef.current.setView([target.lat, target.lng], 18);
       onChange(target.lat, target.lng);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dusunName]);
 
   // Toggle Map Layer (Google Hybrid vs Google Streets)
