@@ -268,20 +268,60 @@ function buildSystemAllocation(
       note: "Dusun Lemo Tua dalam tahap persiapan jaringan sambungan rumah (SR). Belum ada iuran kas berjalan.",
       allocations: [
         {
-          name: "Kas Operasional Berjalan",
-          percent: 0,
-          value: 0,
-          color: "#64748b",
-          icon: Wrench,
-          desc: "Unit belum beroperasi komersial (Tahap Persiapan)",
+          name: "Saldo Kas Tersedia (Kas Utuh)",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? (lmtExpenses.total === 0 ? 100 : Math.max(1, Math.round((lmtCash / (lmtCash + lmtExpenses.total)) * 100))) : 0,
+          value: lmtCash,
+          color: "#10b981",
+          icon: PiggyBank,
+          desc: "Kas operasional KPSPAMS Lemo Tua",
         },
         {
-          name: "Kas Cadangan Unit",
-          percent: 0,
-          value: 0,
-          color: "#94a3b8",
-          icon: PiggyBank,
-          desc: "Saldo kas saat ini Rp 0",
+          name: "Perbaikan Pipa, Kran & Fitting",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.maintenance / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.maintenance,
+          color: "#06b6d4",
+          icon: Wrench,
+          desc: "Belanja riil perbaikan pipa & fitting",
+        },
+        {
+          name: "Kaporit & Bahan Penjernih Air",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.bahan_kimia / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.bahan_kimia,
+          color: "#3b82f6",
+          icon: Droplets,
+          desc: "Belanja riil kaporit & bahan penjernih",
+        },
+        {
+          name: "Listrik PLN Pompa / BBM Solar Genset",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.operasional / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.operasional,
+          color: "#f59e0b",
+          icon: Zap,
+          desc: "Biaya listrik / operasional pompa sumur bor",
+        },
+        {
+          name: "Honor Petugas Lapangan & Pengurus",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.honor / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.honor,
+          color: "#8b5cf6",
+          icon: Users2,
+          desc: "Honor petugas & pengurus KPSPAMS",
+        },
+        {
+          name: "ATK, Konsumsi & Musyawarah",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.atk_konsumsi / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.atk_konsumsi,
+          color: "#f43f5e",
+          icon: FileText,
+          desc: "Belanja ATK & konsumsi musyawarah",
+        },
+        {
+          name: "Lain-lain",
+          percent: (lmtCash + lmtExpenses.total) > 0 ? Math.round((lmtExpenses.lainnya / (lmtCash + lmtExpenses.total)) * 100) : 0,
+          value: lmtExpenses.lainnya,
+          color: "#64748b",
+          icon: ShieldCheck,
+          desc: "Pengeluaran tak terduga lainnya",
         },
       ],
     },
@@ -296,20 +336,60 @@ function buildSystemAllocation(
       note: "Dusun Sarampu 1 dalam tahap persiapan jaringan sambungan rumah (SR). Belum ada iuran kas berjalan.",
       allocations: [
         {
-          name: "Kas Operasional Berjalan",
-          percent: 0,
-          value: 0,
-          color: "#64748b",
-          icon: Wrench,
-          desc: "Unit belum beroperasi komersial (Tahap Persiapan)",
+          name: "Saldo Kas Tersedia (Kas Utuh)",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? (sr1Expenses.total === 0 ? 100 : Math.max(1, Math.round((sr1Cash / (sr1Cash + sr1Expenses.total)) * 100))) : 0,
+          value: sr1Cash,
+          color: "#10b981",
+          icon: PiggyBank,
+          desc: "Kas operasional KPSPAMS Sarampu 1",
         },
         {
-          name: "Kas Cadangan Unit",
-          percent: 0,
-          value: 0,
-          color: "#94a3b8",
-          icon: PiggyBank,
-          desc: "Saldo kas saat ini Rp 0",
+          name: "Perbaikan Pipa, Kran & Fitting",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.maintenance / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.maintenance,
+          color: "#06b6d4",
+          icon: Wrench,
+          desc: "Belanja riil perbaikan pipa & fitting",
+        },
+        {
+          name: "Kaporit & Bahan Penjernih Air",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.bahan_kimia / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.bahan_kimia,
+          color: "#3b82f6",
+          icon: Droplets,
+          desc: "Belanja riil kaporit & bahan penjernih",
+        },
+        {
+          name: "Listrik PLN Pompa / BBM Solar Genset",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.operasional / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.operasional,
+          color: "#f59e0b",
+          icon: Zap,
+          desc: "Biaya listrik / operasional pompa",
+        },
+        {
+          name: "Honor Petugas Lapangan & Pengurus",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.honor / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.honor,
+          color: "#8b5cf6",
+          icon: Users2,
+          desc: "Honor petugas & pengurus KPSPAMS",
+        },
+        {
+          name: "ATK, Konsumsi & Musyawarah",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.atk_konsumsi / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.atk_konsumsi,
+          color: "#f43f5e",
+          icon: FileText,
+          desc: "Belanja ATK & konsumsi musyawarah",
+        },
+        {
+          name: "Lain-lain",
+          percent: (sr1Cash + sr1Expenses.total) > 0 ? Math.round((sr1Expenses.lainnya / (sr1Cash + sr1Expenses.total)) * 100) : 0,
+          value: sr1Expenses.lainnya,
+          color: "#64748b",
+          icon: ShieldCheck,
+          desc: "Pengeluaran tak terduga lainnya",
         },
       ],
     },
@@ -415,7 +495,7 @@ export function PublicTransparencyCharts() {
             </div>
 
             {/* Recharts Area Spline Chart */}
-            <div className="h-64 w-full pt-2">
+            <div className="h-64 sm:h-72 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={DAILY_DISTRIBUTION_DATA}
@@ -476,10 +556,57 @@ export function PublicTransparencyCharts() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+
+            {/* Parameter Teknis & Kualitas Jaringan Lapangan */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-4 mt-3 border-t border-slate-800/80">
+              <div className="p-3 rounded-2xl bg-slate-800/30 border border-slate-800/80 flex items-start space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-950/80 border border-cyan-800/60 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <Mountain className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] text-slate-400 font-medium">Sumber Mata Air</div>
+                  <div className="text-xs font-bold text-white truncate">Wai Kaili (Gravitasi)</div>
+                  <div className="text-[10px] text-emerald-400 font-medium mt-0.5">100% Bebas Biaya Listrik PLN</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-800/30 border border-slate-800/80 flex items-start space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-950/80 border border-blue-800/60 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <Waves className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] text-slate-400 font-medium">Bak Penampung Utama</div>
+                  <div className="text-xs font-bold text-white truncate">2 Unit Reservoir Desa</div>
+                  <div className="text-[10px] text-slate-300 font-medium mt-0.5">Total Kapasitas 24.000 L</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-800/30 border border-slate-800/80 flex items-start space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-950/80 border border-amber-800/60 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <Droplet className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] text-slate-400 font-medium">Tekanan Pipa Distribusi</div>
+                  <div className="text-xs font-bold text-white truncate">1.8 - 2.2 Bar (Stabil)</div>
+                  <div className="text-[10px] text-amber-400 font-medium mt-0.5">Aliran Lancar ke 37 Rumah</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-800/30 border border-slate-800/80 flex items-start space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] text-slate-400 font-medium">Layanan Distribusi</div>
+                  <div className="text-xs font-bold text-white truncate">24 Jam Penuh Non-Stop</div>
+                  <div className="text-[10px] text-emerald-400 font-medium mt-0.5">Tingkat Keandalan 99.4%</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Bottom Highlight Stats */}
-          <div className="pt-4 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs mt-2">
+          <div className="pt-3.5 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs mt-3">
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Minggu Ini</span>
               <strong className="text-white font-black text-xs sm:text-sm">85.000 L</strong>
