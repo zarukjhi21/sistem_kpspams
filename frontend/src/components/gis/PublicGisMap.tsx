@@ -20,6 +20,7 @@ import {
   Info,
   Activity,
   Maximize2,
+  Minimize2,
 } from "lucide-react";
 import L from "leaflet";
 import { apiClient } from "@/lib/api-client";
@@ -132,6 +133,7 @@ export function PublicGisMap() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mapType, setMapType] = useState<"google-hybrid" | "google-streets">("google-hybrid");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Fetch data riil dari backend portal jika tersedia
   useEffect(() => {
@@ -379,10 +381,51 @@ export function PublicGisMap() {
     }
   };
 
+  // Resize Leaflet map when toggling fullscreen
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 100);
+    const t2 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 350);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isFullscreen]);
+
+  // Lock body scroll and listen for Escape key in fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
+
   return (
-    <section className="space-y-4">
+    <section
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-[9999] w-screen h-screen bg-slate-950 p-2 sm:p-4 flex flex-col overflow-hidden animate-in fade-in duration-150"
+          : "space-y-4"
+      }
+    >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4">
+      <div className={`flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4 ${isFullscreen ? "flex-shrink-0" : ""}`}>
         <div>
           <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             Peta Sebaran Jaringan Pipa &amp; Sambungan Rumah (SR)
@@ -392,8 +435,20 @@ export function PublicGisMap() {
           </p>
         </div>
 
-        {/* Action Controls / Recenter */}
-        <div className="flex items-center space-x-2">
+        {/* Action Controls / Recenter / Fullscreen */}
+        <div className="flex items-center flex-wrap gap-2">
+          {isFullscreen && (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              type="button"
+              className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow flex items-center space-x-1.5 transition active:scale-95"
+              title="Keluar Layar Penuh (Esc)"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Keluar Full Layar (Esc)</span>
+            </button>
+          )}
+
           <button
             onClick={handleRecenter}
             type="button"
@@ -431,10 +486,35 @@ export function PublicGisMap() {
               <span>Jalan</span>
             </button>
           </div>
+
+          {/* Fullscreen Toggle Button */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            type="button"
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shadow-md active:scale-95 ${
+              isFullscreen
+                ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-500"
+                : "bg-slate-800/90 hover:bg-slate-700 text-white border-slate-700"
+            }`}
+            title={isFullscreen ? "Keluar Layar Penuh (Esc)" : "Tampilkan Layar Penuh"}
+          >
+            {isFullscreen ? (
+              <>
+                <Minimize2 className="w-3.5 h-3.5 text-white" />
+                <span className="hidden sm:inline">Perkecil</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Full Layar</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Summary Stat Badges */}
+      {/* Summary Stat Badges - Hidden in fullscreen to maximize map canvas */}
+      {!isFullscreen && (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
         <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
           <div className="w-9 h-9 rounded-xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 font-black">
@@ -479,9 +559,16 @@ export function PublicGisMap() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Main Map Box */}
-      <div className="relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
+      <div
+        className={
+          isFullscreen
+            ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 mt-1"
+            : "relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950"
+        }
+      >
         {/* Floating Search Bar */}
         <div className="absolute top-3 left-3 right-16 sm:right-auto sm:w-80 z-[1000]">
           <div className="relative">
@@ -538,8 +625,37 @@ export function PublicGisMap() {
         {/* Map Container */}
         <div
           ref={mapContainerRef}
-          className="w-full h-[460px] sm:h-[540px] z-0 focus:outline-none"
+          className={
+            isFullscreen
+              ? "w-full h-full z-0 focus:outline-none"
+              : "w-full h-[460px] sm:h-[540px] z-0 focus:outline-none"
+          }
+          style={isFullscreen ? { width: "100%", height: "100%" } : undefined}
         />
+
+        {/* Floating Quick Fullscreen Toggle Button on Top-Right */}
+        <button
+          type="button"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className={`absolute top-3 right-3 z-[1000] px-2.5 py-1.5 rounded-xl shadow-lg border text-xs font-bold flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-xs ${
+            isFullscreen
+              ? "bg-slate-900/90 hover:bg-slate-900 text-rose-400 border-slate-700 hover:text-rose-300"
+              : "bg-slate-900/90 hover:bg-slate-900 text-white border-slate-700"
+          }`}
+          title={isFullscreen ? "Keluar Full Layar (Esc)" : "Maksimalkan Peta Layar Penuh"}
+        >
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="w-3.5 h-3.5 text-rose-400" />
+              <span>Perkecil (Esc)</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Full Layar</span>
+            </>
+          )}
+        </button>
 
         {/* Legend Overlay (Kiri Bawah) */}
         <div className="absolute bottom-3 left-3 z-[990] bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-2xl p-2.5 shadow-xl text-xs space-y-1.5 pointer-events-auto max-w-[200px] sm:max-w-none">

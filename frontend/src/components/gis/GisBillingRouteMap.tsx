@@ -14,6 +14,8 @@ import {
   Shield,
   Radio,
   Crosshair,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import L from "leaflet";
 
@@ -44,6 +46,7 @@ export function GisBillingRouteMap({
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const [officerCoords, setOfficerCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const isInvalidSeaCoord = (lat?: number | null, lng?: number | null) => {
     if (lat === null || lat === undefined || lng === null || lng === undefined) return true;
@@ -381,6 +384,41 @@ export function GisBillingRouteMap({
     };
   }, []);
 
+  // Resize Leaflet map when toggling fullscreen
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 100);
+    const t2 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 350);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isFullscreen]);
+
+  // Lock body scroll and listen for Escape key in fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
+
   // Calculate distance from officer to currently selected customer
   const selectedCust = customers.find((c) => c.id === selectedCustomerId);
   const distanceToTarget =
@@ -401,11 +439,35 @@ export function GisBillingRouteMap({
   const totalSealed = customers.filter((c) => c.status === "SEALED").length;
 
   return (
-    <div className="space-y-3">
+    <div
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-[9999] w-screen h-screen bg-slate-950 p-2 sm:p-3 flex flex-col overflow-hidden animate-in fade-in duration-150"
+          : "space-y-3"
+      }
+    >
       {/* Map Header with Statistics and Layer Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        {/* Statistics Pills */}
+      <div
+        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+          isFullscreen
+            ? "bg-slate-900/90 border border-slate-800 p-2.5 rounded-2xl flex-shrink-0"
+            : ""
+        }`}
+      >
+        {/* Statistics Pills & Exit Button (when in Fullscreen) */}
         <div className="flex items-center flex-wrap gap-2 text-xs">
+          {isFullscreen && (
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md flex items-center space-x-1.5 transition active:scale-95"
+              title="Keluar Layar Penuh (Esc)"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Keluar Full Layar (Esc)</span>
+            </button>
+          )}
+
           <div className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 font-bold flex items-center space-x-1.5 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
             <span>Belum Bayar: {totalUnpaid} Rumah</span>
@@ -507,12 +569,36 @@ export function GisBillingRouteMap({
             <Radio className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{isLiveTracking ? "Lacak Aktif" : "Lacak Bergerak"}</span>
           </button>
+
+          {/* Fullscreen Toggle Button in Toolbar */}
+          <button
+            type="button"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1 border shadow-xs active:scale-95 ${
+              isFullscreen
+                ? "bg-rose-600 text-white border-rose-500 hover:bg-rose-700"
+                : "bg-slate-900 text-white border-slate-700 hover:bg-black"
+            }`}
+            title={isFullscreen ? "Keluar Layar Penuh (Esc)" : "Tampilkan Peta Layar Penuh"}
+          >
+            {isFullscreen ? (
+              <>
+                <Minimize2 className="w-3.5 h-3.5 text-white" />
+                <span className="hidden sm:inline">Keluar</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Full Layar</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       {/* GPS Error Alert */}
       {gpsError && (
-        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-sm animate-in fade-in">
+        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-sm animate-in fade-in flex-shrink-0">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
             <span>{gpsError}</span>
@@ -527,14 +613,108 @@ export function GisBillingRouteMap({
         </div>
       )}
 
-      {/* Main Map Viewport - 100% Clean & Touch-Friendly without any blocking overlay */}
-      <div className="relative rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-900">
+      {/* Main Map Viewport */}
+      <div
+        className={
+          isFullscreen
+            ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900 mt-1"
+            : "relative rounded-3xl overflow-hidden border-2 border-slate-300 shadow-xl bg-slate-900"
+        }
+      >
         <div
           ref={mapContainerRef}
-          className="w-full h-[420px] sm:h-[480px] lg:h-[520px] z-10"
-          style={{ minHeight: "400px" }}
+          className={
+            isFullscreen
+              ? "w-full h-full z-10"
+              : "w-full h-[420px] sm:h-[480px] lg:h-[520px] z-10"
+          }
+          style={isFullscreen ? { width: "100%", height: "100%" } : { minHeight: "400px" }}
         />
+
+        {/* Floating Quick Fullscreen Toggle Button on Top-Right of Map Canvas */}
+        <button
+          type="button"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className={`absolute top-3 right-3 z-[1000] px-2.5 py-1.5 rounded-xl shadow-lg border text-xs font-bold flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-xs ${
+            isFullscreen
+              ? "bg-slate-900/90 hover:bg-slate-900 text-rose-400 border-slate-700 hover:text-rose-300"
+              : "bg-white/95 hover:bg-white text-slate-800 border-slate-200"
+          }`}
+          title={isFullscreen ? "Keluar Full Layar (Esc)" : "Maksimalkan Peta Layar Penuh"}
+        >
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="w-3.5 h-3.5 text-rose-400" />
+              <span>Perkecil (Esc)</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Full Layar</span>
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Fullscreen Quick Action Drawer when a customer is selected */}
+      {isFullscreen && selectedCust && (
+        <div className="mt-1 p-3 bg-slate-900/95 backdrop-blur-md border border-slate-800 rounded-2xl flex-shrink-0 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xl animate-in slide-in-from-bottom-2 duration-150">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center space-x-2">
+              <span className="font-extrabold text-white text-sm truncate">
+                {selectedCust.name}
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-brand-gold-400 border border-slate-700 font-bold">
+                {selectedCust.connectionNo}
+              </span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
+                  selectedCust.billingStatus === "PAID"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : selectedCust.status === "SEALED"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                }`}
+              >
+                {selectedCust.billingStatus === "PAID"
+                  ? "✓ Lunas"
+                  : selectedCust.status === "SEALED"
+                  ? "⚠ Segel"
+                  : "● Belum Bayar"}
+              </span>
+            </div>
+            <div className="text-xs text-slate-400 truncate mt-1 flex items-center space-x-2">
+              <span>{selectedCust.dusun}</span>
+              <span>•</span>
+              <span className="text-slate-300 font-mono">Stand: {selectedCust.lastReading.toFixed(1)} m³</span>
+              {distanceToTarget !== null && (
+                <>
+                  <span>•</span>
+                  <span className={`font-bold ${distanceToTarget <= 25 ? "text-emerald-400 animate-pulse" : "text-blue-400"}`}>
+                    Jarak: {distanceToTarget <= 25 ? `Di Lokasi (±${distanceToTarget}m)` : `±${distanceToTarget}m`}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 flex-shrink-0 self-end sm:self-auto">
+            {onProceedToRecord && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFullscreen(false);
+                  onProceedToRecord(selectedCust);
+                }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg flex items-center space-x-1.5 active:scale-95 transition"
+              >
+                <span>Catat Meter &amp; Tagih</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
