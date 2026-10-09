@@ -110,52 +110,36 @@ export default function HomePage() {
                 Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
               </h1>
 
-              <p className="text-xs sm:text-base text-slate-300 leading-relaxed">
-                Platform modern pencatatan stand meter digital, validasi anomali, billing tarif mandiri, transparansi saldo kas terbuka, kwitansi QR digital, dan integrasi pengaduan warga di Desa Kuajang.
+              <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                Sistem informasi pelayanan air bersih, pencatatan meter digital, dan transparansi kas warga Desa Kuajang.
               </p>
 
-              {/* Widget Cek Tagihan Kilat Langsung di Hero */}
-              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/30 shadow-xl backdrop-blur-md space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-300 flex items-center space-x-1.5">
-                    <Droplets className="w-4 h-4 text-emerald-400" />
-                    <span>Cek Rekening &amp; Tagihan Air Mandiri</span>
-                  </span>
-                  <span className="text-[10px] text-slate-400 flex items-center space-x-1">
-                    <Lock className="w-3 h-3 text-slate-400" />
-                    <span>Akses Privat Warga</span>
-                  </span>
+              {/* Bar Pencarian Cek Tagihan Minimalis */}
+              <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2 max-w-lg pt-1">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={quickSearch}
+                    onChange={(e) => setQuickSearch(e.target.value)}
+                    placeholder="Cari nama warga atau No. Sambungan..."
+                    className="w-full pl-9 pr-3 py-3 rounded-2xl bg-slate-950/90 border border-slate-700 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-lg transition"
+                  />
                 </div>
-
-                <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={quickSearch}
-                      onChange={(e) => setQuickSearch(e.target.value)}
-                      placeholder="Ketik No. SR (cth: SR-LMB-00009) atau Nama Warga..."
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition active:scale-95 flex items-center justify-center space-x-1.5 whitespace-nowrap"
-                  >
-                    <span>Cek Sekarang</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-                <p className="text-[10px] text-slate-400">
-                  Warga dapat melihat rincian pemakaian m³, histori pembayaran, dan kwitansi kasir resmi tanpa antre.
-                </p>
-              </div>
+                <button
+                  type="submit"
+                  className="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition active:scale-95 flex items-center justify-center space-x-1.5 whitespace-nowrap"
+                >
+                  <span>Cek Tagihan</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/login"
-                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-xl shadow-brand-maroon-950/50 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand-maroon-950/40 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
                 >
                   <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
                   <span>Akses Pengelola KPSPAMS</span>
@@ -163,10 +147,10 @@ export default function HomePage() {
 
                 <Link
                   href="/portal"
-                  className="px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-white text-xs sm:text-sm font-semibold border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                  className="text-xs sm:text-sm font-semibold text-slate-400 hover:text-white px-3 py-2 transition flex items-center space-x-1.5"
                 >
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  <span>Portal Lengkap Warga Desa</span>
+                  <span>Portal Warga Mandiri</span>
+                  <ChevronRight className="w-4 h-4 text-emerald-400" />
                 </Link>
               </div>
             </div>
@@ -181,70 +165,61 @@ export default function HomePage() {
                       Status Operasional Riil
                     </span>
                   </div>
-                  <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1" />
-                    <span>Cloud Database Live</span>
+                  <span className="inline-flex items-center space-x-1 text-emerald-400 text-[11px] font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1" />
+                    <span>Live Database</span>
                   </span>
                 </div>
 
-                {/* 3 Metric Glass Panels */}
-                <div className="space-y-3">
+                {/* 3 Metric Panels: Clean & Direct */}
+                <div className="space-y-2.5">
                   {/* Metric 1: Kas Operasional */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-amber-500/40 transition">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400">Total Kas Terhimpun:</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800">
-                        100% Akuntabel
-                      </span>
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-400">Total Kas Operasional Riil</div>
+                      <div className="text-2xl font-black text-amber-400 mt-0.5">
+                        Rp 30.136.000
+                      </div>
                     </div>
-                    <div className="text-2xl font-black text-amber-400 mt-1">
-                      Rp 30.136.000
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Saldo Awal Pengurus Rp 29.766.000 + Iuran 37 SR. Tersimpan utuh di kas operasional.
-                    </p>
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
+                      100% Kas Utuh
+                    </span>
                   </div>
 
                   {/* Metric 2: Sambungan Rumah */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-emerald-500/40 transition">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400">Sambungan Rumah (SR):</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
-                        Dusun Lemo Baru
-                      </span>
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-400">Sambungan Rumah (SR) Terlayani</div>
+                      <div className="text-2xl font-black text-white mt-0.5">
+                        37 SR Aktif
+                      </div>
                     </div>
-                    <div className="text-2xl font-black text-white mt-1">
-                      37 SR Aktif
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      100% terverifikasi spasial GIS &amp; tercatat dial meter digital.
-                    </p>
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
+                      Lemo Baru
+                    </span>
                   </div>
 
                   {/* Metric 3: Gravitasi Mata Air */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/40 transition">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400">Debit Aliran Alami:</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
-                        0 Listrik PLN
-                      </span>
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Wai Kaili</div>
+                      <div className="text-2xl font-black text-cyan-400 mt-0.5">
+                        ~12.100 L / Hari
+                      </div>
                     </div>
-                    <div className="text-2xl font-black text-cyan-400 mt-1">
-                      ~12.100 L / Hari
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Mata Air Alami Pegunungan &quot;Wai Kaili&quot; mengalir murni dengan sistem gravitasi.
-                    </p>
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/80">
+                      0 Listrik PLN
+                    </span>
                   </div>
                 </div>
 
                 {/* Progress Health Bar */}
-                <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
                   <div className="flex justify-between text-[11px]">
                     <span className="text-slate-400">Kelancaran Distribusi Jaringan:</span>
                     <span className="font-bold text-emerald-400">99.4% Normal</span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[99.4%]" />
                   </div>
                 </div>
