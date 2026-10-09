@@ -1,6 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
   Activity,
@@ -11,13 +14,40 @@ import {
   Sparkles,
   Building2,
   CheckCircle,
+  CheckCircle2,
   Receipt,
   Wallet,
+  Search,
+  Droplets,
+  Mountain,
+  PhoneCall,
+  HelpCircle,
+  Lock,
+  ArrowDown,
+  Layers,
+  MapPin,
+  TrendingUp,
 } from "lucide-react";
 import { PublicTransparencyCharts } from "@/components/charts/PublicTransparencyCharts";
 import { PublicGisMapSection } from "@/components/gis/PublicGisMapSection";
 
 export default function HomePage() {
+  const router = useRouter();
+  const [quickSearch, setQuickSearch] = useState("");
+
+  const handleQuickSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickSearch.trim()) return;
+    router.push(`/portal?no=${encodeURIComponent(quickSearch.trim())}`);
+  };
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
       {/* Header Bar */}
@@ -58,188 +88,544 @@ export default function HomePage() {
               href="/login"
               className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
             >
-              <span>Masuk</span>
+              <span>Masuk Petugas</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-12 w-full space-y-6 sm:space-y-12">
-        {/* Hero Card */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-brand-maroon-950/70 to-slate-900 border border-slate-800/90 p-5 sm:p-10 lg:p-12 shadow-2xl">
-          {/* Ambient Glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-maroon-600/15 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-gold-500/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Main Content */}
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-10 w-full space-y-8 sm:space-y-12">
+        {/* Modern Dual-Column Hero Section */}
+        <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-brand-maroon-950/70 to-slate-950 border border-slate-800/90 p-6 sm:p-10 lg:p-12 shadow-2xl">
+          {/* Ambient Lighting Orbs */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-maroon-600/15 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-brand-maroon-900/80 border border-brand-maroon-700/80 text-brand-gold-400 text-[10px] sm:text-xs font-bold mb-3 sm:mb-4">
-              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brand-gold-400" />
-              <span>Multi-Tenant KPSPAMS Terisolasi Mandiri</span>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* Left Column: Headline, Description & Cek Tagihan Kilat */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-maroon-900/80 border border-brand-maroon-700/80 text-brand-gold-400 text-xs font-bold shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-brand-gold-400" />
+                <span>Multi-Tenant 3 Unit KPSPAMS Desa Kuajang</span>
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight">
+                Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
+              </h1>
+
+              <p className="text-xs sm:text-base text-slate-300 leading-relaxed">
+                Platform modern pencatatan stand meter digital, validasi anomali, billing tarif mandiri, transparansi saldo kas terbuka, kwitansi QR digital, dan integrasi pengaduan warga di Desa Kuajang.
+              </p>
+
+              {/* Widget Cek Tagihan Kilat Langsung di Hero */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/80 border border-emerald-500/30 shadow-xl backdrop-blur-md space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-emerald-300 flex items-center space-x-1.5">
+                    <Droplets className="w-4 h-4 text-emerald-400" />
+                    <span>Cek Rekening &amp; Tagihan Air Mandiri</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 flex items-center space-x-1">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span>Akses Privat Warga</span>
+                  </span>
+                </div>
+
+                <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={quickSearch}
+                      onChange={(e) => setQuickSearch(e.target.value)}
+                      placeholder="Ketik No. SR (cth: SR-LMB-00009) atau Nama Warga..."
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition active:scale-95 flex items-center justify-center space-x-1.5 whitespace-nowrap"
+                  >
+                    <span>Cek Sekarang</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+                <p className="text-[10px] text-slate-400">
+                  Warga dapat melihat rincian pemakaian m³, histori pembayaran, dan kwitansi kasir resmi tanpa antre.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                <Link
+                  href="/login"
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-xl shadow-brand-maroon-950/50 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                >
+                  <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
+                  <span>Akses Pengelola KPSPAMS</span>
+                </Link>
+
+                <Link
+                  href="/portal"
+                  className="px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-white text-xs sm:text-sm font-semibold border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                >
+                  <Users className="w-4 h-4 text-emerald-400" />
+                  <span>Portal Lengkap Warga Desa</span>
+                </Link>
+              </div>
             </div>
 
-            <h2 className="text-xl sm:text-3xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight mb-3 sm:mb-4">
-              Pengelolaan Transparan & Akuntabel Air Bersih Perdesaan
-            </h2>
+            {/* Right Column: Glassmorphism Live Stats Widget */}
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl bg-slate-950/75 backdrop-blur-xl border border-slate-700/80 p-5 sm:p-6 shadow-2xl space-y-4 relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Status Operasional Riil
+                    </span>
+                  </div>
+                  <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1" />
+                    <span>Cloud Database Live</span>
+                  </span>
+                </div>
 
-            <p className="text-xs sm:text-base text-slate-300 leading-relaxed mb-6 sm:mb-8">
-              Platform modern pencatatan stand meter digital, validasi anomali mundur, billing tarif bertingkat, kwitansi QR kasir, dan integrasi pengaduan warga di seluruh 5 dusun Desa Kuajang.
-            </p>
+                {/* 3 Metric Glass Panels */}
+                <div className="space-y-3">
+                  {/* Metric 1: Kas Operasional */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-amber-500/40 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">Total Kas Terhimpun:</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800">
+                        100% Akuntabel
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black text-amber-400 mt-1">
+                      Rp 30.136.000
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Saldo Awal Pengurus Rp 29.766.000 + Iuran 37 SR. Tersimpan utuh di kas operasional.
+                    </p>
+                  </div>
 
-            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
-              <Link
-                href="/login"
-                className="px-5 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-xl shadow-brand-maroon-950/50 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
-              >
-                <span>Akses Pengelola KPSPAMS</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+                  {/* Metric 2: Sambungan Rumah */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-emerald-500/40 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">Sambungan Rumah (SR):</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                        Dusun Lemo Baru
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black text-white mt-1">
+                      37 SR Aktif
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      100% terverifikasi spasial GIS &amp; tercatat dial meter digital.
+                    </p>
+                  </div>
 
-              <Link
-                href="/portal"
-                className="px-5 py-3 sm:py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-white text-xs sm:text-sm font-semibold border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
-              >
-                <span>Portal Mandiri Cek Tagihan Warga</span>
-              </Link>
+                  {/* Metric 3: Gravitasi Mata Air */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 hover:border-cyan-500/40 transition">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">Debit Aliran Alami:</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
+                        0 Listrik PLN
+                      </span>
+                    </div>
+                    <div className="text-2xl font-black text-cyan-400 mt-1">
+                      ~12.100 L / Hari
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Mata Air Alami Pegunungan &quot;Wai Kaili&quot; mengalir murni dengan sistem gravitasi.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Progress Health Bar */}
+                <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-slate-400">Kelancaran Distribusi Jaringan:</span>
+                    <span className="font-bold text-emerald-400">99.4% Normal</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[99.4%]" />
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* Floating Quick Anchor Navigation Bar */}
+        <div className="sticky top-14 sm:top-16 z-20 -mx-3 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-2.5 bg-slate-950/85 backdrop-blur-md border-y border-slate-800/80 shadow-md">
+          <div className="max-w-7xl mx-auto flex items-center space-x-2 overflow-x-auto no-scrollbar py-0.5">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden md:inline whitespace-nowrap mr-1">
+              Navigasi Pintas:
+            </span>
+            <button
+              type="button"
+              onClick={() => scrollToSection("unit-pengelola")}
+              className="px-3.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>🏘️ 3 Unit Pengelola</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("peta-gis")}
+              className="px-3.5 py-1.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 text-xs font-bold text-emerald-300 border border-emerald-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>🗺️ Peta Jaringan GIS</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("transparansi-kas")}
+              className="px-3.5 py-1.5 rounded-full bg-amber-950/80 hover:bg-amber-900 text-xs font-bold text-amber-300 border border-amber-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>📊 Transparansi Kas &amp; Air</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("fitur-layanan")}
+              className="px-3.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>⚡ Fitur Aplikasi</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToSection("pusat-bantuan")}
+              className="px-3.5 py-1.5 rounded-full bg-blue-950/80 hover:bg-blue-900 text-xs font-bold text-blue-300 border border-blue-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
+            >
+              <span>📞 Bantuan &amp; Pengaduan</span>
+            </button>
           </div>
         </div>
 
-        {/* 3 Unit KPSPAMS Grid */}
-        <div>
-          <div className="mb-4">
-            <h3 className="text-lg font-bold text-white">Unit Pengelola KPSPAMS Desa Kuajang</h3>
-            <p className="text-xs text-slate-400">Pembagian wilayah layanan air bersih mandiri per unit</p>
+        {/* 3 Unit KPSPAMS Grid (Dengan Indikator Visual Kesiapan Jaringan) */}
+        <section id="unit-pengelola" className="scroll-mt-28 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800/80 pb-3">
+            <div>
+              <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-extrabold uppercase tracking-wider mb-1.5">
+                <Building2 className="w-3 h-3 text-slate-400" />
+                <span>Desentralisasi Mandiri Per Wilayah</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                3 Unit Pengelola KPSPAMS Desa Kuajang
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400">
+                Setiap unit mengelola sumber air, pembukuan kas, serta sambungan rumah secara otonom dan transparan.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-xl border border-emerald-800 self-start sm:self-auto">
+              1 Unit Aktif Operasi • 2 Tahap Persiapan
+            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            {/* Unit 1 */}
-            <div className="p-5 rounded-2xl border border-emerald-900/50 bg-emerald-950/20 hover:bg-emerald-950/30 transition space-y-3">
+            {/* Unit 1: LMB (Operasional Aktif Penuh) */}
+            <div className="p-5 rounded-3xl border-2 border-emerald-500/50 bg-gradient-to-b from-emerald-950/30 to-slate-900/60 shadow-xl space-y-4 relative group">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-900/90 text-emerald-300 border border-emerald-700">
+                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-900 text-emerald-200 border border-emerald-600 shadow-sm">
                   Unit 1 (LMB)
                 </span>
-                <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Operasional Aktif</span>
+                <span className="text-xs text-emerald-400 font-extrabold flex items-center space-x-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>100% Beroperasi</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-white">KPSPAMS &quot;Wai Kaili&quot; Lemo Baru</h4>
-              <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-200">Dusun Lemo Baru &amp; Batu Miallo</strong>
-              </p>
-              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
-                <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-emerald-400">37 SR (Aktif Terverifikasi)</span>
+
+              <div>
+                <h4 className="text-lg font-black text-white group-hover:text-emerald-300 transition-colors">
+                  KPSPAMS &quot;Wai Kaili&quot; Lemo Baru
+                </h4>
+                <p className="text-xs text-slate-300 mt-1">
+                  Sumber Air: <strong className="text-emerald-400">Mata Air Alami Pegunungan</strong> (Gravitasi)
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Wilayah: Dusun Lemo Baru &amp; Batu Miallo
+                </p>
               </div>
+
+              {/* Progress Kesiapan Jaringan */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Status Jaringan Distribusi:</span>
+                  <span className="font-bold text-emerald-400">100% Berjalan</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-full" />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-400">
+                  <span>Pelanggan Terlayani:</span>
+                  <strong className="text-emerald-400 font-bold">37 SR (Aktif Verifikasi)</strong>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Kas Terhimpun:</span>
+                  <strong className="text-amber-400 font-bold">Rp 30.136.000</strong>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollToSection("peta-gis")}
+                className="w-full py-2 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition flex items-center justify-center space-x-1"
+              >
+                <span>Lihat Sebaran di Peta GIS</span>
+                <ArrowDown className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            {/* Unit 2 */}
-            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/30 hover:bg-slate-800/50 transition space-y-3 opacity-75">
+            {/* Unit 2: LMT (Tahap 2) */}
+            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-85">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                   Unit 2 (LMT)
                 </span>
-                <span className="text-xs text-slate-400 font-bold flex items-center space-x-1">
-                  <span>Tahap 2</span>
+                <span className="text-xs text-amber-400 font-bold flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Tahap 2 Persiapan</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Lemo Tua</h4>
-              <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-400">Dusun Lemo Tua &amp; Kandang Tedong</strong>
-              </p>
-              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
-                <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-slate-400">0 SR (Persiapan)</span>
+
+              <div>
+                <h4 className="text-lg font-black text-slate-200">
+                  KPSPAMS Lemo Tua
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Sumber Air: <strong className="text-slate-300">Sumur Bor Dalam &amp; Mata Air Sekunder</strong>
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Wilayah: Dusun Lemo Tua &amp; Kandang Tedong
+                </p>
+              </div>
+
+              {/* Progress Kesiapan Jaringan */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Survey Teknis &amp; Sumber Air:</span>
+                  <span className="font-bold text-amber-400">25% Tahap Awal</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full w-1/4" />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-500">
+                  <span>Pelanggan Terdaftar:</span>
+                  <strong className="text-slate-400 font-bold">0 SR (Target ~80 SR)</strong>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Kas Operasional:</span>
+                  <strong className="text-slate-400 font-bold">Rp 0 (Belum Iuran)</strong>
+                </div>
+              </div>
+
+              <div className="py-2 text-center text-[11px] text-slate-400 italic bg-slate-950/40 rounded-xl border border-slate-800/60">
+                Pencatatan meter &amp; iuran akan diaktifkan setelah uji debit air selesai.
               </div>
             </div>
 
-            {/* Unit 3 */}
-            <div className="p-5 rounded-2xl border border-slate-800 bg-slate-800/30 hover:bg-slate-800/50 transition space-y-3 opacity-75">
+            {/* Unit 3: SRP (Tahap 2) */}
+            <div className="p-5 rounded-3xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-4 opacity-85">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                   Unit 3 (SRP)
                 </span>
-                <span className="text-xs text-slate-400 font-bold flex items-center space-x-1">
-                  <span>Tahap 2</span>
+                <span className="text-xs text-cyan-400 font-bold flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                  <span>Tahap 2 Persiapan</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Sarampu 1</h4>
-              <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-400">Dusun Sarampu 1 &amp; Pakkandoang</strong>
-              </p>
-              <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
-                <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-slate-400">0 SR (Persiapan)</span>
+
+              <div>
+                <h4 className="text-lg font-black text-slate-200">
+                  KPSPAMS Sarampu 1
+                </h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Sumber Air: <strong className="text-slate-300">Pipa Gravitasi &amp; Bak Penampung</strong>
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Wilayah: Dusun Sarampu 1 &amp; Pakkandoang
+                </p>
+              </div>
+
+              {/* Progress Kesiapan Jaringan */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-slate-400">Perencanaan Jaringan Pipa:</span>
+                  <span className="font-bold text-cyan-400">15% Tahap Desain</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-cyan-500 rounded-full w-[15%]" />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-800/80 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-500">
+                  <span>Pelanggan Terdaftar:</span>
+                  <strong className="text-slate-400 font-bold">0 SR (Target ~65 SR)</strong>
+                </div>
+                <div className="flex justify-between text-slate-500">
+                  <span>Kas Operasional:</span>
+                  <strong className="text-slate-400 font-bold">Rp 0 (Belum Iuran)</strong>
+                </div>
+              </div>
+
+              <div className="py-2 text-center text-[11px] text-slate-400 italic bg-slate-950/40 rounded-xl border border-slate-800/60">
+                Penyambungan pipa tersier sedang dalam tahap pemetaan teknis lapangan.
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Public Interactive GIS Map (Dusun Lemo Baru & Wai Kaili Spring) */}
-        <PublicGisMapSection />
+        <div id="peta-gis" className="scroll-mt-28">
+          <PublicGisMapSection />
+        </div>
 
         {/* Public Transparency & Performance Charts */}
-        <PublicTransparencyCharts />
+        <div id="transparansi-kas" className="scroll-mt-28">
+          <PublicTransparencyCharts />
+        </div>
 
         {/* Feature Highlights Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-maroon-800/40 to-brand-maroon-950/80 border border-brand-maroon-700/60 text-brand-gold-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-maroon-950/30 group-hover:scale-105 transition-transform">
-              <Activity className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(217,119,6,0.3)]" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white group-hover:text-brand-gold-300 transition-colors">Catat Meter Mobile</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Optimasi HP lapangan, validasi stand mundur, & foto dial meter.
-              </p>
-            </div>
+        <section id="fitur-layanan" className="scroll-mt-28 space-y-4">
+          <div className="border-b border-slate-800/80 pb-3">
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              Keunggulan Sistem Informasi SI-KPSPAMS Kuajang
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Dibangun dengan standar Enterprise Architecture untuk kemudahan petugas dan kenyamanan warga.
+            </p>
           </div>
 
-          <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10 group-hover:scale-105 transition-transform">
-              <Receipt className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(245,158,11,0.3)]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-maroon-800/40 to-brand-maroon-950/80 border border-brand-maroon-700/60 text-brand-gold-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-maroon-950/30 group-hover:scale-105 transition-transform">
+                <Activity className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(217,119,6,0.3)]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white group-hover:text-brand-gold-300 transition-colors">Catat Meter Mobile</h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Optimasi HP lapangan, validasi stand mundur otomatis, &amp; foto dial meter.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Billing Engine Fleksibel</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Tarif independen per KPSPAMS dan kwitansi kasir QR digital.
+
+            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10 group-hover:scale-105 transition-transform">
+                <Receipt className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(245,158,11,0.3)]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">Billing Multi-Tarif</h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Tarif independen per KPSPAMS dan kwitansi kasir QR digital resmi.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/40 text-emerald-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/10 group-hover:scale-105 transition-transform">
+                <Wallet className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(16,185,129,0.3)]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Buku Kas &amp; Saldo Awal</h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Koreksi kasir tanpa hard delete (Void T+0) &amp; audit trail transparan.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-500/40 text-sky-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-500/10 group-hover:scale-105 transition-transform">
+                <Users className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(14,165,233,0.3)]" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">Portal Warga 24/7</h4>
+                <p className="text-xs text-slate-400 mt-1">
+                  Akses cek tagihan, histori pembayaran, &amp; pengaduan pipa via ponsel.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pusat Bantuan & Pengaduan Warga */}
+        <section id="pusat-bantuan" className="scroll-mt-28 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-6 sm:p-8 shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-blue-400 bg-blue-950/80 px-2.5 py-0.5 rounded-full border border-blue-800">
+                Pusat Pelayanan &amp; Respon Cepat Desa
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white">
+                Pusat Bantuan &amp; Pengaduan Gangguan Air
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400">
+                Mengalami gangguan pipa bocor, meter macet, atau air keruh? Laporkan segera ke tim pengelola KPSPAMS.
               </p>
             </div>
+            <Link
+              href="/portal"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+            >
+              <span>Kirim Laporan Gangguan</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
-          <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/40 text-emerald-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/10 group-hover:scale-105 transition-transform">
-              <Wallet className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(16,185,129,0.3)]" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Audit Kas & Saldo Awal</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Koreksi transaksi kasir tanpa hard delete (Void T+0) & jejak audit.
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-950 text-blue-400 flex items-center justify-center font-bold">
+                1
+              </div>
+              <h5 className="text-sm font-bold text-white">Tiket Pengaduan Online</h5>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Laporkan lewat Portal Warga dan dapatkan nomor tiket untuk memantau status tindak lanjut petugas di lapangan.
               </p>
             </div>
-          </div>
 
-          <div className="bg-slate-900/60 hover:bg-slate-800/60 transition p-5 rounded-2xl border border-slate-800 flex items-start space-x-3.5 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500/20 to-blue-600/10 border border-sky-500/40 text-sky-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-500/10 group-hover:scale-105 transition-transform">
-              <Users className="w-5 h-5 stroke-[2.2] drop-shadow-[0_2px_4px_rgba(14,165,233,0.3)]" />
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold">
+                2
+              </div>
+              <h5 className="text-sm font-bold text-white">Posko KPSPAMS Wai Kaili</h5>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pelayanan tatap muka bertempat di Dusun Lemo Baru, Desa Kuajang setiap hari kerja (08.00 - 17.00 WITA).
+              </p>
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">Portal Warga Mandiri</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                Akses cek tagihan, histori 6 bulan, dan pengaduan gangguan via ponsel.
+
+            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-950 text-amber-400 flex items-center justify-center font-bold">
+                3
+              </div>
+              <h5 className="text-sm font-bold text-white">Musyawarah &amp; LPJ Terbuka</h5>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Laporan pertanggungjawaban pengelolaan air dibahas secara terbuka dan jujur dalam musyawarah desa bersama BPD.
               </p>
             </div>
           </div>
-        </div>
+        </section>
       </main>
 
       {/* Footer */}
       <footer className="bg-slate-950 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p>© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
-          <p className="text-slate-500">SI-KPSPAMS KUAJANG v1.0 • Enterprise Architecture</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-slate-300">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
+            <p className="text-slate-500 text-[11px] mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Desa (SI-KPSPAMS) v1.0</p>
+          </div>
+          <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
+            <Link href="/portal" className="hover:text-white transition">Portal Warga</Link>
+            <span>•</span>
+            <Link href="/login" className="hover:text-white transition">Login Pengurus</Link>
+            <span>•</span>
+            <span className="text-emerald-400 font-bold">Sistem Aktif &amp; Terlindungi</span>
+          </div>
         </div>
       </footer>
     </div>
