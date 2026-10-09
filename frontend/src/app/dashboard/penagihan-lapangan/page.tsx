@@ -242,14 +242,14 @@ function PenagihanLapanganContent() {
   React.useEffect(() => {
     if (availableCustomers.length > 0 && !availableCustomers.some((c) => c.id === selectedCustomerId)) {
       setSelectedCustomerId(availableCustomers[0].id);
-      setCurrentReading((availableCustomers[0].lastReading + 14.5).toFixed(2));
+      setCurrentReading(availableCustomers[0].lastReading > 0 ? availableCustomers[0].lastReading.toFixed(2) : "");
       setCustomerPhone(availableCustomers[0].phone || "");
     }
   }, [effectiveKpspamsId, availableCustomers, selectedCustomerId]);
 
-  // Step 2: Pencatatan Meteran
+  // Step 2: Pencatatan Meteran (Default ke stand meter fisik terakhir yang tercatat, tidak menambah angka fiktif)
   const [currentReading, setCurrentReading] = useState<string>(
-    (selectedCustomer.lastReading + 14.5).toFixed(2)
+    selectedCustomer.lastReading > 0 ? selectedCustomer.lastReading.toFixed(2) : ""
   );
   // Opsi Mode Opname Stand Awal untuk meteran yang baru pertama kali dicatat
   const [isInitialSetup, setIsInitialSetup] = useState<boolean>(selectedCustomer.lastReading === 0);
@@ -264,10 +264,11 @@ function PenagihanLapanganContent() {
     selectedCustomer?.phone || ""
   );
 
-  // Sinkronkan nomor WhatsApp & status stand awal otomatis saat pelanggan berganti
+  // Sinkronkan nomor WhatsApp, stand meter riil & status stand awal otomatis saat pelanggan berganti
   React.useEffect(() => {
     if (selectedCustomer) {
       setCustomerPhone(selectedCustomer.phone || "");
+      setCurrentReading(selectedCustomer.lastReading > 0 ? selectedCustomer.lastReading.toFixed(2) : "");
       if (selectedCustomer.lastReading === 0) {
         setIsInitialSetup(true);
       }
@@ -294,8 +295,8 @@ function PenagihanLapanganContent() {
   // Handler Pilih Pelanggan Baru
   const handleSelectCustomer = (cust: DemoCustomer) => {
     setSelectedCustomerId(cust.id);
-    // Beri default stand baru +14.5 m3 di atas stand lama
-    setCurrentReading((cust.lastReading + 14.5).toFixed(2));
+    // Isi otomatis dengan stand fisik terakhir yang tercatat di sistem (tidak mengarang tambahan 14.5 m3)
+    setCurrentReading(cust.lastReading > 0 ? cust.lastReading.toFixed(2) : "");
     setCustomerPhone(cust.phone || "");
   };
 
@@ -917,7 +918,9 @@ function PenagihanLapanganContent() {
                     step="0.01"
                     required
                     value={currentReading}
+                    onFocus={(e) => e.target.select()}
                     onChange={(e) => setCurrentReading(e.target.value)}
+                    placeholder={previousReading > 0 ? previousReading.toFixed(2) : "0.00"}
                     className="w-full px-3.5 py-2.5 text-xl font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-maroon-700"
                   />
                   <span className="absolute right-3.5 top-3 text-xs font-bold text-slate-400">m³</span>
