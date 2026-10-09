@@ -10,10 +10,8 @@ import {
   User,
   Eye,
   EyeOff,
-  ShieldCheck,
   Globe,
   ArrowLeft,
-  Droplets,
   HelpCircle,
   CheckCircle2,
   AlertCircle,
@@ -115,14 +113,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Region Pill */}
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200/70 mb-1.5 sm:mb-2">
-              <Droplets className="w-3 h-3 text-brand-maroon-700" />
-              <span>Desa Kuajang</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-brand-gold-700">Kec. Binuang</span>
-            </div>
-
             {/* System Title */}
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               SI-KPSPAMS KUAJANG
@@ -130,17 +120,6 @@ export default function LoginPage() {
             <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
               Sistem Informasi Pengelolaan Air Minum & Sanitasi Perdesaan
             </p>
-          </div>
-
-          {/* Active Scope Notice Banner */}
-          <div className="mt-3 sm:mt-4 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between text-[10px] sm:text-[11px] text-amber-900">
-            <span className="flex items-center space-x-1.5 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>Unit Aktif: <strong>KPSPAMS Lemo Baru</strong></span>
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-amber-700 font-semibold px-1.5 py-0.5 bg-amber-100 rounded-md">
-              Desa Kuajang
-            </span>
           </div>
 
           {/* Login Form */}
@@ -251,30 +230,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Institutional Trust Notice */}
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span className="flex items-center space-x-1.5 text-slate-500 font-medium">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Akses Terenkripsi SSL 256-bit</span>
-            </span>
-            <span className="text-slate-400 font-mono text-[10px]">v2.6 Kuajang</span>
-          </div>
-        </div>
-
-        {/* Portal Warga Quick Link */}
-        <div className="mt-4 p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 shadow-sm flex items-center justify-between text-xs text-amber-950">
-          <div>
-            <div className="font-bold text-slate-800">Warga / Pelanggan Air Bersih?</div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Warga tidak perlu akun login, cukup cek dengan <strong>NIK KTP</strong>.</div>
-          </div>
-          <Link
-            href="/portal"
-            className="font-bold text-brand-maroon-800 hover:text-brand-maroon-900 transition px-3 py-1.5 rounded-xl bg-white border border-brand-gold-400 shadow-2xs hover:shadow flex items-center space-x-1 shrink-0 ml-3"
-          >
-            <span>Portal Warga</span>
-            <ArrowRight className="w-3.5 h-3.5 text-brand-gold-600" />
-          </Link>
         </div>
       </main>
 
