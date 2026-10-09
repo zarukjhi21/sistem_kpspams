@@ -474,17 +474,25 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-slate-950 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-slate-300">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
-            <p className="text-slate-500 text-[11px] mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Desa (SI-KPSPAMS) v1.0</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-slate-300">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
+              <p className="text-slate-500 text-[11px] mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Desa (SI-KPSPAMS) v1.0</p>
+            </div>
+            <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
+              <Link href="/portal" className="hover:text-white transition">Portal Warga</Link>
+              <span>•</span>
+              <Link href="/login" className="hover:text-white transition">Login Pengurus</Link>
+              <span>•</span>
+              <span className="text-emerald-400 font-bold">Sistem Aktif &amp; Terlindungi</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
-            <Link href="/portal" className="hover:text-white transition">Portal Warga</Link>
-            <span>•</span>
-            <Link href="/login" className="hover:text-white transition">Login Pengurus</Link>
-            <span>•</span>
-            <span className="text-emerald-400 font-bold">Sistem Aktif &amp; Terlindungi</span>
+          <div className="pt-3 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
+            <p>
+              Dirancang &amp; Dikembangkan oleh <span className="text-brand-gold-400 font-bold">Pua Kaso</span> untuk Kemandirian Layanan Air Bersih Desa Kuajang.
+            </p>
+            <span className="text-slate-400 text-[10px]">Kecamatan Binuang, Polewali Mandar</span>
           </div>
         </div>
       </footer>

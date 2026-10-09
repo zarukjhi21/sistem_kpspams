@@ -279,9 +279,12 @@ export default function LoginPage() {
       </main>
 
       {/* Clean Minimalist Footer */}
-      <footer className="max-w-md w-full mx-auto text-center z-10 pt-4 pb-2 text-[11px] text-slate-400">
+      <footer className="max-w-md w-full mx-auto text-center z-10 pt-4 pb-2 text-[11px] text-slate-400 space-y-0.5">
         <p>© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar</p>
-        <p className="text-[10px] text-slate-400/80 mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Perdesaan</p>
+        <p className="text-[10px] text-slate-400/80">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Perdesaan</p>
+        <p className="text-[10px] text-slate-400 pt-0.5">
+          Dikembangkan oleh <span className="text-slate-300 font-semibold">Pua Kaso</span>
+        </p>
       </footer>
 
       {/* Account Help Modal */}

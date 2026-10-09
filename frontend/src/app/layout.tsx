@@ -15,7 +15,8 @@ export const metadata: Metadata = {
   title: "SI-KPSPAMS KUAJANG | Sistem Informasi Pengelolaan Air Perdesaan",
   description: "Sistem Informasi Terpadu Pengelolaan KPSPAMS Desa Kuajang: Cek tagihan mandiri warga, transparansi kas operasional riil, dan peta geospasial jaringan air bersih.",
   applicationName: "SI-KPSPAMS Kuajang",
-  authors: [{ name: "Pemerintah Desa Kuajang" }],
+  authors: [{ name: "Pemerintah Desa Kuajang" }, { name: "Pua Kaso" }],
+  creator: "Pua Kaso",
   keywords: [
     "KPSPAMS",
     "Desa Kuajang",

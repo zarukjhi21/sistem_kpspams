@@ -575,10 +575,13 @@ function CitizenPortalContent() {
       </main>
 
       {/* Clean Footer */}
-      <footer className="max-w-4xl w-full mx-auto px-4 text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-8">
-        <p>© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
-        <p className="text-[11px] text-slate-400/80 mt-0.5">
+      <footer className="max-w-4xl w-full mx-auto px-4 text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-8 space-y-1">
+        <p className="font-medium text-slate-600">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
+        <p className="text-[11px] text-slate-400">
           SI-KPSPAMS KUAJANG • Layanan Transparansi Air Bersih Terpadu
+        </p>
+        <p className="text-[11px] text-slate-500 pt-1">
+          Dirancang &amp; Dikembangkan oleh <span className="font-semibold text-slate-700">Pua Kaso</span>
         </p>
       </footer>
 
