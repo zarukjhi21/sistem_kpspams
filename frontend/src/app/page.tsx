@@ -28,6 +28,7 @@ import {
   Layers,
   MapPin,
   TrendingUp,
+  Gauge,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -65,29 +66,48 @@ export default function HomePage() {
   const router = useRouter();
   const [quickSearch, setQuickSearch] = useState("");
   const [stats, setStats] = useState({
-    lmbCash: 30196000,
-    lmbCustomers: 43,
-    totalCash: 30196000,
-    totalCustomers: 43,
+    lmbCash: 30216000,
+    lmbCustomers: 45,
+    lmbUsageM3: 0,
+    lmbPhysicalMeterM3: 62157.5,
+    totalCash: 30216000,
+    totalCustomers: 45,
+    totalUsageM3: 0,
+    totalPhysicalMeterM3: 62157.5,
   });
 
   useEffect(() => {
     apiClient<{
-      units: Record<string, { cash: number; customers: number }>;
+      units: Record<string, {
+        cash: number;
+        customers: number;
+        usage_m3?: number;
+        physical_meter_m3?: number;
+      }>;
       total_cash: number;
       total_customers: number;
+      total_usage_m3?: number;
+      total_physical_meter_m3?: number;
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmbCash = res.data.units.LMB?.cash ?? 30196000;
-          const lmbCust = res.data.units.LMB?.customers ?? 43;
-          const totCash = res.data.total_cash ?? lmbCash;
-          const totCust = res.data.total_customers ?? lmbCust;
+          const lmbCash = res.data.units.LMB?.cash ?? 30216000;
+          const lmbCust = res.data.units.LMB?.customers ?? 45;
+          const lmbUsage = Number(res.data.units.LMB?.usage_m3 ?? 0);
+          const lmbPhysical = Number(res.data.units.LMB?.physical_meter_m3 ?? 62157.5);
+          const totCash = Number(res.data.total_cash ?? lmbCash);
+          const totCust = Number(res.data.total_customers ?? lmbCust);
+          const totUsage = Number(res.data.total_usage_m3 ?? lmbUsage);
+          const totPhysical = Number(res.data.total_physical_meter_m3 ?? lmbPhysical);
           setStats({
             lmbCash,
             lmbCustomers: lmbCust,
+            lmbUsageM3: lmbUsage,
+            lmbPhysicalMeterM3: lmbPhysical,
             totalCash: totCash,
             totalCustomers: totCust,
+            totalUsageM3: totUsage,
+            totalPhysicalMeterM3: totPhysical,
           });
         }
       })
@@ -234,7 +254,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                {/* 3 Metric Panels: Clean & Direct */}
+                {/* Metric Panels: Clean & Direct */}
                 <div className="space-y-2.5">
                   {/* Metric 1: Kas Operasional */}
                   <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
@@ -262,7 +282,50 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  {/* Metric 3: Gravitasi Mata Air */}
+                  {/* Metric 3 & 4 Grid: Pemakaian Air Bulan Ini & Stand Fisik Odometer */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                          Pakai Bulan Ini
+                        </span>
+                        <div className="p-1 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/60">
+                          <Activity className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                      <div className="mt-1 flex items-baseline justify-between">
+                        <span className="text-lg sm:text-xl font-black text-white font-tabular">
+                          {stats.lmbUsageM3.toLocaleString("id-ID")}
+                          <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
+                        </span>
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">
+                          Bulan Ini
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                          Stand Fisik
+                        </span>
+                        <div className="p-1 rounded-lg bg-indigo-950 text-indigo-400 border border-indigo-800/60">
+                          <Gauge className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                      <div className="mt-1 flex items-baseline justify-between">
+                        <span className="text-lg sm:text-xl font-black text-indigo-300 font-tabular truncate">
+                          {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                          <span className="text-[10px] font-normal text-slate-400 ml-0.5">m³</span>
+                        </span>
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
+                          Odometer
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metric 5: Gravitasi Mata Air */}
                   <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">Debit Aliran Alami Lemo Baru</div>
@@ -287,6 +350,74 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Real-time Meter & Usage Showcase (Sesuai Dashboard Penagihan Lapangan) */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+              <h3 className="text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider">
+                Pemantauan Konsumsi &amp; Stand Fisik Meteran Riil
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-400 flex items-center space-x-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1" />
+              <span>Real-Time Database</span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Card 1: Pemakaian Air Bulan Ini */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-slate-950/80 border border-slate-800 shadow-xl space-y-3 hover:border-cyan-500/40 transition">
+              <div className="flex items-center justify-between">
+                <span className="text-xs sm:text-sm font-black text-slate-400 uppercase tracking-wider">
+                  Pemakaian Air Bulan Ini
+                </span>
+                <div className="p-2.5 rounded-2xl bg-cyan-950 text-cyan-400 border border-cyan-800/80">
+                  <Activity className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-3xl sm:text-4xl font-black text-white font-tabular tracking-tight">
+                  {stats.lmbUsageM3.toLocaleString("id-ID")}
+                  <span className="text-base sm:text-lg font-normal text-slate-400 ml-1.5">m³</span>
+                </span>
+                <span className="text-xs font-black px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                  BULAN BERJALAN
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                {stats.lmbUsageM3 === 0
+                  ? "Masa transisi stand awal • Beban dasar Rp 10.000/SR"
+                  : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
+              </p>
+            </div>
+
+            {/* Card 2: Total Stand Fisik Meteran (Odometer SR) */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-slate-950/80 border border-slate-800 shadow-xl space-y-3 hover:border-indigo-500/40 transition">
+              <div className="flex items-center justify-between">
+                <span className="text-xs sm:text-sm font-black text-slate-400 uppercase tracking-wider">
+                  Total Stand Fisik Meteran
+                </span>
+                <div className="p-2.5 rounded-2xl bg-indigo-950 text-indigo-300 border border-indigo-800/80">
+                  <Gauge className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-3xl sm:text-4xl font-black text-indigo-300 font-tabular tracking-tight">
+                  {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                  <span className="text-base sm:text-lg font-normal text-slate-400 ml-1.5">m³</span>
+                </span>
+                <span className="text-xs font-black px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+                  ODOMETER SR
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Total akumulasi putaran meter fisik {stats.lmbCustomers} SR di lapangan
+              </p>
             </div>
           </div>
         </section>
@@ -336,6 +467,12 @@ export default function HomePage() {
                   <div className="flex justify-between items-center text-slate-400">
                     <span>Kas Operasional:</span>
                     <strong className="text-amber-400 font-extrabold text-sm">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-400">
+                    <span>Stand Fisik Meteran:</span>
+                    <strong className="text-indigo-300 font-extrabold text-sm">
+                      {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³
+                    </strong>
                   </div>
                 </div>
               </div>
