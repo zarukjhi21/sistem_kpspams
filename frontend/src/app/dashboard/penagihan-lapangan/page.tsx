@@ -48,7 +48,7 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     kpspamsName: item.kpspams_name || item.kpspams?.name || (Number(item.kpspams_id) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${item.kpspams_id}`),
     meterSerial: item.meter_serial || primaryConn?.meter?.serial_number || "MTR-1001",
     lastReading: isNaN(lastReadingNum) ? 0 : lastReadingNum,
-    status: (item.status === "ACTIVE" ? "ACTIVE" : item.status === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
+    status: ((item.connection_status || item.status) === "ACTIVE" ? "ACTIVE" : (item.connection_status || item.status) === "SEALED" ? "SEALED" : "DISCONNECTED") as any,
     tariffType: item.customer_type?.name || "Rumah Tangga",
     latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : (primaryConn?.latitude ? Number(primaryConn.latitude) : -3.4215),
     longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : (primaryConn?.longitude ? Number(primaryConn.longitude) : 119.3452),

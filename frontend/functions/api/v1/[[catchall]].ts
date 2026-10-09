@@ -428,12 +428,13 @@ export async function onRequest(context: any) {
           religion = COALESCE($11, religion),
           marital_status = COALESCE($12, marital_status),
           occupation = COALESCE($13, occupation),
+          status = COALESCE($14, status),
           updated_at = NOW()
-        WHERE id = $14
+        WHERE id = $15
       `, [
         b.full_name, b.nik, b.phone, b.identity_address, b.rt_rw,
         b.dusun, b.village, b.district, b.birth_place_date, b.gender,
-        b.religion, b.marital_status, b.occupation, custId
+        b.religion, b.marital_status, b.occupation, b.status || null, custId
       ]);
 
       // Update connections table (latitude, longitude, status, address_detail, meter)
@@ -594,6 +595,10 @@ export async function onRequest(context: any) {
         UPDATE connections SET status = $1, notes = COALESCE($2, notes), updated_at = NOW()
         WHERE id = $3 OR CAST(customer_id AS text) = $4
       `, [newStatus, b.notes || null, connId, connId.toString()]);
+      await sql.query(`
+        UPDATE customers SET status = $1, updated_at = NOW()
+        WHERE id = $2 OR id = (SELECT customer_id::int FROM connections WHERE id = $2 LIMIT 1)
+      `, [newStatus, connId]);
       return jsonResponse({ status: "success", message: "Status koneksi berhasil diperbarui." });
     }
 
@@ -982,13 +987,36 @@ export async function onRequest(context: any) {
         }, 201);
       }
 
-      const rows = await sql.query(`
+      const txKpspamsId = url.searchParams.get("kpspams_id");
+      const txPerPage = parseInt(url.searchParams.get("per_page") || "100", 10);
+      const txType = url.searchParams.get("type"); // INCOME or EXPENSE
+      const txCategory = url.searchParams.get("category");
+
+      let txQuery = `
         SELECT ft.*, ca.account_name, ca.account_code, ca.bank_name, k.name as kpspams_name
         FROM financial_transactions ft
         LEFT JOIN cash_accounts ca ON CAST(ft.cash_account_id AS integer) = ca.id
         LEFT JOIN kpspams k ON CAST(ft.kpspams_id AS integer) = k.id
-        ORDER BY ft.id DESC
-      `);
+        WHERE 1=1
+      `;
+      const txParams: any[] = [];
+      let paramIdx = 1;
+      if (txKpspamsId) {
+        txQuery += ` AND CAST(ft.kpspams_id AS integer) = $${paramIdx++}`;
+        txParams.push(parseInt(txKpspamsId, 10));
+      }
+      if (txType) {
+        txQuery += ` AND ft.transaction_type = $${paramIdx++}`;
+        txParams.push(txType);
+      }
+      if (txCategory) {
+        txQuery += ` AND ft.category = $${paramIdx++}`;
+        txParams.push(txCategory);
+      }
+      txQuery += ` ORDER BY ft.id DESC LIMIT $${paramIdx++}`;
+      txParams.push(txPerPage);
+
+      const rows = await sql.query(txQuery, txParams);
       const mapped = rows.map((r: any) => ({
         ...r,
         cash_account: {
@@ -1093,7 +1121,7 @@ export async function onRequest(context: any) {
       }, 201);
     }
 
-    if (path.startsWith("complaints/") && (path.endsWith("/status") || pathParts.length === 2) && (method === "PATCH" || method === "PUT")) {
+    if (path.startsWith("complaints/") && (path.endsWith("/status") || path.endsWith("/verify") || pathParts.length === 2) && (method === "PATCH" || method === "PUT")) {
       const complaintId = parseInt(pathParts[1], 10);
       const b = await request.json().catch(() => ({}));
 
@@ -1107,6 +1135,40 @@ export async function onRequest(context: any) {
       `, [b.status || null, b.rejection_reason || null, complaintId]);
 
       return jsonResponse({ status: "success", message: "Status pengaduan berhasil diperbarui." });
+    }
+
+    // 14b. Work Orders Complete
+    if (path.startsWith("work-orders/") && path.endsWith("/complete") && method === "POST") {
+      const woId = parseInt(pathParts[1], 10);
+      const b = await request.json().catch(() => ({}));
+      const actionTaken = b.action_taken || "Pekerjaan lapangan telah selesai ditangani dan diverifikasi dengan baik.";
+      const notes = b.notes || null;
+
+      const woRows = await sql.query(`
+        UPDATE work_orders SET
+          status = 'COMPLETED',
+          completion_time = NOW(),
+          action_taken = $1,
+          supervisor_notes = COALESCE($2, supervisor_notes),
+          updated_at = NOW()
+        WHERE id = $3
+        RETURNING complaint_id
+      `, [actionTaken, notes, woId]);
+
+      if (woRows.length > 0 && woRows[0].complaint_id) {
+        await sql.query(`
+          UPDATE complaints SET
+            status = 'RESOLVED',
+            resolved_at = NOW()::text,
+            updated_at = NOW()::text
+          WHERE id = $1
+        `, [woRows[0].complaint_id]);
+      }
+
+      return jsonResponse({
+        status: "success",
+        message: "Surat Perintah Kerja (SPK) berhasil diselesaikan dan status tiket diperbarui menjadi SELESAI.",
+      });
     }
 
     if (path === "complaints") {
@@ -1181,8 +1243,22 @@ export async function onRequest(context: any) {
       const invStats = await sql.query(invQuery, queryParams);
       const cashRes = await sql.query(cashQuery, cashParams);
       const kpspamsCount = await sql`SELECT count(*)::int as count FROM kpspams`;
-      const meterUsage = await sql`SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings`;
-      const complaintsCount = await sql`SELECT count(*)::int as count FROM complaints WHERE status IN ('SUBMITTED', 'VERIFIED', 'IN_PROGRESS')`;
+
+      let meterQuery = "SELECT COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as total_usage FROM meter_readings";
+      const meterParams: any[] = [];
+      if (kId) {
+        meterQuery += " WHERE CAST(kpspams_id AS integer) = $1";
+        meterParams.push(kId);
+      }
+      const meterUsage = await sql.query(meterQuery, meterParams);
+
+      let compQuery = "SELECT count(*)::int as count FROM complaints WHERE status NOT IN ('RESOLVED', 'REJECTED')";
+      const compParams: any[] = [];
+      if (kId) {
+        compQuery += " AND CAST(kpspams_id AS integer) = $1";
+        compParams.push(kId);
+      }
+      const complaintsCount = await sql.query(compQuery, compParams);
 
       const billed = Number(invStats[0]?.total_billed) || 0;
       const collected = Number(invStats[0]?.total_collected) || 0;
@@ -1196,12 +1272,84 @@ export async function onRequest(context: any) {
       `);
       const periodLabel = activeBp.length > 0 ? activeBp[0].name : "Periode Berjalan";
 
+      let scopeLabel = "Konsolidasi Seluruh Desa Kuajang";
+      if (kId === 1) scopeLabel = "KPSPAMS Lemo Baru";
+      else if (kId === 2) scopeLabel = "KPSPAMS Lemo Tua";
+      else if (kId === 3) scopeLabel = "KPSPAMS Sarampu 1";
+      else if (kId) {
+        const kRow = await sql.query("SELECT name FROM kpspams WHERE id = $1 LIMIT 1", [kId]);
+        if (kRow.length > 0) scopeLabel = kRow[0].name;
+      }
+
+      const unitBreakdownRows = await sql.query(`
+        SELECT 
+          k.id as kpspams_id,
+          k.code,
+          k.name,
+          COALESCE(c.cust_count, 0)::int as total_customers,
+          COALESCE(inv.total_billed, 0)::numeric as total_billed,
+          COALESCE(inv.total_collected, 0)::numeric as total_collected,
+          COALESCE(inv.total_arrears, 0)::numeric as total_arrears,
+          COALESCE(ca.cash_balance, 0)::numeric as cash_balance
+        FROM kpspams k
+        LEFT JOIN (
+          SELECT CAST(kpspams_id AS integer) as kid, count(*)::int as cust_count 
+          FROM customers 
+          WHERE (status = 'ACTIVE' OR status = 'active') AND deleted_at IS NULL 
+          GROUP BY CAST(kpspams_id AS integer)
+        ) c ON k.id = c.kid
+        LEFT JOIN (
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            sum(CAST(total_amount AS numeric)) as total_billed,
+            sum(CASE WHEN status ILIKE 'paid' THEN CAST(total_amount AS numeric) ELSE 0 END) as total_collected,
+            sum(CASE WHEN status ILIKE 'unpaid' THEN CAST(total_amount AS numeric) ELSE 0 END) as total_arrears
+          FROM invoices 
+          GROUP BY CAST(kpspams_id AS integer)
+        ) inv ON k.id = inv.kid
+        LEFT JOIN (
+          SELECT 
+            CAST(kpspams_id AS integer) as kid,
+            sum(CAST(current_balance AS numeric)) as cash_balance 
+          FROM cash_accounts 
+          WHERE is_active = '1' 
+          GROUP BY CAST(kpspams_id AS integer)
+        ) ca ON k.id = ca.kid
+        ORDER BY k.id ASC
+      `);
+
+      const unitDusunsMap: Record<number, string[]> = {
+        1: ["Lemo Baru", "Batu Miallo"],
+        2: ["Lemo Tua", "Kandang Tedong"],
+        3: ["Sarampu 1", "Pakkandoang"],
+      };
+
+      const unitBreakdown = unitBreakdownRows.map((u: any) => ({
+        kpspams_id: Number(u.kpspams_id),
+        code: u.code,
+        name: u.name,
+        dusuns: unitDusunsMap[Number(u.kpspams_id)] || ["Desa Kuajang"],
+        total_customers: Number(u.total_customers) || 0,
+        total_billed: Number(u.total_billed) || 0,
+        total_collected: Number(u.total_collected) || 0,
+        total_arrears: Number(u.total_arrears) || 0,
+        cash_balance: Number(u.cash_balance) || 0,
+      }));
+
+      const dusunRows = await sql.query(`
+        SELECT d.id as dusun_id, d.code, d.name, count(conn.id)::int as total_connections
+        FROM dusun d
+        LEFT JOIN connections conn ON CAST(conn.dusun_id AS integer) = d.id AND conn.status = 'ACTIVE'
+        GROUP BY d.id, d.code, d.name
+        ORDER BY d.id ASC
+      `);
+
       return jsonResponse({
         status: "success",
         data: {
           context: {
             kpspams_id: kId,
-            scope_label: kId === 1 ? "KPSPAMS Lemo Baru" : "Konsolidasi Seluruh Desa Kuajang",
+            scope_label: scopeLabel,
             period: periodLabel,
           },
           kpi: {
@@ -1217,6 +1365,8 @@ export async function onRequest(context: any) {
             total_cash_balance: totalCashBalance,
             active_complaints: Number(complaintsCount[0]?.count) || 0,
           },
+          dusun_breakdown: dusunRows,
+          unit_breakdown: unitBreakdown,
           active_customers: activeCust,
           total_kpspams: kpspamsCount[0]?.count || 1,
           total_billed: billed,

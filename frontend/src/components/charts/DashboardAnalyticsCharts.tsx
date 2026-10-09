@@ -59,8 +59,8 @@ export function DashboardAnalyticsCharts({
             kpspamsId: Number(c.kpspams_id) || 1,
             kpspamsName: c.kpspams_name || "KPSPAMS Lemo Baru",
             meterSerial: c.meter_serial || "MTR-1001",
-            lastReading: Number(c.lastReading) || 0,
-            status: c.status || "ACTIVE",
+            lastReading: Number(c.last_reading ?? c.lastReading ?? c.initial_reading ?? 0),
+            status: c.connection_status || c.status || "ACTIVE",
             tariffType: c.tariffType || "Rumah Tangga",
             billingStatus: c.billing_status || "UNPAID",
           }));
