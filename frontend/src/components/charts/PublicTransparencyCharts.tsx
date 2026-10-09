@@ -23,7 +23,6 @@ import {
   PiggyBank,
   CheckCircle2,
   TrendingUp,
-  Sparkles,
   Info,
   Globe2,
   Mountain,
@@ -790,14 +789,6 @@ export function PublicTransparencyCharts() {
                 </div>
               );
             })}
-          </div>
-
-          {/* Catatan Penjelas Sistem Khusus (Gravitasi vs Sumur Bor) */}
-          <div className="mt-3.5 p-3 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900/90 border border-slate-800 text-xs text-slate-300 flex items-start space-x-2.5 shadow-sm">
-            <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm text-amber-300">
-              <Sparkles className="w-3.5 h-3.5 stroke-[2.2]" />
-            </div>
-            <p className="leading-relaxed text-[11px] text-slate-300">{currentSystemData.note}</p>
           </div>
         </div>
       </div>

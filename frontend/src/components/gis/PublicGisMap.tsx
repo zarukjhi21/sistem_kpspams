@@ -17,7 +17,6 @@ import {
   ExternalLink,
   RotateCcw,
   CheckCircle2,
-  Info,
   Activity,
   Maximize2,
   Minimize2,
@@ -773,19 +772,6 @@ export function PublicGisMap() {
             )}
           </div>
         )}
-      </div>
-
-      {/* Catatan Etika & Batasan Tampilan Publik */}
-      <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-start space-x-3 text-xs text-slate-400">
-        <Info className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-        <div className="space-y-0.5">
-          <p className="font-semibold text-slate-300">
-            Standar Batasan &amp; Etika Tampilan Publik (Public Privacy Boundary):
-          </p>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Peta publik menampilkan lokasi sambungan terdaftar dan hulu mata air untuk transparansi cakupan air bersih. Demi menjaga privasi, kehormatan warga, dan ketenteraman desa, status tunggakan atau nominal piutang <strong>tidak dipublikasikan</strong> secara terbuka. Warga dapat mengecek detail tagihan masing-masing secara privat melalui Portal Warga Mandiri.
-          </p>
-        </div>
       </div>
     </section>
   );
