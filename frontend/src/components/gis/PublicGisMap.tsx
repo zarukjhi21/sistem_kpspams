@@ -192,6 +192,9 @@ export function PublicGisMap() {
       maxZoom: 20,
       subdomains: ["0", "1", "2", "3"],
       attribution: "&copy; Google Maps Satelit",
+      updateWhenIdle: false,
+      updateWhenZooming: true,
+      keepBuffer: 6,
     }).addTo(map);
 
     tileLayerRef.current = tileLayer;
@@ -366,6 +369,9 @@ export function PublicGisMap() {
       maxZoom: 20,
       subdomains: ["0", "1", "2", "3"],
       attribution: "&copy; Google Maps",
+      updateWhenIdle: false,
+      updateWhenZooming: true,
+      keepBuffer: 6,
     }).addTo(mapInstanceRef.current);
 
     tileLayerRef.current = newLayer;
@@ -381,19 +387,34 @@ export function PublicGisMap() {
     }
   };
 
-  // Resize Leaflet map when toggling fullscreen
+  // Resize Leaflet map when toggling fullscreen & force tile redraw
   useEffect(() => {
-    const t1 = setTimeout(() => {
-      mapInstanceRef.current?.invalidateSize();
-    }, 100);
-    const t2 = setTimeout(() => {
-      mapInstanceRef.current?.invalidateSize();
-    }, 350);
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    const refreshMap = () => {
+      map.invalidateSize({ pan: false });
+      if (selectedItem && selectedItem.data.latitude && selectedItem.data.longitude) {
+        map.setView([selectedItem.data.latitude, selectedItem.data.longitude], map.getZoom(), { animate: false });
+      } else {
+        map.setView(map.getCenter(), map.getZoom(), { animate: false });
+      }
+      if (tileLayerRef.current) {
+        tileLayerRef.current.redraw();
+      }
+      window.dispatchEvent(new Event("resize"));
+    };
+
+    const t1 = setTimeout(refreshMap, 50);
+    const t2 = setTimeout(refreshMap, 200);
+    const t3 = setTimeout(refreshMap, 500);
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
     };
-  }, [isFullscreen]);
+  }, [isFullscreen, selectedItem]);
 
   // Lock body scroll and listen for Escape key in fullscreen
   useEffect(() => {
@@ -420,7 +441,7 @@ export function PublicGisMap() {
     <section
       className={
         isFullscreen
-          ? "fixed inset-0 z-[9999] w-screen h-screen bg-slate-950 p-2 sm:p-4 flex flex-col overflow-hidden animate-in fade-in duration-150"
+          ? "fixed inset-0 z-[9999] w-screen h-screen bg-slate-950 p-2 sm:p-4 flex flex-col overflow-hidden"
           : "space-y-4"
       }
     >
@@ -627,10 +648,14 @@ export function PublicGisMap() {
           ref={mapContainerRef}
           className={
             isFullscreen
-              ? "w-full h-full z-0 focus:outline-none"
+              ? "absolute inset-0 w-full h-full z-0 focus:outline-none"
               : "w-full h-[460px] sm:h-[540px] z-0 focus:outline-none"
           }
-          style={isFullscreen ? { width: "100%", height: "100%" } : undefined}
+          style={
+            isFullscreen
+              ? { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }
+              : undefined
+          }
         />
 
         {/* Floating Quick Fullscreen Toggle Button on Top-Right */}
