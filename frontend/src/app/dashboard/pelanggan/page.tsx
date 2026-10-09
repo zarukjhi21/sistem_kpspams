@@ -216,6 +216,30 @@ function PelangganContent() {
 
   const allowedDusuns = getAllowedDusuns();
 
+  // Nama-nama Pejabat Penandatangan Resmi (Default SK Desa Kuajang)
+  const defaultKetuaName =
+    effectiveKpspamsId === 2
+      ? "ABDUL RAUF"
+      : effectiveKpspamsId === 3
+      ? "Drs. USMAN ALI"
+      : "FADLI";
+
+  const defaultKetuaTitle =
+    effectiveKpspamsId === 2
+      ? "Ketua KPSPAMS Lemo Tua"
+      : effectiveKpspamsId === 3
+      ? "Ketua KPSPAMS Sarampu 1"
+      : "Ketua KPSPAMS Lemo Baru";
+
+  const defaultAdminName =
+    user && user.role !== "super_admin" && user.role !== "admin_desa" && user.name
+      ? user.name.toUpperCase()
+      : "MADA ALI";
+
+  const [signKades, setSignKades] = useState("H. MUHAMMAD BASIR, S.Sos.");
+  const [signKetua, setSignKetua] = useState(defaultKetuaName);
+  const [signAdmin, setSignAdmin] = useState(defaultAdminName);
+
   // Modal State Tambah Pelanggan Baru
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newFullName, setNewFullName] = useState("");
@@ -2603,18 +2627,22 @@ function PelangganContent() {
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
                     ( Tanda Tangan &amp; Cap )
                   </div>
-                  <div className="font-extrabold underline uppercase">MUHAMMAD DAHLAN</div>
-                  <div className="text-[10px] text-slate-500">Pemerintah Desa Kuajang</div>
+                  <div className="font-extrabold underline uppercase tracking-wide">
+                    {signKades}
+                  </div>
+                  <div className="text-[10px] text-slate-500">Kepala Desa Kuajang</div>
                 </div>
 
                 <div>
                   <div className="text-[11px] text-slate-500 mb-1">Disahkan Oleh,</div>
-                  <div className="font-bold">Ketua KPSPAMS Unit</div>
+                  <div className="font-bold">{defaultKetuaTitle}</div>
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
                     ( Tanda Tangan )
                   </div>
-                  <div className="font-extrabold underline uppercase">PENGURUS KPSPAMS</div>
-                  <div className="text-[10px] text-slate-500">Unit Pengelola Air Bersih</div>
+                  <div className="font-extrabold underline uppercase tracking-wide">
+                    {signKetua}
+                  </div>
+                  <div className="text-[10px] text-slate-500">Pengurus KPSPAMS Desa Kuajang</div>
                 </div>
 
                 <div>
@@ -2625,8 +2653,47 @@ function PelangganContent() {
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-400 italic">
                     ( Tanda Tangan )
                   </div>
-                  <div className="font-extrabold underline uppercase">{user?.name || "ADMINISTRATOR"}</div>
-                  <div className="text-[10px] text-slate-500">Petugas Pendataan Pelanggan</div>
+                  <div className="font-extrabold underline uppercase tracking-wide">
+                    {signAdmin}
+                  </div>
+                  <div className="text-[10px] text-slate-500">Sekretaris &amp; Administrasi KPSPAMS</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Opsi Sesuaikan Nama Penandatangan Riil (print:hidden) */}
+            <div className="mt-4 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl print:hidden space-y-2">
+              <div className="text-[11px] font-bold text-slate-700 flex items-center space-x-1.5">
+                <Pencil className="w-3.5 h-3.5 text-slate-500" />
+                <span>Sesuaikan Nama Penandatangan Riil (Dapat Diubah Kapan Saja Sebelum Cetak):</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Kepala Desa Kuajang:</label>
+                  <input
+                    type="text"
+                    value={signKades}
+                    onChange={(e) => setSignKades(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Ketua KPSPAMS Unit:</label>
+                  <input
+                    type="text"
+                    value={signKetua}
+                    onChange={(e) => setSignKetua(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 font-medium block mb-1">Petugas Administrasi / Register:</label>
+                  <input
+                    type="text"
+                    value={signAdmin}
+                    onChange={(e) => setSignAdmin(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                  />
                 </div>
               </div>
             </div>
