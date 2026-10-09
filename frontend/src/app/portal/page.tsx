@@ -216,7 +216,7 @@ function CitizenPortalContent() {
                 <span className="text-xs sm:text-sm font-black tracking-tight whitespace-nowrap">
                   PORTAL WARGA
                 </span>
-                <span className="text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
+                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
                   KUAJANG
                 </span>
               </div>

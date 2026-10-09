@@ -53,7 +53,7 @@ export default function HomePage() {
       {/* Header Bar */}
       <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-shrink-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-lg bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
               <Image
                 src="/logo.jpg"
@@ -69,7 +69,7 @@ export default function HomePage() {
                 <span className="text-sm sm:text-base font-extrabold tracking-tight text-white whitespace-nowrap">
                   SI-KPSPAMS
                 </span>
-                <span className="text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
+                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
                   KUAJANG
                 </span>
               </div>
@@ -80,15 +80,17 @@ export default function HomePage() {
           <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <Link
               href="/portal"
-              className="inline-flex px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
+              className="inline-flex px-2 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
             >
-              Portal Warga
+              <span className="hidden sm:inline">Portal Warga</span>
+              <span className="sm:hidden">Portal</span>
             </Link>
             <Link
               href="/login"
               className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
             >
-              <span>Masuk Petugas</span>
+              <span className="hidden sm:inline">Masuk Petugas</span>
+              <span className="sm:hidden">Masuk</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Link>
           </div>
