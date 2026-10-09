@@ -124,13 +124,13 @@ export default function HomePage() {
                   <span>Operasional Aktif</span>
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-white">KPSPAMS Lemo Baru</h4>
+              <h4 className="text-base font-extrabold text-white">KPSPAMS &quot;Wai Kaili&quot; Lemo Baru</h4>
               <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-200">Dusun Lemo Baru</strong>
+                Wilayah Layanan: <strong className="text-slate-200">Dusun Lemo Baru &amp; Batu Miallo</strong>
               </p>
               <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-400 flex justify-between">
                 <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-emerald-400">1 SR (Aktif Server)</span>
+                <span className="font-bold text-emerald-400">37 SR (Aktif Terverifikasi)</span>
               </div>
             </div>
 
@@ -146,11 +146,11 @@ export default function HomePage() {
               </div>
               <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Lemo Tua</h4>
               <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-400">Dusun Lemo Tua</strong>
+                Wilayah Layanan: <strong className="text-slate-400">Dusun Lemo Tua &amp; Kandang Tedong</strong>
               </p>
               <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
                 <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-slate-400">0 SR (Belum Aktif)</span>
+                <span className="font-bold text-slate-400">0 SR (Persiapan)</span>
               </div>
             </div>
 
@@ -166,11 +166,11 @@ export default function HomePage() {
               </div>
               <h4 className="text-base font-extrabold text-slate-300">KPSPAMS Sarampu 1</h4>
               <p className="text-xs text-slate-400">
-                Wilayah Layanan: <strong className="text-slate-400">Dusun Sarampu 1 & Pakkandoang</strong>
+                Wilayah Layanan: <strong className="text-slate-400">Dusun Sarampu 1 &amp; Pakkandoang</strong>
               </p>
               <div className="pt-2 border-t border-slate-700/60 text-xs text-slate-500 flex justify-between">
                 <span>Pelanggan Terdaftar:</span>
-                <span className="font-bold text-slate-400">0 SR (Belum Aktif)</span>
+                <span className="font-bold text-slate-400">0 SR (Persiapan)</span>
               </div>
             </div>
           </div>

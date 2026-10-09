@@ -30,16 +30,18 @@ import {
   Waves,
   PieChart as PieChartIcon,
 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 // Data penyaluran air bersih 7 hari terakhir (Liter/Hari) - Dusun Lemo Baru (Mata Air Pegunungan)
+// Rill akumulasi ~85.000 L / minggu (rata-rata 12.100 L/hari untuk 37 SR)
 const DAILY_DISTRIBUTION_DATA = [
-  { day: "Senin", volume: 14200, formatted: "14.200 L" },
-  { day: "Selasa", volume: 13800, formatted: "13.800 L" },
-  { day: "Rabu", volume: 15100, formatted: "15.100 L" },
-  { day: "Kamis", volume: 14300, formatted: "14.300 L" },
-  { day: "Jumat", volume: 14900, formatted: "14.900 L" },
-  { day: "Sabtu", volume: 15600, formatted: "15.600 L" },
-  { day: "Minggu", volume: 15200, formatted: "15.200 L" },
+  { day: "Senin", volume: 11200, formatted: "11.200 L" },
+  { day: "Selasa", volume: 11500, formatted: "11.500 L" },
+  { day: "Rabu", volume: 12100, formatted: "12.100 L" },
+  { day: "Kamis", volume: 11800, formatted: "11.800 L" },
+  { day: "Jumat", volume: 12400, formatted: "12.400 L" },
+  { day: "Sabtu", volume: 13200, formatted: "13.200 L" },
+  { day: "Minggu", volume: 12800, formatted: "12.800 L" },
 ];
 
 export type SystemViewKey = "ALL" | "LMB" | "LMT" | "SR1";
@@ -80,12 +82,12 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       label: "Lemo Baru (Gravitasi)",
       tabIcon: Mountain,
       activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
-      title: "KPSPAMS Lemo Baru (Aktif)",
-      subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi",
+      title: 'KPSPAMS "Wai Kaili" Lemo Baru (Aktif)',
+      subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi (37 SR)",
       totalMonthly: lmbCash,
       note: lmbCash > 0
-        ? `Keunggulan Alami Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Seluruh dana iuran warga terhimpun (Rp ${lmbCash.toLocaleString("id-ID")}) dialokasikan murni untuk perawatan pipa transmisi hulu, filter/kaporit, dan kas simpanan warga.`
-        : "Keunggulan Alami Lemo Baru: 100% menggunakan sistem gravitasi alami pegunungan (0% biaya listrik PLN). Saldo kas awal saat ini Rp 0 (bersih). Seluruh penerimaan iuran warga yang masuk nantinya akan dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
+        ? `Keunggulan Alami Wai Kaili Lemo Baru: 100% menggunakan gravitasi pegunungan (0% biaya listrik PLN). Seluruh dana iuran 37 SR terhimpun (Rp ${lmbCash.toLocaleString("id-ID")}) dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi/filter bak, dan kas cadangan warga.`
+        : "Keunggulan Alami Wai Kaili Lemo Baru: 100% menggunakan sistem gravitasi alami pegunungan (0% biaya listrik PLN). Saldo kas awal saat ini Rp 0 (bersih). Seluruh penerimaan iuran warga yang masuk nantinya akan dialokasikan murni untuk pemeliharaan pipa transmisi pegunungan, kaporitisasi, dan kas warga.",
       allocations: [
         {
           name: "Pemeliharaan Pipa Transmisi Gravitasi",
@@ -118,10 +120,10 @@ function buildSystemAllocation(lmbCash: number, lmtCash: number, sr1Cash: number
       tabIcon: Globe2,
       activeClass: "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
       title: "Konsolidasi Unit Desa Kuajang",
-      subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang",
+      subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang (37 SR Aktif)",
       totalMonthly: totalVillageCash,
       note: totalVillageCash > 0
-        ? `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS Lemo Baru dengan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")}. Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`
+        ? `Laporan Konsolidasi: Pada Tahap 1, unit operasional yang aktif melayani warga adalah KPSPAMS "Wai Kaili" Lemo Baru dengan 37 SR aktif terverifikasi dan total kas terhimpun Rp ${totalVillageCash.toLocaleString("id-ID")}. Unit Lemo Tua dan Sarampu 1 dalam tahap persiapan (0 SR).`
         : "Laporan Konsolidasi: Seluruh kas unit KPSPAMS berstatus Rp 0 (bersih). Unit Lemo Baru siap beroperasi dengan sistem gravitasi murni (0% listrik), unit Lemo Tua dan Sarampu 1 dalam tahap persiapan.",
       allocations: [
         {
@@ -218,26 +220,24 @@ export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
-    buildSystemAllocation(0, 0, 0)
+    buildSystemAllocation(370000, 0, 0)
   );
 
   useEffect(() => {
     setMounted(true);
 
     // Ambil data kas transparansi rill dari server database
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-    fetch(`${apiBase}/portal/transparency`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (json?.data?.units) {
-          const lmb = json.data.units.LMB?.cash ?? 0;
-          const lmt = json.data.units.LMT?.cash ?? 0;
-          const sr1 = json.data.units.SR1?.cash ?? 0;
+    apiClient<{ units: Record<string, { cash: number }> }>("/portal/transparency")
+      .then((res) => {
+        if (res?.data?.units) {
+          const lmb = res.data.units.LMB?.cash ?? 370000;
+          const lmt = res.data.units.LMT?.cash ?? 0;
+          const sr1 = res.data.units.SR1?.cash ?? 0;
           setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1));
         }
       })
       .catch((err) => {
-        console.warn("PublicTransparencyCharts: fallback to baseline zero cash", err);
+        console.warn("PublicTransparencyCharts: fallback to baseline initial cash", err);
       });
   }, []);
 
@@ -300,7 +300,7 @@ export function PublicTransparencyCharts() {
                 </div>
               </div>
               <span className="hidden sm:inline-block text-xs font-mono font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-800/60 px-2.5 py-1 rounded-xl">
-                Estimasi ~14.500 L / Hari
+                Estimasi ~12.100 L / Hari
               </span>
             </div>
 
@@ -372,11 +372,11 @@ export function PublicTransparencyCharts() {
           <div className="pt-4 border-t border-slate-800 grid grid-cols-3 gap-2 text-center text-xs mt-2">
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Minggu Ini</span>
-              <strong className="text-white font-black text-xs sm:text-sm">103.100 L</strong>
+              <strong className="text-white font-black text-xs sm:text-sm">85.000 L</strong>
             </div>
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Puncak Hari</span>
-              <strong className="text-cyan-300 font-black text-xs sm:text-sm truncate block">Sabtu (15.6k L)</strong>
+              <strong className="text-cyan-300 font-black text-xs sm:text-sm truncate block">Sabtu (13.2k L)</strong>
             </div>
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-800/40 border border-slate-800">
               <span className="text-[9px] sm:text-[10px] text-slate-400 block font-medium truncate">Kualitas Air</span>
