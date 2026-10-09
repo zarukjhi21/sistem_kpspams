@@ -476,7 +476,7 @@ function KeuanganContent() {
   return (
     <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-brand-maroon-950 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
             <Wallet className="w-3.5 h-3.5" />
@@ -504,11 +504,11 @@ function KeuanganContent() {
                 + Catat Pemasukan
               </Button>
               <Button
-                variant="secondary"
+                variant="danger"
                 size="sm"
-                className="bg-rose-700/80 hover:bg-rose-800 text-white border border-rose-600/50 font-bold shadow-sm"
                 icon={<MinusCircle className="w-4 h-4" />}
                 onClick={handleOpenExpenseModal}
+                className="font-bold shadow-sm"
               >
                 - Catat Pengeluaran
               </Button>
@@ -516,9 +516,9 @@ function KeuanganContent() {
           )}
 
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
-            className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+            className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold"
             icon={<FileText className="w-4 h-4 text-brand-gold-400" />}
             onClick={() => setShowReportModal(true)}
           >

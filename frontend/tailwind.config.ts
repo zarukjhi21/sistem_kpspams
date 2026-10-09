@@ -17,6 +17,7 @@ const config: Config = {
             700: '#8B0000',
             800: '#7B1113', // Warna Brand Utama
             900: '#52090B',
+            950: '#2B0B0E',
           },
           gold: {
             50: '#FFFBEB',
