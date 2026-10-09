@@ -15,6 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { PublicTransparencyCharts } from "@/components/charts/PublicTransparencyCharts";
+import { PublicGisMapSection } from "@/components/gis/PublicGisMapSection";
 
 export default function HomePage() {
   return (
@@ -175,6 +176,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Public Interactive GIS Map (Dusun Lemo Baru & Wai Kaili Spring) */}
+        <PublicGisMapSection />
 
         {/* Public Transparency & Performance Charts */}
         <PublicTransparencyCharts />

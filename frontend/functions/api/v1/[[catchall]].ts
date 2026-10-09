@@ -1667,6 +1667,61 @@ export async function onRequest(context: any) {
       });
     }
 
+    // 16d. Portal GIS Connections (Public Map View)
+    if (path === "portal/gis-connections") {
+      const conns = await sql.query(`
+        SELECT 
+          c.id, 
+          c.code, 
+          c.full_name, 
+          c.dusun, 
+          c.rt_rw,
+          co.connection_no, 
+          co.latitude, 
+          co.longitude, 
+          co.status as connection_status
+        FROM customers c
+        JOIN connections co ON c.id = CAST(co.customer_id AS integer)
+        WHERE CAST(c.kpspams_id AS integer) = 1 
+          AND (c.status = 'ACTIVE' OR c.status = 'active') 
+          AND c.deleted_at IS NULL
+          AND co.latitude IS NOT NULL 
+          AND co.longitude IS NOT NULL
+        ORDER BY c.id ASC
+      `);
+
+      return jsonResponse({
+        status: "success",
+        data: {
+          water_source: {
+            name: 'Mata Air Alami Pegunungan "Wai Kaili"',
+            type: "BRONCAPTERING",
+            latitude: -3.4285,
+            longitude: 119.3725,
+            flow_system: "GRAVITASI_MURNI",
+            elevation_m: 145,
+            description: "Sumber mata air pegunungan alami Lemo Baru, dialirkan murni dengan gravitasi tanpa pompa listrik.",
+          },
+          connections: conns.map((c: any) => ({
+            id: Number(c.id),
+            code: c.code,
+            name: c.full_name,
+            connection_no: c.connection_no,
+            dusun: c.dusun || "Lemo Baru",
+            rt_rw: c.rt_rw || "-",
+            latitude: parseFloat(c.latitude) || -3.4326,
+            longitude: parseFloat(c.longitude) || 119.3752,
+            status: "ACTIVE",
+          })),
+          summary: {
+            total_connections: conns.length,
+            flow_status: "NORMAL",
+            flow_rate_lpd: 12100,
+          },
+        },
+      });
+    }
+
     // 17. Users Management (CRUD)
     if (path === "users") {
       if (method === "POST") {
