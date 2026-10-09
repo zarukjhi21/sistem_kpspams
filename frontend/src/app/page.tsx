@@ -228,52 +228,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Floating Quick Anchor Navigation Bar */}
-        <div className="sticky top-14 sm:top-16 z-20 -mx-3 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-2.5 bg-slate-950/85 backdrop-blur-md border-y border-slate-800/80 shadow-md">
-          <div className="max-w-7xl mx-auto flex items-center space-x-2 overflow-x-auto no-scrollbar py-0.5">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden md:inline whitespace-nowrap mr-1">
-              Navigasi Pintas:
-            </span>
-            <button
-              type="button"
-              onClick={() => scrollToSection("unit-pengelola")}
-              className="px-3.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-white border border-slate-700/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
-            >
-              <span>🏘️ 3 Unit Pengelola</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("peta-gis")}
-              className="px-3.5 py-1.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 text-xs font-bold text-emerald-300 border border-emerald-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
-            >
-              <span>🗺️ Peta Jaringan GIS</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("transparansi-kas")}
-              className="px-3.5 py-1.5 rounded-full bg-amber-950/80 hover:bg-amber-900 text-xs font-bold text-amber-300 border border-amber-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
-            >
-              <span>📊 Transparansi Kas &amp; Air</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("fitur-layanan")}
-              className="px-3.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
-            >
-              <span>⚡ Fitur Aplikasi</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("pusat-bantuan")}
-              className="px-3.5 py-1.5 rounded-full bg-blue-950/80 hover:bg-blue-900 text-xs font-bold text-blue-300 border border-blue-800/80 transition active:scale-95 whitespace-nowrap flex items-center space-x-1.5 shadow-sm"
-            >
-              <span>📞 Bantuan &amp; Pengaduan</span>
-            </button>
-          </div>
-        </div>
-
         {/* 3 Unit KPSPAMS Grid */}
-        <section id="unit-pengelola" className="scroll-mt-28 space-y-4">
+        <section id="unit-pengelola" className="space-y-4">
           <div className="border-b border-slate-800/80 pb-3">
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               3 Unit Pengelola KPSPAMS Desa Kuajang
