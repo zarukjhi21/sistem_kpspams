@@ -1626,12 +1626,12 @@ export async function onRequest(context: any) {
         `),
         sql.query(`
           SELECT 
-            CAST(kpspams_id AS integer) as kid,
-            COALESCE(sum(CAST(usage_m3 AS numeric)), 0)::numeric as usage_m3
+            CAST(mr.kpspams_id AS integer) as kid,
+            COALESCE(sum(CAST(mr.usage_m3 AS numeric)), 0)::numeric as usage_m3
           FROM meter_readings mr
           LEFT JOIN billing_periods bp ON mr.billing_period_id::text = bp.id::text
           WHERE (bp.status = 'OPEN' OR mr.billing_period_id = '6')
-          GROUP BY CAST(kpspams_id AS integer)
+          GROUP BY CAST(mr.kpspams_id AS integer)
         `),
         sql.query(`
           SELECT 
@@ -1738,7 +1738,7 @@ export async function onRequest(context: any) {
           units: {
             LMB: {
               cash: lmbCash,
-              customers: custMap[1] || 42,
+              customers: custMap[1] || 43,
               usage_m3: meterMap[1] || 0,
               physical_meter_m3: physMap[1] || 49635.5,
               name: "KPSPAMS Lemo Baru",
@@ -1763,7 +1763,7 @@ export async function onRequest(context: any) {
           },
           total_cash: lmbCash + lmtCash + sr1Cash,
           total_expenses: lmbExp.total + lmtExp.total + sr1Exp.total,
-          total_customers: (custMap[1] || 42) + (custMap[2] || 0) + (custMap[3] || 0),
+          total_customers: (custMap[1] || 43) + (custMap[2] || 0) + (custMap[3] || 0),
           total_usage_m3: (meterMap[1] || 0) + (meterMap[2] || 0) + (meterMap[3] || 0),
           total_physical_meter_m3: (physMap[1] || 49635.5) + (physMap[2] || 0) + (physMap[3] || 0),
         },

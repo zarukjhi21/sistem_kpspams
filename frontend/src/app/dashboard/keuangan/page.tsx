@@ -664,7 +664,7 @@ function KeuanganContent() {
             + Rp {totalIncome.toLocaleString("id-ID")}
           </div>
           <div className="mt-1 text-[11px] text-emerald-600 font-semibold">
-            Termasuk 37 iuran warga & setoran lain
+            Termasuk penerimaan iuran warga & setoran kasir
           </div>
         </Card>
 

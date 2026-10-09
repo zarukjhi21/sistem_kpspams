@@ -169,11 +169,13 @@ class CitizenPortalController extends BaseApiController
 
         $stats = [];
         $totalCash = 0;
+        $totalActiveSr = 0;
 
         foreach ($units as $u) {
             $cash = (float) CashAccount::where('kpspams_id', $u->id)->sum('current_balance');
             $srCount = Connection::where('kpspams_id', $u->id)->where('status', 'ACTIVE')->count();
             $totalCash += $cash;
+            $totalActiveSr += $srCount;
 
             $key = match ($u->code) {
                 'KP-LMB', 'KPS-LMB' => 'LMB',
@@ -187,11 +189,14 @@ class CitizenPortalController extends BaseApiController
                 'name' => $u->name,
                 'cash' => $cash,
                 'active_sr' => $srCount,
+                'customers' => $srCount,
             ];
         }
 
         return $this->sendResponse([
             'total_cash' => $totalCash,
+            'total_customers' => $totalActiveSr,
+            'total_active_sr' => $totalActiveSr,
             'units' => $stats,
         ], 'Data transparansi kas dan penyaluran air berhasil dimuat.');
     }

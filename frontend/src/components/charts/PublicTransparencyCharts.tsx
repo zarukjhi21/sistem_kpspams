@@ -84,7 +84,9 @@ function buildSystemAllocation(
   sr1Cash: number,
   lmbExp?: UnitExpenses,
   lmtExp?: UnitExpenses,
-  sr1Exp?: UnitExpenses
+  sr1Exp?: UnitExpenses,
+  lmbCust: number = 43,
+  totalCust: number = 43
 ): Record<SystemViewKey, SystemData> {
   const defaultExp: UnitExpenses = {
     operasional: 0,
@@ -236,7 +238,7 @@ function buildSystemAllocation(
       tabIcon: Mountain,
       activeClass: "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 font-black scale-[1.02]",
       title: "KPSPAMS Lemo Baru (Aktif)",
-      subtitle: "Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi (37 SR)",
+      subtitle: `Mata Air Alami Pegunungan • Bebas Listrik PLN • Sistem Gravitasi (${lmbCust} SR)`,
       totalMonthly: lmbCash,
       totalExpense: lmbExpenses.total,
       note: lmbExpenses.total === 0
@@ -249,7 +251,7 @@ function buildSystemAllocation(
       tabIcon: Globe2,
       activeClass: "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/25 font-black scale-[1.02]",
       title: "Konsolidasi Unit Desa Kuajang",
-      subtitle: "Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang (37 SR Aktif)",
+      subtitle: `Laporan Kas Terpadu Layanan Air Bersih Desa Kuajang (${totalCust} SR Aktif)`,
       totalMonthly: totalVillageCash,
       totalExpense: totalVillageExpenses,
       note: totalVillageExpenses === 0
@@ -407,7 +409,7 @@ export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
-    buildSystemAllocation(30136000, 0, 0)
+    buildSystemAllocation(30196000, 0, 0, undefined, undefined, undefined, 43, 43)
   );
 
   useEffect(() => {
@@ -415,19 +417,22 @@ export function PublicTransparencyCharts() {
 
     // Ambil data kas transparansi rill dari server database
     apiClient<{
-      units: Record<string, { cash: number; expenses?: UnitExpenses }>;
+      units: Record<string, { cash: number; customers?: number; expenses?: UnitExpenses }>;
       total_cash: number;
       total_expenses: number;
+      total_customers?: number;
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmb = res.data.units.LMB?.cash ?? 30136000;
+          const lmb = res.data.units.LMB?.cash ?? 30196000;
           const lmt = res.data.units.LMT?.cash ?? 0;
           const sr1 = res.data.units.SR1?.cash ?? 0;
           const lmbExp = res.data.units.LMB?.expenses;
           const lmtExp = res.data.units.LMT?.expenses;
           const sr1Exp = res.data.units.SR1?.expenses;
-          setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1, lmbExp, lmtExp, sr1Exp));
+          const lmbCust = res.data.units.LMB?.customers ?? 43;
+          const totalCust = res.data.total_customers ?? lmbCust;
+          setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1, lmbExp, lmtExp, sr1Exp, lmbCust, totalCust));
         }
       })
       .catch((err) => {

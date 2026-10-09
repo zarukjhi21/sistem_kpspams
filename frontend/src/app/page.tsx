@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
 import {
   ShieldCheck,
   Activity,
@@ -63,6 +64,37 @@ const PublicGisMapSection = dynamic(
 export default function HomePage() {
   const router = useRouter();
   const [quickSearch, setQuickSearch] = useState("");
+  const [stats, setStats] = useState({
+    lmbCash: 30196000,
+    lmbCustomers: 43,
+    totalCash: 30196000,
+    totalCustomers: 43,
+  });
+
+  useEffect(() => {
+    apiClient<{
+      units: Record<string, { cash: number; customers: number }>;
+      total_cash: number;
+      total_customers: number;
+    }>("/portal/transparency")
+      .then((res) => {
+        if (res?.data?.units) {
+          const lmbCash = res.data.units.LMB?.cash ?? 30196000;
+          const lmbCust = res.data.units.LMB?.customers ?? 43;
+          const totCash = res.data.total_cash ?? lmbCash;
+          const totCust = res.data.total_customers ?? lmbCust;
+          setStats({
+            lmbCash,
+            lmbCustomers: lmbCust,
+            totalCash: totCash,
+            totalCustomers: totCust,
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn("HomePage: could not fetch live transparency stats", err);
+      });
+  }, []);
 
   const handleQuickSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,7 +241,7 @@ export default function HomePage() {
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">Total Kas Operasional Riil</div>
                       <div className="text-2xl font-black text-amber-400 mt-0.5">
-                        Rp 30.136.000
+                        Rp {stats.lmbCash.toLocaleString("id-ID")}
                       </div>
                     </div>
                     <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
@@ -222,7 +254,7 @@ export default function HomePage() {
                     <div>
                       <div className="text-[11px] font-medium text-slate-400">Sambungan Rumah (SR) Terlayani</div>
                       <div className="text-2xl font-black text-white mt-0.5">
-                        37 SR Aktif
+                        {stats.lmbCustomers} SR Aktif
                       </div>
                     </div>
                     <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
@@ -299,11 +331,11 @@ export default function HomePage() {
                 <div className="pt-3 border-t border-slate-800/80 text-xs space-y-2">
                   <div className="flex justify-between items-center text-slate-400">
                     <span>Pelanggan Terlayani:</span>
-                    <strong className="text-white font-extrabold text-sm">37 Sambungan</strong>
+                    <strong className="text-white font-extrabold text-sm">{stats.lmbCustomers} Sambungan</strong>
                   </div>
                   <div className="flex justify-between items-center text-slate-400">
                     <span>Kas Operasional:</span>
-                    <strong className="text-amber-400 font-extrabold text-sm">Rp 30.136.000</strong>
+                    <strong className="text-amber-400 font-extrabold text-sm">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
                   </div>
                 </div>
               </div>
