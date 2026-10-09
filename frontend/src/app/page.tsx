@@ -180,20 +180,34 @@ export default function HomePage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-10 w-full space-y-8 sm:space-y-12">
-        {/* Modern Dual-Column Hero Section */}
-        <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-brand-maroon-950/70 to-slate-950 border border-slate-800/90 p-6 sm:p-10 lg:p-12 shadow-2xl">
-          {/* Ambient Lighting Orbs */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-maroon-600/15 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+        {/* Modern Dual-Column Hero Section with Custom Illustrated Artwork */}
+        <section className="relative rounded-3xl overflow-hidden border border-slate-800/90 p-6 sm:p-10 lg:p-12 shadow-2xl bg-slate-950">
+          {/* Custom Illustration Artwork Layer */}
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <Image
+              src="/hero-bg.jpg"
+              alt="Ilustrasi KPSPAMS PAMSIMAS Desa Kuajang"
+              fill
+              className="object-cover object-center transform scale-105 transition-transform duration-700 hover:scale-100"
+              priority
+            />
+            {/* Elegant Vignette & Dark Overlay untuk menjaga kontras dan kenyamanan membaca */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 to-slate-950/85 sm:to-slate-950/75 backdrop-blur-[1px]" />
+            <div className="absolute inset-0 bg-slate-950/30" />
+          </div>
+
+          {/* Ambient Lighting Accents */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-maroon-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
+          <div className="absolute bottom-0 left-0 w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
             {/* Left Column: Headline, Description & Cek Tagihan Kilat */}
             <div className="lg:col-span-7 space-y-5">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-snug sm:leading-tight drop-shadow-md">
                 Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
               </h1>
 
-              <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-xl">
+              <p className="text-xs sm:text-base text-slate-200 leading-relaxed max-w-xl drop-shadow-sm font-medium">
                 Sistem informasi pelayanan air bersih, pencatatan meter digital, dan transparansi kas warga Desa Kuajang.
               </p>
 
