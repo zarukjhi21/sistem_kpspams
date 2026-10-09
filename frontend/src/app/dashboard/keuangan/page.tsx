@@ -1336,11 +1336,14 @@ function KeuanganContent() {
                 <div className="text-xs uppercase tracking-widest font-bold text-slate-600">
                   Pemerintah Kabupaten Polewali Mandar • Kecamatan Binuang
                 </div>
-                <div className="text-base sm:lg font-black uppercase text-slate-900 tracking-tight">
+                <div className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-tight">
                   Pemerintah Desa Kuajang
                 </div>
                 <div className="text-xs font-extrabold text-brand-maroon-900 tracking-wide uppercase">
-                  Badan Pengelola Sistem Penyediaan Air Minum & Sanitasi (KPSPAMS)
+                  Pengurus KPSPAMS &quot;Wai Kaili&quot; Lemo Baru Desa Kuajang
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  SK Kepala Desa Kuajang Nomor 19 Tahun 2026 Tanggal 30 Juni 2026 (Masa Bakti 2026–2029)
                 </div>
                 <div className="text-[10px] text-slate-500">
                   Sekretariat: Kantor Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar, Sulawesi Barat 91353
@@ -1439,8 +1442,8 @@ function KeuanganContent() {
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-300 italic">
                     [Tanda Tangan & Cap]
                   </div>
-                  <div className="font-bold underline text-slate-900">H. Muhammad Basir, S.Sos.</div>
-                  <div className="text-[10px] text-slate-500">NIP. 19740512 200212 1 004</div>
+                  <div className="font-bold underline text-slate-900">H. MUHAMMAD S.</div>
+                  <div className="text-[10px] text-slate-500">Kepala Desa Kuajang</div>
                 </div>
 
                 <div>
@@ -1450,9 +1453,11 @@ function KeuanganContent() {
                     [Tanda Tangan]
                   </div>
                   <div className="font-bold underline text-slate-900">
-                    {effectiveKpspamsId === 1 ? "Hasanuddin" : effectiveKpspamsId === 2 ? "Abdul Rauf" : "Drs. Usman Ali"}
+                    {effectiveKpspamsId === 1 ? "FADLI" : effectiveKpspamsId === 2 ? "Abdul Rauf" : "Drs. Usman Ali"}
                   </div>
-                  <div className="text-[10px] text-slate-500">Ketua Pengelola</div>
+                  <div className="text-[10px] text-slate-500">
+                    {effectiveKpspamsId === 1 ? "Ketua KPSPAMS \"Wai Kaili\"" : "Ketua Pengelola"}
+                  </div>
                 </div>
 
                 <div>
@@ -1462,7 +1467,7 @@ function KeuanganContent() {
                     [Tanda Tangan]
                   </div>
                   <div className="font-bold underline text-slate-900">
-                    {effectiveKpspamsId === 1 ? "Rahmawati" : "Bendahara Unit"}
+                    {effectiveKpspamsId === 1 ? "M. DARMAWAN" : "Bendahara Unit"}
                   </div>
                   <div className="text-[10px] text-slate-500">Pemegang Kas Resmi</div>
                 </div>

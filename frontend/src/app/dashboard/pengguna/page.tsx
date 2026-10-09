@@ -407,6 +407,77 @@ function PenggunaContent() {
         </div>
       )}
 
+      {/* Struktur Pengurus KPSPAMS Wai Kaili Lemo Baru Berdasarkan SK No. 19 Tahun 2026 */}
+      <Card className="p-4 sm:p-5 bg-gradient-to-br from-amber-50/60 via-white to-slate-50 border border-amber-200/80 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-amber-200/60">
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase tracking-wider mb-1">
+              <Shield className="w-3 h-3 text-amber-700" />
+              <span>SK Pengukuhan Resmi Masa Bakti 2026–2029</span>
+            </div>
+            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">
+              Struktur Pengurus KPSPAMS &quot;Wai Kaili&quot; Lemo Baru Desa Kuajang
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Keputusan Kepala Desa Kuajang Nomor 19 Tahun 2026 tanggal 30 Juni 2026 • Ditetapkan oleh: <strong>H. MUHAMMAD S.</strong> (Kepala Desa Kuajang)
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-xl text-xs font-bold bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200 self-start md:self-auto">
+            7 Pengurus Resmi
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-3.5">
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. Ketua</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">FADLI</span>
+            <span className="text-[10px] text-emerald-700 font-semibold mt-0.5 block">Penanggung Jawab Utama</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">2. Sekretaris</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">MADA ALI</span>
+            <span className="text-[10px] text-blue-700 font-semibold mt-0.5 block">Administrasi &amp; Persuratan</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">3. Bendahara</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">M. DARMAWAN</span>
+            <span className="text-[10px] text-amber-700 font-semibold mt-0.5 block">Pengelola Buku Kas &amp; Bank</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">4. Koordinator Penagihan</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">SUARDI</span>
+            <span className="text-[10px] text-sky-700 font-semibold mt-0.5 block">Penagihan Iuran Lapangan</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">5. Koordinator Pemeliharaan</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">SAPRI</span>
+            <span className="text-[10px] text-purple-700 font-semibold mt-0.5 block">Teknis Pipa &amp; Pemeliharaan</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">6. Anggota</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">ABDUL WAHAB</span>
+            <span className="text-[10px] text-slate-600 font-semibold mt-0.5 block">Tim Operasional Lapangan</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">7. Anggota</span>
+            <span className="text-xs font-black text-slate-900 block mt-0.5">NURHANUDDIN</span>
+            <span className="text-[10px] text-slate-600 font-semibold mt-0.5 block">Tim Operasional Lapangan</span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-brand-maroon-50/70 border border-brand-maroon-200/80 shadow-2xs flex flex-col justify-center">
+            <span className="text-[10px] font-bold text-brand-maroon-700 uppercase tracking-wider block">Pengukuhan</span>
+            <span className="text-xs font-black text-brand-maroon-900 block mt-0.5">H. MUHAMMAD S.</span>
+            <span className="text-[10px] text-brand-maroon-800 font-medium block">Kepala Desa Kuajang</span>
+          </div>
+        </div>
+      </Card>
+
       {/* Filter Card */}
       <Card>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
