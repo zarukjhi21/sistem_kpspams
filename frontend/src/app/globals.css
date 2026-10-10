@@ -76,6 +76,23 @@ body {
   border-top-color: #334155 !important;
 }
 
+/* Prevent Tailwind CSS from breaking Leaflet tiles and causing grey map */
+.leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-tile-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+.leaflet-pane {
+  z-index: 10 !important;
+}
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+
 /* Print optimization for official A4 reports (Customer & Financial Reports) */
 @media print {
   .print\:hidden {

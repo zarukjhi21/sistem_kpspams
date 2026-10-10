@@ -6,13 +6,12 @@ import {
   Navigation,
   Layers,
   Satellite,
-  Compass,
-  Sparkles,
   Maximize2,
   Minimize2,
   RotateCcw,
+  RefreshCw,
   Check,
-  X,
+  Map as MapIcon,
 } from "lucide-react";
 import L from "leaflet";
 
@@ -42,19 +41,10 @@ export function GisLocationPicker({
   const markerRef = useRef<L.Marker | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
-  const [mapType, setMapType] = useState<"google-hybrid" | "google-streets">("google-hybrid");
+  const [mapType, setMapType] = useState<"google-hybrid" | "google-streets" | "osm">("google-hybrid");
   const [isLocating, setIsLocating] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Invalidate map size whenever fullscreen/expanded mode is toggled
-  useEffect(() => {
-    if (mapInstanceRef.current) {
-      setTimeout(() => {
-        mapInstanceRef.current?.invalidateSize();
-      }, 250);
-    }
-  }, [isExpanded]);
 
   // Validate coordinates: prevent sea coordinates (<= -3.45 and <= 119.35)
   const isInvalidSeaCoord = (lat: number, lng: number) => {
@@ -70,14 +60,13 @@ export function GisLocationPicker({
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
-    // Avoid double initialization
-    if (mapInstanceRef.current) return;
+    if (mapInstanceRef.current) return; // Prevent duplicate instantiation
 
     const map = L.map(mapContainerRef.current, {
       center: [currentLat, currentLng],
       zoom: 18,
       zoomControl: true,
+      fadeAnimation: false, // Prevents tile fading glitch on container resize
     });
 
     // Default tile: Google Maps Hybrid (Satellite Imagery + Street Names & Labels)
@@ -123,7 +112,7 @@ export function GisLocationPicker({
       icon: customIcon,
     }).addTo(map);
 
-    // Bind popup without auto-opening to prevent covering satellite view
+    // Bind popup
     marker.bindPopup(`<b>Titik Sambungan Meter</b><br>Dusun ${dusunName}`);
 
     // If initial coordinate was invalid or 0, synchronize parent with real land coordinate
@@ -147,9 +136,13 @@ export function GisLocationPicker({
     mapInstanceRef.current = map;
     markerRef.current = marker;
 
+    // Staggered invalidateSize after mount
     setTimeout(() => {
       map.invalidateSize();
-    }, 300);
+    }, 150);
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
 
     return () => {
       map.remove();
@@ -157,6 +150,57 @@ export function GisLocationPicker({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ResizeObserver to detect any change in map container dimensions and refresh Leaflet
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    let resizeTimer: NodeJS.Timeout;
+    const resizeObserver = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize({ pan: false });
+        }
+      }, 60);
+    });
+
+    resizeObserver.observe(mapContainerRef.current);
+
+    return () => {
+      clearTimeout(resizeTimer);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Invalidate map size & pan to marker whenever fullscreen/expanded mode is toggled
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const refreshMap = () => {
+      if (!mapInstanceRef.current) return;
+      mapInstanceRef.current.invalidateSize({ pan: false });
+      if (markerRef.current) {
+        const pos = markerRef.current.getLatLng();
+        mapInstanceRef.current.setView(pos, mapInstanceRef.current.getZoom(), { animate: false });
+      }
+    };
+
+    // Staggered redraws ensure Leaflet catches the container at 0ms, 60ms, 150ms, and 350ms
+    refreshMap();
+    const t1 = setTimeout(refreshMap, 60);
+    const t2 = setTimeout(refreshMap, 150);
+    const t3 = setTimeout(refreshMap, 350);
+    const t4 = setTimeout(refreshMap, 600);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, [isExpanded]);
 
   // Update marker if lat/lng props change from outside
   useEffect(() => {
@@ -182,25 +226,38 @@ export function GisLocationPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dusunName]);
 
-  // Toggle Map Layer (Google Hybrid vs Google Streets)
-  const toggleMapLayer = (type: "google-hybrid" | "google-streets") => {
+  // Toggle Map Layer (Google Hybrid, Google Streets, or OpenStreetMap)
+  const toggleMapLayer = (type: "google-hybrid" | "google-streets" | "osm") => {
     setMapType(type);
     if (!mapInstanceRef.current || !tileLayerRef.current) return;
 
     tileLayerRef.current.remove();
 
-    const newUrl =
-      type === "google-hybrid"
-        ? "https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-        : "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+    let newUrl = "https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}";
+    let subdomains: string[] = ["0", "1", "2", "3"];
+    let attribution = "&copy; Google Maps";
+    let maxZoom = 20;
+
+    if (type === "google-streets") {
+      newUrl = "https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+    } else if (type === "osm") {
+      newUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      subdomains = ["a", "b", "c"];
+      attribution = "&copy; OpenStreetMap contributors";
+      maxZoom = 19;
+    }
 
     const newLayer = L.tileLayer(newUrl, {
-      maxZoom: 20,
-      subdomains: ["0", "1", "2", "3"],
-      attribution: "&copy; Google Maps",
+      maxZoom,
+      subdomains,
+      attribution,
     }).addTo(mapInstanceRef.current);
 
     tileLayerRef.current = newLayer;
+
+    setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize({ pan: false });
+    }, 50);
   };
 
   // GPS Device Geolocation Trigger
@@ -218,6 +275,7 @@ export function GisLocationPicker({
           setIsLocating(false);
 
           if (mapInstanceRef.current && markerRef.current) {
+            mapInstanceRef.current.invalidateSize({ pan: false });
             markerRef.current.setLatLng([lat, lng]);
             mapInstanceRef.current.setView([lat, lng], 18);
           }
@@ -232,6 +290,7 @@ export function GisLocationPicker({
           setIsLocating(false);
 
           if (mapInstanceRef.current && markerRef.current) {
+            mapInstanceRef.current.invalidateSize({ pan: false });
             markerRef.current.setLatLng([simLat, simLng]);
             mapInstanceRef.current.setView([simLat, simLng], 18);
           }
@@ -248,9 +307,21 @@ export function GisLocationPicker({
   const handleRecenter = (dName?: string) => {
     const target = KUAJANG_DUSUN_COORDS[dName || dusunName] || { lat: -3.4349, lng: 119.3768 };
     if (mapInstanceRef.current && markerRef.current) {
+      mapInstanceRef.current.invalidateSize({ pan: false });
       markerRef.current.setLatLng([target.lat, target.lng]);
       mapInstanceRef.current.flyTo([target.lat, target.lng], 19);
       onChange(target.lat, target.lng);
+    }
+  };
+
+  // Handler untuk memuat ulang ukuran dan tampilan peta
+  const handleRefreshMap = () => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.invalidateSize({ pan: false });
+      if (markerRef.current) {
+        const pos = markerRef.current.getLatLng();
+        mapInstanceRef.current.setView(pos, mapInstanceRef.current.getZoom(), { animate: false });
+      }
     }
   };
 
@@ -259,7 +330,7 @@ export function GisLocationPicker({
       {/* Backdrop saat mode layar penuh / diperluas aktif */}
       {isExpanded && (
         <div
-          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99998] transition-opacity"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[99998]"
           onClick={() => setIsExpanded(false)}
         />
       )}
@@ -267,12 +338,12 @@ export function GisLocationPicker({
       <div
         className={
           isExpanded
-            ? "fixed inset-2 sm:inset-5 z-[99999] bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border-2 border-brand-gold-500/70 flex flex-col justify-between overflow-hidden animate-in zoom-in-95 duration-200"
+            ? "fixed inset-2 sm:inset-4 md:inset-6 z-[99999] bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-2xl border-2 border-brand-gold-500/80 flex flex-col justify-between"
             : "space-y-3"
         }
       >
         {/* Header Bar with Action Buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center space-x-2">
             <div className="p-1.5 rounded-lg bg-brand-gold-500/10 text-brand-gold-600">
               <MapPin className="w-4 h-4 text-brand-gold-600" />
@@ -308,6 +379,17 @@ export function GisLocationPicker({
               <span>Pusatkan Dusun</span>
             </button>
 
+            {/* Quick Refresh Canvas Button */}
+            <button
+              type="button"
+              onClick={handleRefreshMap}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center space-x-1 shadow-sm active:scale-95"
+              title="Muat ulang dan segarkan tampilan peta jika ada bagian yang abu-abu"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Segarkan</span>
+            </button>
+
             {/* Layer Toggle */}
             <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] font-bold">
               <button
@@ -318,6 +400,7 @@ export function GisLocationPicker({
                     ? "bg-slate-900 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
+                title="Citra Satelit Google dengan nama jalan & atap rumah"
               >
                 <Satellite className="w-3 h-3 text-amber-400" />
                 <span>Google Satelit</span>
@@ -330,9 +413,23 @@ export function GisLocationPicker({
                     ? "bg-slate-900 text-white shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
+                title="Peta Jalan Vektor Google"
               >
                 <Layers className="w-3 h-3 text-emerald-400" />
                 <span>Google Jalan</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleMapLayer("osm")}
+                className={`px-2.5 py-1 rounded-lg transition flex items-center space-x-1 ${
+                  mapType === "osm"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+                title="OpenStreetMap Standar"
+              >
+                <MapIcon className="w-3 h-3 text-cyan-400" />
+                <span>OSM</span>
               </button>
             </div>
 
@@ -375,18 +472,19 @@ export function GisLocationPicker({
 
         {/* Map Container Viewport */}
         <div
-          className={`relative rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100 ${
-            isExpanded ? "flex-1 my-2" : ""
-          }`}
+          className={
+            isExpanded
+              ? "relative flex-1 w-full min-h-[360px] my-2.5 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100"
+              : "relative w-full h-80 sm:h-96 md:h-[460px] rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100"
+          }
         >
           <div
             ref={mapContainerRef}
-            className={`w-full z-10 transition-all duration-200 ${
+            className={
               isExpanded
-                ? "h-[62vh] sm:h-[68vh]"
-                : "h-80 sm:h-96 md:h-[450px]"
-            }`}
-            style={{ minHeight: isExpanded ? "420px" : "360px" }}
+                ? "absolute inset-0 w-full h-full z-10"
+                : "w-full h-full z-10"
+            }
           />
 
           {/* Overlay Instruction Hint */}
@@ -404,7 +502,7 @@ export function GisLocationPicker({
         </div>
 
         {/* Bottom Bar: Lat Lng Readout Inputs & Done Button */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pt-1">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pt-1">
           <div className="grid grid-cols-2 gap-3 text-xs flex-1 max-w-xl">
             <div>
               <label className="block text-[11px] font-bold text-slate-600 mb-1">
