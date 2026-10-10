@@ -712,7 +712,7 @@ export async function onRequest(context: any) {
           totalAmount = 10000;
           waterAmount = 0;
         } else {
-          usageM3 = Math.max(0, currentReading - prevReading);
+          usageM3 = Math.round(Math.max(0, currentReading - prevReading) * 100) / 100;
           if (kId.toString() === "1") {
             // Gravitasi Kuajang (LMB): Beban dasar Rp 10.000 s.d 15 m3, kelebihan > 15 m3 = +Rp 1.000 / m3
             totalAmount = 10000;

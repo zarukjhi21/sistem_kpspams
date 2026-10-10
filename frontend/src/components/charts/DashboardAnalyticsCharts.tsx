@@ -659,7 +659,8 @@ export function DashboardAnalyticsCharts({
               </div>
               <div className="flex items-baseline justify-between">
                 <span className="text-sm font-black text-slate-900 font-tabular">
-                  {item.usage} <span className="text-[10px] font-normal text-slate-500">m³</span>
+                  {Number(item.usage || 0).toLocaleString("id-ID", { maximumFractionDigits: 1 })}{" "}
+                  <span className="text-[10px] font-normal text-slate-500">m³</span>
                 </span>
                 <span className="text-[10px] text-slate-500 font-mono font-medium">{item.sr} SR</span>
               </div>
