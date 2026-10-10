@@ -24,6 +24,8 @@ import {
   Shield,
   UserCheck,
   Smartphone,
+  Map,
+  MessageCircle,
 } from "lucide-react";
 
 interface MobileDrawerProps {
@@ -65,7 +67,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           items: [
             { label: "Beranda Ringkasan", href: "/dashboard", icon: LayoutDashboard },
             { label: "Pelanggan & SR (Dusun)", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
           ],
         },
         {
@@ -85,7 +89,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
           items: [
             { label: "Dashboard Unit", href: "/dashboard", icon: LayoutDashboard },
             { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
           ],
         },
         {
@@ -111,7 +117,9 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         items: [
           { label: "Dashboard Ringkasan", href: "/dashboard", icon: LayoutDashboard },
           { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
+          { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
           { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+          { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
         ],
       },
       {
