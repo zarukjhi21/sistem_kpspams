@@ -256,13 +256,37 @@ export async function onRequest(context: any) {
       });
     }
 
-    // 8b. Billing Cycle Roll-over Status (Mekanisme Tutup Buku & Status Kesiapan Periode Baru)
+    // 8b. Billing Cycle Roll-over Status (Mekanisme Tutup Buku & Status Kesiapan Periode Baru - Dinamis Setiap Bulan)
     if (path === "billing/rollover-status") {
-      const [activeBp, octInvoices, activeConns, novBp] = await Promise.all([
-        sql.query(`SELECT * FROM billing_periods WHERE status = 'OPEN' ORDER BY id ASC`),
+      const activeBp = await sql.query(`SELECT * FROM billing_periods WHERE status = 'OPEN' ORDER BY id ASC`);
+      
+      const curBp = activeBp[0] || {
+        id: 6,
+        name: "Periode Oktober 2026",
+        period_code: "BP-KP-LMB-202610",
+        year: "2026",
+        month: "10"
+      };
+
+      const MONTH_NAMES = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+
+      const curYear = parseInt(curBp.year, 10) || 2026;
+      const curMonth = parseInt(curBp.month, 10) || 10;
+      const nextMonth = curMonth === 12 ? 1 : curMonth + 1;
+      const nextYear = curMonth === 12 ? curYear + 1 : curYear;
+      const nextMonthStr = String(nextMonth).padStart(2, "0");
+      const nextPeriodName = `Periode ${MONTH_NAMES[nextMonth - 1]} ${nextYear}`;
+      const nextEffectiveDate = `${nextYear}-${nextMonthStr}-01`;
+
+      const activeBpIds = activeBp.length > 0 ? activeBp.map((b: any) => `'${b.id}'`).join(", ") : "'6'";
+
+      const [curInvoices, activeConns, nextBp] = await Promise.all([
         sql.query(`
           SELECT status, count(*) as count, COALESCE(sum(total_amount::numeric), 0) as total_val 
-          FROM invoices WHERE billing_period_id IN ('6', '12', '18') GROUP BY status
+          FROM invoices WHERE billing_period_id IN (${activeBpIds}) GROUP BY status
         `),
         sql.query(`
           SELECT count(*) as total_conns FROM connections conn
@@ -271,74 +295,101 @@ export async function onRequest(context: any) {
         `),
         sql.query(`
           SELECT * FROM billing_periods 
-          WHERE year = '2026' AND month = '11' AND status = 'OPEN'
+          WHERE year = '${nextYear}' AND month = '${nextMonth}' AND status = 'OPEN'
           LIMIT 1
         `),
       ]);
 
-      const paidRow = octInvoices.find((r: any) => r.status === 'PAID') || { count: '0', total_val: '0' };
-      const unpaidRow = octInvoices.find((r: any) => r.status === 'UNPAID') || { count: '0', total_val: '0' };
+      const paidRow = curInvoices.find((r: any) => r.status === 'PAID') || { count: '0', total_val: '0' };
+      const unpaidRow = curInvoices.find((r: any) => r.status === 'UNPAID') || { count: '0', total_val: '0' };
 
       return jsonResponse({
         status: "success",
         data: {
-          current_period_name: activeBp[0]?.name || "Periode Oktober 2026",
-          current_period_code: activeBp[0]?.period_code || "BP-KP-LMB-202610",
-          current_period_id: activeBp[0]?.id || 6,
-          is_november_open: novBp.length > 0,
+          current_period_name: curBp.name || `Periode ${MONTH_NAMES[curMonth - 1]} ${curYear}`,
+          current_period_code: curBp.period_code || `BP-KP-LMB-${curYear}${String(curMonth).padStart(2, "0")}`,
+          current_period_id: curBp.id,
+          current_period_year: curYear,
+          current_period_month: curMonth,
+          is_next_period_open: nextBp.length > 0,
           total_active_connections: Number(activeConns[0]?.total_conns) || 83,
-          october_summary: {
+          current_summary: {
             paid_count: Number(paidRow.count) || 0,
             paid_amount: Number(paidRow.total_val) || 0,
             unpaid_count: Number(unpaidRow.count) || 0,
             unpaid_amount: Number(unpaidRow.total_val) || 0,
             total_billed: (Number(paidRow.total_val) || 0) + (Number(unpaidRow.total_val) || 0),
           },
-          target_next_period: "Periode November 2026",
-          scheduled_effective_date: "2026-11-01",
+          target_next_period: nextPeriodName,
+          target_next_month: nextMonth,
+          target_next_year: nextYear,
+          scheduled_effective_date: nextEffectiveDate,
         }
       });
     }
 
-    // 8c. Billing Cycle Roll-over Execute (Tutup Buku Oktober & Buka November)
+    // 8c. Billing Cycle Roll-over Execute (Tutup Buku Periode Aktif & Buka Siklus Bulan Baru - Berlaku Selamanya)
     if (path === "billing/rollover-execute" && method === "POST") {
-      // 1. Cek apakah November 2026 sudah dibuka sebelumnya
-      const existingNov = await sql.query(`
-        SELECT * FROM billing_periods WHERE year = '2026' AND month = '11' AND status = 'OPEN'
+      const activeBps = await sql.query(`SELECT * FROM billing_periods WHERE status = 'OPEN' ORDER BY id ASC`);
+      if (activeBps.length === 0) {
+        return jsonResponse({
+          status: "error",
+          message: "Tidak ada periode billing yang sedang berstatus OPEN untuk ditutup.",
+        }, 400);
+      }
+
+      const curBp = activeBps[0];
+      const curYear = parseInt(curBp.year, 10) || 2026;
+      const curMonth = parseInt(curBp.month, 10) || 10;
+      const nextMonth = curMonth === 12 ? 1 : curMonth + 1;
+      const nextYear = curMonth === 12 ? curYear + 1 : curYear;
+      const nextMonthStr = String(nextMonth).padStart(2, "0");
+
+      const MONTH_NAMES = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      const curPeriodName = curBp.name || `Periode ${MONTH_NAMES[curMonth - 1]} ${curYear}`;
+      const nextPeriodName = `Periode ${MONTH_NAMES[nextMonth - 1]} ${nextYear}`;
+
+      // 1. Cek apakah periode bulan baru sudah dibuka sebelumnya
+      const existingNext = await sql.query(`
+        SELECT * FROM billing_periods WHERE year = '${nextYear}' AND month = '${nextMonth}' AND status = 'OPEN'
       `);
-      if (existingNov.length > 0) {
+      if (existingNext.length > 0) {
         return jsonResponse({
           status: "success",
-          message: "Periode November 2026 sudah berstatus OPEN sebelumnya. Tidak ada perubahan ganda.",
+          message: `${nextPeriodName} sudah berstatus OPEN sebelumnya. Tidak ada perubahan ganda.`,
           data: { already_active: true }
         });
       }
 
-      // 2. Kunci (CLOSE) periode aktif Oktober 2026 (ID 6, 12, 18)
+      // 2. Kunci (CLOSE) seluruh periode aktif saat ini
+      const activeIds = activeBps.map((b: any) => b.id);
       await sql.query(`
         UPDATE billing_periods SET status = 'CLOSED', updated_at = NOW() 
-        WHERE (year = '2026' AND month = '10') OR (id IN (6, 12, 18))
+        WHERE id IN (${activeIds.join(", ")})
       `);
 
-      // 3. Buat periode baru November 2026 untuk masing-masing unit KPSPAMS
+      // 3. Buat periode baru secara dinamis untuk seluruh unit KPSPAMS
       const newBpRes = await sql.query(`
         INSERT INTO billing_periods (
           kpspams_id, period_code, name, year, month,
           reading_start_date, reading_end_date, billing_date, due_date, status,
           created_at, updated_at
         ) VALUES 
-        ('1', 'BP-KP-LMB-202611', 'Periode November 2026', '2026', '11', '2026-11-01 00:00:00', '2026-11-05 00:00:00', '2026-11-06 00:00:00', '2026-11-20 00:00:00', 'OPEN', NOW(), NOW()),
-        ('2', 'BP-KP-LMT-202611', 'Periode November 2026', '2026', '11', '2026-11-01 00:00:00', '2026-11-05 00:00:00', '2026-11-06 00:00:00', '2026-11-20 00:00:00', 'OPEN', NOW(), NOW()),
-        ('3', 'BP-KP-SR1-202611', 'Periode November 2026', '2026', '11', '2026-11-01 00:00:00', '2026-11-05 00:00:00', '2026-11-06 00:00:00', '2026-11-20 00:00:00', 'OPEN', NOW(), NOW())
+        ('1', 'BP-KP-LMB-${nextYear}${nextMonthStr}', '${nextPeriodName}', '${nextYear}', '${nextMonth}', '${nextYear}-${nextMonthStr}-01 00:00:00', '${nextYear}-${nextMonthStr}-05 00:00:00', '${nextYear}-${nextMonthStr}-06 00:00:00', '${nextYear}-${nextMonthStr}-20 00:00:00', 'OPEN', NOW(), NOW()),
+        ('2', 'BP-KP-LMT-${nextYear}${nextMonthStr}', '${nextPeriodName}', '${nextYear}', '${nextMonth}', '${nextYear}-${nextMonthStr}-01 00:00:00', '${nextYear}-${nextMonthStr}-05 00:00:00', '${nextYear}-${nextMonthStr}-06 00:00:00', '${nextYear}-${nextMonthStr}-20 00:00:00', 'OPEN', NOW(), NOW()),
+        ('3', 'BP-KP-SR1-${nextYear}${nextMonthStr}', '${nextPeriodName}', '${nextYear}', '${nextMonth}', '${nextYear}-${nextMonthStr}-01 00:00:00', '${nextYear}-${nextMonthStr}-05 00:00:00', '${nextYear}-${nextMonthStr}-06 00:00:00', '${nextYear}-${nextMonthStr}-20 00:00:00', 'OPEN', NOW(), NOW())
         RETURNING *
       `);
 
-      const novBpLmb = newBpRes.find((p: any) => String(p.kpspams_id) === '1') || newBpRes[0];
-      const novBpId = String(novBpLmb.id);
+      const nextBpLmb = newBpRes.find((p: any) => String(p.kpspams_id) === '1') || newBpRes[0];
+      const nextBpId = String(nextBpLmb.id);
 
-      // 4. Ambil seluruh sambungan aktif beserta stand akhir meteran Oktober
+      // 4. Ambil seluruh 83 sambungan aktif beserta stand akhir meteran sebelumnya
       const activeConns = await sql.query(`
-        SELECT conn.id as connection_id, conn.connection_no, conn.customer_id, c.full_name, c.kpspams_id,
+        SELECT conn.id as connection_id, conn.connection_no, conn.customer_id, conn.meter_id, c.full_name, c.kpspams_id,
                COALESCE(mr.current_reading::text, m.initial_reading::text, '0') as latest_reading
         FROM connections conn
         JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
@@ -352,22 +403,21 @@ export async function onRequest(context: any) {
         ORDER BY c.id ASC
       `);
 
-      // 5. Terbitkan lembar tagihan (Invoices) & Stand Awal Meteran periode November 2026 untuk seluruh 83 SR
+      // 5. Terbitkan lembar tagihan (Invoices) & Stand Awal Meteran periode baru untuk seluruh 83 SR
       let createdCount = 0;
       if (activeConns.length > 0) {
-        // Multi-row INSERT for invoices
         const invoiceValues: string[] = [];
         const invoiceParams: any[] = [];
         let pIdx = 1;
 
         for (const c of activeConns) {
           const srCode = (c.connection_no || `SR-${c.connection_id}`).replace(/[^A-Za-z0-9]/g, "").slice(-6);
-          const invNum = `INV/202611/KP01/${srCode.toUpperCase()}`;
+          const invNum = `INV/${nextYear}${nextMonthStr}/KP01/${srCode.toUpperCase()}`;
 
-          invoiceValues.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, '2026-11-01 00:00:00+00', '2026-11-20 23:59:59+00', '0', '0', '10000', '0', '0', '10000', '0', '10000', 'UNPAID', NOW(), NOW())`);
+          invoiceValues.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, '${nextYear}-${nextMonthStr}-01 00:00:00+00', '${nextYear}-${nextMonthStr}-20 23:59:59+00', '0', '0', '10000', '0', '0', '10000', '0', '10000', 'UNPAID', NOW(), NOW())`);
           invoiceParams.push(
             String(c.kpspams_id || 1),
-            novBpId,
+            nextBpId,
             String(c.connection_id),
             String(c.customer_id),
             invNum
@@ -386,16 +436,16 @@ export async function onRequest(context: any) {
           ) VALUES ${invoiceValues.join(", ")}
         `, invoiceParams);
 
-        // Multi-row INSERT for meter_readings carrying forward stand akhir Oktober sebagai stand awal November
+        // Stand meter estafet: stand akhir periode lalu jadi stand awal periode baru
         const readingValues: string[] = [];
         const readingParams: any[] = [];
         let rIdx = 1;
 
         for (const c of activeConns) {
-          readingValues.push(`($${rIdx}, $${rIdx + 1}, $${rIdx + 2}, $${rIdx + 3}, '2026-11-01', $${rIdx + 4}, $${rIdx + 5}, '0', 'PENDING', 'Stand awal otomatis dari tutup buku Oktober', NOW(), NOW())`);
+          readingValues.push(`($${rIdx}, $${rIdx + 1}, $${rIdx + 2}, $${rIdx + 3}, '${nextYear}-${nextMonthStr}-01', $${rIdx + 4}, $${rIdx + 5}, '0', 'PENDING', 'Stand awal otomatis dari tutup buku ${curPeriodName}', NOW(), NOW())`);
           readingParams.push(
             String(c.kpspams_id || 1),
-            novBpId,
+            nextBpId,
             String(c.connection_id),
             String(c.meter_id || ''),
             String(c.latest_reading || '0'),
@@ -416,11 +466,11 @@ export async function onRequest(context: any) {
 
       return jsonResponse({
         status: "success",
-        message: `Tutup buku periode Oktober 2026 berhasil. Periode November 2026 telah dibuka dan ${createdCount} tagihan baru telah diterbitkan otomatis. Stand meter akhir Oktober telah dialihkan sebagai stand awal November untuk seluruh ${createdCount} SR. Data Oktober tersimpan 100% aman.`,
+        message: `Tutup buku ${curPeriodName} berhasil. ${nextPeriodName} telah dibuka dan ${createdCount} tagihan baru telah diterbitkan otomatis. Stand meter akhir ${curPeriodName} dialihkan sebagai stand awal ${nextPeriodName} untuk seluruh ${createdCount} SR. Data historis ${curPeriodName} tersimpan 100% aman.`,
         data: {
-          closed_periods: 3,
-          new_period_id: novBpId,
-          new_period_name: "Periode November 2026",
+          closed_periods: activeIds.length,
+          new_period_id: nextBpId,
+          new_period_name: nextPeriodName,
           invoices_created: createdCount,
           total_amount_billed: createdCount * 10000,
         }

@@ -289,169 +289,95 @@ export default function BillingPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-7xl mx-auto pb-24">
-        {/* Header Section */}
-        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-brand-maroon-800">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="space-y-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Modul Notifikasi & Billing Resmi Desa Kuajang</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Billing & Pengingat Tagihan (Broadcast WA)
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-                Kirim notifikasi tagihan air bersih massal ke WhatsApp warga secara personal dalam satu
-                klik, lengkapi nomor telepon warga, dan pantau status pelunasan periode berjalan.
-              </p>
+        {/* Header Section (Clean & Sleek) */}
+        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-brand-maroon-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold mb-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Billing &amp; Penagihan Warga</span>
             </div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              Billing &amp; Pengingat Tagihan (Broadcast WA)
+            </h1>
+            <p className="text-xs text-slate-300 mt-1 max-w-xl">
+              Monitoring status pelunasan 83 sambungan rumah dan pengiriman notifikasi WhatsApp massal.
+            </p>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsBroadcastOpen(true)}
-                className="flex items-center space-x-2 px-5 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-950/40 transition active:scale-95 border border-emerald-400/30"
-              >
-                <MessageCircle className="w-5 h-5 text-emerald-200" />
-                <span>Kirim Pengingat Tagihan (Broadcast WA)</span>
-              </button>
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsBroadcastOpen(true)}
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition active:scale-95 border border-emerald-400/30"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-100" />
+              <span>Broadcast WA</span>
+            </button>
 
-              <Link
-                href="/dashboard/penagihan-lapangan"
-                className="flex items-center space-x-2 px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm backdrop-blur-sm transition border border-white/10"
-              >
-                <Smartphone className="w-4 h-4 text-brand-gold-400" />
-                <span>Mode Catat & Tagih Lapangan</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
+            <Link
+              href="/dashboard/penagihan-lapangan"
+              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs backdrop-blur-sm transition border border-white/10"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-brand-gold-400" />
+              <span>Mode Lapangan</span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
           </div>
         </div>
 
-        {/* Card Mekanisme Tutup Buku Akhir Bulan (Billing Cycle Roll-over) */}
-        <div className="bg-white border-2 border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-blue-500/5 via-amber-500/5 to-transparent rounded-full -mr-16 -mt-16 pointer-events-none" />
-
-          {rolloverSuccessMsg && (
-            <div className="mb-5 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start space-x-3 text-emerald-900 animate-in fade-in">
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-sm">Tutup Buku Berhasil Diproses!</p>
-                <p className="text-xs text-emerald-800 mt-0.5">{rolloverSuccessMsg}</p>
-              </div>
+        {/* Clean Tutup Buku & Siklus Billing Bar */}
+        {rolloverSuccessMsg && (
+          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-emerald-900 animate-in fade-in">
+            <div className="flex items-center space-x-2 text-xs">
+              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span className="font-semibold">{rolloverSuccessMsg}</span>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setRolloverSuccessMsg(null)}
+              className="text-xs text-emerald-700 hover:text-emerald-900 font-bold ml-2"
+            >
+              Tutup
+            </button>
+          </div>
+        )}
 
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-3 flex-1">
+        <div className="bg-white rounded-2xl p-4 sm:px-5 border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-slate-900 text-brand-gold-400 flex items-center justify-center flex-shrink-0">
+              <RefreshCw className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
-                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                  <span>
-                    {rolloverStatus?.is_november_open
-                      ? "Periode Berjalan: November 2026 (AKTIF)"
-                      : "Periode Berjalan: Oktober 2026 (AKTIF)"}
-                  </span>
+                <span className="text-xs sm:text-sm font-black text-slate-900">
+                  {rolloverStatus?.current_period_name || "Periode Oktober 2026"}
                 </span>
-                <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                  rolloverStatus?.is_november_open 
-                    ? "bg-slate-100 text-slate-700 border border-slate-200"
-                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                }`}>
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>
-                    {rolloverStatus?.is_november_open
-                      ? "Oktober 2026 Terkunci & Arsip Utuh"
-                      : "82/83 SR Terbayar Lunas (98.8%)"}
-                  </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {stats.paid}/{stats.total} Lunas ({stats.collectionRate}%)
                 </span>
-                <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                  <span>Jaminan 0% Data Dihapus</span>
+                <span className="hidden md:inline-flex text-[11px] text-slate-400">
+                  • Target siklus: <strong className="text-slate-700 ml-1">{rolloverStatus?.target_next_period || "Periode November 2026"}</strong>
                 </span>
               </div>
-
-              <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                  Mekanisme Tutup Buku Akhir Bulan & Siklus Billing Baru
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-                  Alur otomatisasi tutup buku akhir bulan KPSPAMS Kuajang menuju <strong>Periode November 2026</strong>.
-                  Sistem menjamin <strong>100% data riil dan mutasi kas Oktober tetap tersimpan permanen</strong> tanpa ada data yang terhapus atau hilang.
-                </p>
-              </div>
-
-              {/* 3 Keunggulan Otomatisasi Siklus */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                <div className="flex items-start space-x-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Lock className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800">1. Kunci Buku Kas</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                      Mengunci mutasi kas & transaksi Oktober agar saldo pembukuan final aman.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800">2. Stand Meter Estafet</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                      Angka stand meter akhir Oktober otomatis dijadikan stand awal 83 SR di November.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <FileText className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-800">3. Terbit 83 Tagihan Baru</h4>
-                    <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
-                      Menerbitkan invoice baru periode November @ Rp 10.000,- siap ditagihkan.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                Otomatisasi bulanan estafet stand meter &amp; penguncian buku kas aman tanpa hapus data.
+              </p>
             </div>
+          </div>
 
-            {/* Action Card Box */}
-            <div className="flex-shrink-0 flex flex-col justify-center items-stretch lg:items-end gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 min-w-[260px]">
-              <div className="text-left lg:text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Status Kesiapan</span>
-                <span className="text-xs font-black text-slate-800">
-                  {rolloverStatus?.is_november_open ? "November 2026 Aktif" : "Siap Dieksekusi Menuju 1 Nov"}
-                </span>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Target: <strong>83 Sambungan Rumah (SR)</strong>
-                </p>
-              </div>
-
-              {rolloverStatus?.is_november_open ? (
-                <div className="px-4 py-2.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-black text-center flex items-center justify-center space-x-1.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-700" />
-                  <span>Periode November Aktif</span>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsRolloverConfirmChecked(false);
-                    setIsRolloverModalOpen(true);
-                  }}
-                  className="flex items-center justify-center space-x-2 px-5 py-3 rounded-xl bg-brand-maroon-700 hover:bg-brand-maroon-800 text-white font-extrabold text-xs shadow-md transition active:scale-95"
-                >
-                  <Lock className="w-4 h-4 text-brand-gold-300" />
-                  <span>Jalankan Tutup Buku & Buka Siklus Baru</span>
-                </button>
-              )}
-            </div>
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRolloverConfirmChecked(false);
+                setIsRolloverModalOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-2xs transition active:scale-95"
+            >
+              <Lock className="w-3.5 h-3.5 text-brand-gold-400" />
+              <span>Tutup Buku &amp; Buka Siklus Baru</span>
+            </button>
           </div>
         </div>
 
@@ -801,7 +727,7 @@ export default function BillingPage() {
                 <span>PROSES RESMI AKHIR BULAN KPSPAMS DESA KUAJANG</span>
               </div>
               <h3 className="text-xl font-black text-white">
-                Konfirmasi Tutup Buku & Buka Siklus November 2026
+                Tutup Buku {rolloverStatus?.current_period_name || "Oktober 2026"} &amp; Buka {rolloverStatus?.target_next_period || "November 2026"}
               </h3>
             </div>
 
@@ -813,7 +739,7 @@ export default function BillingPage() {
                   <span>JAMINAN INTEGRITAS: 0% PENGHAPUSAN DATA</span>
                 </div>
                 <p className="text-[11px] text-emerald-800">
-                  Seluruh 82 pembayaran warga (Rp 820.000), 82 kwitansi resmi, 1 tagihan tertunggak Ibu Nurul Pratiwi, dan mutasi saldo kas (Rp 30.586.000) <strong>tetap tersimpan utuh dan permanen</strong> sebagai arsip resmi buku kas Oktober.
+                  Seluruh pembayaran warga ({stats.paid} Lunas), mutasi kas, dan pembukuan resmi <strong>tersimpan permanen</strong> sebagai arsip {rolloverStatus?.current_period_name || "Oktober 2026"}.
                 </p>
               </div>
 
@@ -821,16 +747,16 @@ export default function BillingPage() {
                 <h4 className="font-bold text-slate-800 text-xs">Rangkaian Aksi Otomatis yang Dijalankan:</h4>
                 <ul className="space-y-1.5 text-[11px] text-slate-600 list-disc list-inside">
                   <li>
-                    Mengubah status periode <strong>Oktober 2026</strong> menjadi <span className="font-bold text-slate-800">CLOSED (Terkunci)</span>.
+                    Mengubah status periode <strong>{rolloverStatus?.current_period_name || "Oktober 2026"}</strong> menjadi <span className="font-bold text-slate-800">CLOSED (Terkunci)</span>.
                   </li>
                   <li>
-                    Membuka periode baru <strong>November 2026</strong> dengan status <span className="font-bold text-emerald-700">OPEN (Aktif)</span>.
+                    Membuka periode baru <strong>{rolloverStatus?.target_next_period || "November 2026"}</strong> dengan status <span className="font-bold text-emerald-700">OPEN (Aktif)</span>.
                   </li>
                   <li>
-                    Menyalin stand meter terakhir <strong>83 SR</strong> menjadi stand meter awal periode November secara otomatis.
+                    Menyalin stand meter terakhir <strong>83 SR</strong> menjadi stand meter awal periode baru secara otomatis.
                   </li>
                   <li>
-                    Menerbitkan <strong>83 lembar tagihan baru</strong> periode November 2026 @ Rp 10.000,- (Nomor: <code>INV/202611/KP01/...</code>, status UNPAID).
+                    Menerbitkan <strong>83 lembar tagihan baru</strong> periode {rolloverStatus?.target_next_period || "November 2026"} @ Rp 10.000,- (UNPAID).
                   </li>
                 </ul>
               </div>
@@ -843,7 +769,7 @@ export default function BillingPage() {
                   className="mt-0.5 rounded text-brand-maroon-700 focus:ring-brand-maroon-700 w-4 h-4"
                 />
                 <span className="text-[11px] font-bold text-amber-950">
-                  Saya menyetujui tutup buku periode Oktober 2026 dan pembukaan siklus penagihan November 2026 untuk 83 SR.
+                  Saya menyetujui tutup buku {rolloverStatus?.current_period_name || "Oktober 2026"} dan pembukaan siklus penagihan {rolloverStatus?.target_next_period || "November 2026"} untuk 83 SR.
                 </span>
               </label>
             </div>
