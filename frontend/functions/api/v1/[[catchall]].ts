@@ -1781,7 +1781,38 @@ export async function onRequest(context: any) {
       });
     }
 
-    // 16c. Portal Transparency Data (Public)
+    // 16c. Portal Public GIS Connections (83 Sambungan Rumah Riil Warga Desa Kuajang)
+    if (path === "portal/gis-connections") {
+      const rows = await sql.query(`
+        SELECT c.id, c.code, c.full_name as name, c.dusun, c.rt_rw, conn.connection_no,
+               COALESCE(NULLIF(conn.latitude, '')::numeric, -3.4328) as latitude,
+               COALESCE(NULLIF(conn.longitude, '')::numeric, 119.3755) as longitude,
+               conn.status
+        FROM connections conn
+        JOIN customers c ON CAST(conn.customer_id as integer) = c.id
+        WHERE (conn.status = 'ACTIVE' OR conn.status = 'active')
+          AND conn.deleted_at IS NULL AND c.deleted_at IS NULL
+        ORDER BY conn.id ASC
+      `);
+      return jsonResponse({
+        status: "success",
+        data: {
+          connections: rows.map((r: any) => ({
+            id: Number(r.id),
+            code: r.code,
+            name: r.name,
+            dusun: r.dusun || "Lemo Baru",
+            rt_rw: r.rt_rw || "000/000",
+            connection_no: r.connection_no,
+            latitude: parseFloat(r.latitude) || -3.4328,
+            longitude: parseFloat(r.longitude) || 119.3755,
+            status: r.status,
+          })),
+        }
+      });
+    }
+
+    // 16d. Portal Transparency Data (Public)
     if (path === "portal/transparency") {
       const [cashRows, custRows, meterRows, physRows, expenseRows] = await Promise.all([
         sql.query(`

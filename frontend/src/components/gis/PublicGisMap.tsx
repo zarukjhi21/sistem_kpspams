@@ -172,13 +172,13 @@ export function PublicGisMap() {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Center di antara Hulu Mata Air dan Pemukiman Warga Dusun Lemo Baru
-    const defaultCenterLat = -3.4248;
-    const defaultCenterLng = 119.3770;
+    // Center langsung di Pemukiman Warga Dusun Lemo Baru Desa Kuajang
+    const defaultCenterLat = -3.4328;
+    const defaultCenterLng = 119.3755;
 
     const map = L.map(mapContainerRef.current, {
       center: [defaultCenterLat, defaultCenterLng],
-      zoom: 15,
+      zoom: 16,
       zoomControl: false,
       scrollWheelZoom: false, // Aman saat scroll halaman web di HP
     });
@@ -216,71 +216,13 @@ export function PublicGisMap() {
     };
   }, []);
 
-  // Render Marker & Jalur Transmisi
+  // Render Marker Sambungan Rumah (SR) Warga Riil
   useEffect(() => {
     if (!mapInstanceRef.current || !markersLayerRef.current) return;
     const markersLayer = markersLayerRef.current;
     markersLayer.clearLayers();
 
-    // 1. Jalur Pipa Transmisi Utama (Glow Cyan Dashed Line)
-    const pipelinePolyline = L.polyline(MAIN_GRAVITY_PIPELINE, {
-      color: "#06b6d4",
-      weight: 4,
-      opacity: 0.85,
-      dashArray: "8, 8",
-      lineJoin: "round",
-    });
-
-    pipelinePolyline.bindTooltip("Jalur Pipa Transmisi Gravitasi Utama (Dari Mata Air ke Pemukiman)", {
-      direction: "top",
-      className: "gis-custom-tooltip",
-    });
-
-    markersLayer.addLayer(pipelinePolyline);
-
-    // 2. Pin Hulu Mata Air Pegunungan Lemo Baru (Ikon Khusus Emas-Cyan dengan Animasi Denyut)
-    const sourceLat = waterSource.latitude;
-    const sourceLng = waterSource.longitude;
-
-    const sourceIcon = L.divIcon({
-      className: "source-gis-pin",
-      html: `
-        <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(6, 182, 212, 0.4); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div style="
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #06b6d4 0%, #0d9488 100%);
-            border: 3px solid #fef08a;
-            border-radius: 50%;
-            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-          ">
-            <span style="font-size: 18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">🏔️</span>
-          </div>
-        </div>
-      `,
-      iconSize: [44, 44],
-      iconAnchor: [22, 22],
-    });
-
-    const sourceMarker = L.marker([sourceLat, sourceLng], { icon: sourceIcon });
-    sourceMarker.bindTooltip(
-      `<strong>${waterSource.name}</strong><br/><span style="color:#67e8f9; font-size:11px;">Hulu Sistem Gravitasi • Broncaptering</span>`,
-      { direction: "top", className: "gis-custom-tooltip" }
-    );
-
-    sourceMarker.on("click", () => {
-      setSelectedItem({ type: "SOURCE", data: waterSource });
-      mapInstanceRef.current?.setView([sourceLat, sourceLng], 17, { animate: true });
-    });
-
-    markersLayer.addLayer(sourceMarker);
-
-    // 3. Pin Sambungan Rumah (SR) Warga (Hijau Zamrud #10b981)
+    // Render Pin Sambungan Rumah (SR) Warga (Hijau Zamrud #10b981)
     connections.forEach((conn) => {
       const lat = conn.latitude;
       const lng = conn.longitude;
@@ -340,16 +282,17 @@ export function PublicGisMap() {
     });
   }, [connections, waterSource, selectedItem]);
 
-  // Fungsi Recenter: Tampilkan seluruh jaringan
+  // Fungsi Recenter: Tampilkan seluruh jaringan sambungan warga
   const handleRecenter = () => {
     if (!mapInstanceRef.current) return;
-    const allCoords: [number, number][] = [
-      [waterSource.latitude, waterSource.longitude],
-      ...connections.map((c): [number, number] => [c.latitude, c.longitude]),
-    ];
+    const allCoords: [number, number][] = connections.map(
+      (c): [number, number] => [c.latitude, c.longitude]
+    );
     if (allCoords.length > 0) {
       const bounds = L.latLngBounds(allCoords);
       mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], animate: true });
+    } else {
+      mapInstanceRef.current.setView([-3.4328, 119.3755], 16, { animate: true });
     }
   };
 
@@ -432,10 +375,10 @@ export function PublicGisMap() {
       <div className={`flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4 ${isFullscreen ? "flex-shrink-0" : ""}`}>
         <div>
           <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Peta Sebaran Jaringan Pipa &amp; Sambungan Rumah (SR)
+            Peta Sebaran Sambungan Rumah (SR) Warga
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Visualisasi spasial 37 titik sambungan warga Dusun Lemo Baru dan hulu mata air pegunungan alami Dusun Lemo Baru.
+            Visualisasi spasial sebaran titik sambungan meteran air warga Dusun Lemo Baru Desa Kuajang.
           </p>
         </div>
 
@@ -532,11 +475,11 @@ export function PublicGisMap() {
 
         <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
           <div className="w-9 h-9 rounded-xl bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-black">
-            <Mountain className="w-4 h-4" />
+            <MapPin className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-base font-black text-white">1 Titik Hulu</div>
-            <div className="text-[11px] text-slate-400">Mata Air Lemo Baru</div>
+            <div className="text-base font-black text-white">Dusun Lemo Baru</div>
+            <div className="text-[11px] text-slate-400">Wilayah Sebaran SR</div>
           </div>
         </div>
 
@@ -659,19 +602,11 @@ export function PublicGisMap() {
         {/* Legend Overlay (Kiri Bawah) */}
         <div className="absolute bottom-3 left-3 z-[990] bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-2xl p-2.5 shadow-xl text-xs space-y-1.5 pointer-events-auto max-w-[200px] sm:max-w-none">
           <div className="text-[11px] font-bold text-slate-300 border-b border-slate-800/80 pb-1">
-            Legenda Jaringan
-          </div>
-          <div className="flex items-center space-x-2 text-[11px] text-slate-300">
-            <span className="text-sm">🏔️</span>
-            <span>Hulu Mata Air Lemo Baru</span>
+            Legenda Peta
           </div>
           <div className="flex items-center space-x-2 text-[11px] text-slate-300">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-            <span>Sambungan Rumah (Aktif)</span>
-          </div>
-          <div className="flex items-center space-x-2 text-[11px] text-slate-300">
-            <span className="w-4 h-0.5 bg-cyan-400 border-t border-dashed border-cyan-300 inline-block" />
-            <span>Pipa Transmisi Gravitasi</span>
+            <span>Sambungan Rumah Warga (Aktif)</span>
           </div>
         </div>
 
