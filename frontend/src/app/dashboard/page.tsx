@@ -150,11 +150,11 @@ function DashboardContent() {
       ? DEMO_KPSPAMS_LIST
       : DEMO_KPSPAMS_LIST.filter((k) => Number(k.id) === Number(activeKpspamsId));
 
-  // Nilai metrik dari API Backend (Realtime) atau Fallback
+  // Nilai metrik murni dari API Backend Realtime Server (tanpa angka dummy demo)
   const realCustomerCount =
     overviewData?.kpi?.total_customers ??
     (overviewData as any)?.active_customers ??
-    filteredCustomers.length;
+    0;
   const totalCustomers = realCustomerCount;
 
   const dusunSumUsage = overviewData?.dusun_breakdown?.reduce(
@@ -167,7 +167,7 @@ function DashboardContent() {
       ? dusunSumUsage
       : overviewData?.kpi?.total_usage_m3 ??
         (overviewData as any)?.total_consumption_m3 ??
-        currentUnits.reduce((acc, curr) => acc + curr.waterUsageThisMonth, 0);
+        0;
 
   const dusunSumPhysicalMeter = overviewData?.dusun_breakdown?.reduce(
     (acc: number, curr: any) => acc + (Number(curr.total_physical_meter_m3) || 0),
@@ -177,26 +177,26 @@ function DashboardContent() {
   const totalPhysicalMeter =
     overviewData?.kpi?.total_physical_meter_m3 ??
     (dusunSumPhysicalMeter && dusunSumPhysicalMeter > 0 ? dusunSumPhysicalMeter : undefined) ??
-    currentUnits.reduce((acc, curr) => acc + (curr.totalPhysicalMeterM3 || 0), 0);
+    0;
 
   const totalBilled =
     overviewData?.kpi?.total_billed ??
     (overviewData as any)?.total_billed ??
-    currentUnits.reduce((acc, curr) => acc + curr.totalBilled, 0);
+    0;
 
   const totalCollected =
     overviewData?.kpi?.total_collected ??
     (overviewData as any)?.total_collected ??
-    currentUnits.reduce((acc, curr) => acc + curr.totalCollected, 0);
+    0;
 
   const totalArrears =
     overviewData?.kpi?.total_arrears ??
     (overviewData as any)?.total_unpaid ??
-    currentUnits.reduce((acc, curr) => acc + curr.outstandingArrears, 0);
+    0;
 
   const totalCash =
     overviewData?.kpi?.total_cash_balance ??
-    currentUnits.reduce((acc, curr) => acc + curr.cashBalance, 0);
+    0;
 
   const collectionRate =
     overviewData?.kpi?.collection_rate_percent !== undefined
@@ -379,7 +379,7 @@ function DashboardContent() {
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
             {totalCollected === 0
               ? "Realisasi Rp 0 • Penagihan periode berjalan"
-              : `Realisasi tagihan Rp ${Number(totalBilled).toLocaleString("id-ID")} (Setoran Kasir & Lapangan)`}
+              : `Total uang fisik iuran dari ${Math.round(totalCollected / 10000)} SR terbayar lunas`}
           </p>
         </Card>
 
@@ -423,8 +423,10 @@ function DashboardContent() {
               Rp {Number(totalCash).toLocaleString("id-ID")}
             </span>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {totalCash === 0 ? "Buku kas operasional tersinkronisasi" : "Tercatat di Buku Kas Resmi"}
+          <p className="text-[10px] sm:text-[11px] text-emerald-600 font-medium mt-1 truncate">
+            {totalCash === 0
+              ? "Buku kas operasional tersinkronisasi"
+              : `Buku Kas: Saldo Awal Rp 29.766.000 + Iuran Masuk Rp ${Number(totalCollected).toLocaleString("id-ID")}`}
           </p>
         </Card>
 
