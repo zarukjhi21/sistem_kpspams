@@ -688,7 +688,7 @@ export function MasterDesaGisMap({
         <div
           ref={mapContainerRef}
           className={`w-full ${
-            isFullscreen ? "h-[calc(100vh-180px)]" : "h-[540px] sm:h-[620px]"
+            isFullscreen ? "h-[calc(100vh-180px)]" : "h-[490px] sm:h-[620px]"
           } z-10`}
         />
 
@@ -709,7 +709,7 @@ export function MasterDesaGisMap({
 
         {/* Detail Drawer Card (Kanan Bawah Peta saat Titik Sambungan Diklik) */}
         {activeCustomer && (
-          <div className="absolute bottom-4 right-4 left-4 sm:left-auto sm:w-96 z-30 bg-slate-900/95 backdrop-blur-md border border-slate-700 text-white p-4 rounded-3xl shadow-2xl space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 left-3 sm:left-auto sm:w-96 z-30 bg-slate-900/95 backdrop-blur-md border border-slate-700 text-white p-3.5 sm:p-4 rounded-3xl shadow-2xl space-y-3 max-h-[80vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200">
             {/* Header Drawer */}
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-2.5">
