@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   UserCheck,
   Smartphone,
+  MessageCircle,
 } from "lucide-react";
 
 export function AppSidebar() {
@@ -50,6 +51,7 @@ export function AppSidebar() {
             { label: "Beranda Ringkasan", href: "/dashboard", icon: LayoutDashboard },
             { label: "Pelanggan & SR (Dusun)", href: "/dashboard/pelanggan", icon: Users },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
           ],
         },
         {
@@ -75,6 +77,7 @@ export function AppSidebar() {
           items: [
             { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
           ],
         },
         {
@@ -106,6 +109,7 @@ export function AppSidebar() {
         items: [
           { label: "Pelanggan & SR", href: "/dashboard/pelanggan", icon: Users },
           { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+          { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
         ],
       },
       {

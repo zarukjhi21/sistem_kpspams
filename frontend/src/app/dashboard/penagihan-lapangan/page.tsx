@@ -92,7 +92,9 @@ import {
   List,
   Mountain,
   Zap,
+  MessageCircle,
 } from "lucide-react";
+import { WaBroadcastModal, BroadcastCustomer } from "@/components/billing/WaBroadcastModal";
 
 const GisBillingRouteMap = dynamic(
   () => import("@/components/gis/GisBillingRouteMap").then((m) => m.GisBillingRouteMap),
@@ -217,6 +219,25 @@ function PenagihanLapanganContent() {
     effectiveKpspamsId === null
       ? customers
       : customers.filter((c) => Number(c.kpspamsId) === Number(effectiveKpspamsId));
+
+  // Modal WhatsApp Broadcast Massal
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
+
+  const broadcastList: BroadcastCustomer[] = availableCustomers.map((c) => {
+    const inv = unpaidInvoices[c.connectionNo] || unpaidInvoices[`CUST_${c.id}`];
+    return {
+      id: c.id,
+      name: c.name,
+      connectionNo: c.connectionNo,
+      phone: c.phone,
+      dusun: c.dusun,
+      kpspamsName: c.kpspamsName || (Number(c.kpspamsId) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${c.kpspamsId}`),
+      billingStatus: c.billingStatus,
+      totalAmount: inv?.total_amount ? Number(inv.total_amount) : 10000,
+      periodName: inv?.period_name || "Oktober 2026",
+      dueDate: "20 Oktober 2026",
+    };
+  });
 
   // Step 1: Pemilihan Pelanggan
   const [searchQuery, setSearchQuery] = useState("");
@@ -687,22 +708,34 @@ function PenagihanLapanganContent() {
                 </button>
               </div>
 
-              {/* Status Tagihan Summary */}
-              <div className="flex items-center space-x-3 text-xs font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs self-start sm:self-auto">
-                <div className="flex items-center space-x-1.5 text-rose-600">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-                  <span>
-                    Belum Bayar:{" "}
-                    {availableCustomers.filter((c) => c.billingStatus !== "PAID").length}
-                  </span>
-                </div>
-                <span className="text-slate-300">|</span>
-                <div className="flex items-center space-x-1.5 text-emerald-600">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span>
-                    Lunas:{" "}
-                    {availableCustomers.filter((c) => c.billingStatus === "PAID").length}
-                  </span>
+              {/* Broadcast WA Button & Status Summary */}
+              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setBroadcastModalOpen(true)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95"
+                  title="Kirim pengingat tagihan massal via WhatsApp ke warga"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>Kirim Pengingat Tagihan (Broadcast WA)</span>
+                </button>
+
+                <div className="flex items-center space-x-3 text-xs font-bold bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-xs">
+                  <div className="flex items-center space-x-1.5 text-rose-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    <span>
+                      Belum:{" "}
+                      {availableCustomers.filter((c) => c.billingStatus !== "PAID").length}
+                    </span>
+                  </div>
+                  <span className="text-slate-300">|</span>
+                  <div className="flex items-center space-x-1.5 text-emerald-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span>
+                      Lunas:{" "}
+                      {availableCustomers.filter((c) => c.billingStatus === "PAID").length}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -786,11 +819,31 @@ function PenagihanLapanganContent() {
                             </div>
                           </div>
 
-                          <div className="text-right">
-                            <div className="text-xs font-black font-tabular text-slate-800">
-                              {cust.lastReading.toFixed(2)} m³
+                          <div className="flex items-center space-x-2">
+                            <div className="text-right">
+                              <div className="text-xs font-black font-tabular text-slate-800">
+                                {cust.lastReading.toFixed(2)} m³
+                              </div>
+                              <div className="text-[10px] text-slate-400">Stand lalu</div>
                             </div>
-                            <div className="text-[10px] text-slate-400">Stand lalu</div>
+                            {cust.phone ? (
+                              <button
+                                type="button"
+                                title="Kirim Pengingat WA Tagihan ke Warga"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const clean = cust.phone?.replace(/^0/, "62").replace(/\D/g, "");
+                                  const kName = cust.kpspamsName || "KPSPAMS Lemo Baru";
+                                  const text = encodeURIComponent(
+                                    `Yth. Bpk/Ibu ${cust.name}, tagihan air bersih ${kName} periode Oktober 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${cust.connectionNo}`
+                                  );
+                                  window.open(`https://wa.me/${clean}?text=${text}`, "_blank");
+                                }}
+                                className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 transition border border-emerald-200"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5" />
+                              </button>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -842,9 +895,29 @@ function PenagihanLapanganContent() {
                 </div>
                 <div>
                   <div className="text-[10px] text-slate-400">No. WhatsApp Warga</div>
-                  <div className="font-mono text-emerald-400 font-bold flex items-center space-x-1">
-                    <Phone className="w-3 h-3 text-emerald-400" />
-                    <span>{selectedCustomer.phone || "(Belum ada WA)"}</span>
+                  <div className="flex items-center space-x-2 mt-0.5">
+                    <span className="font-mono text-emerald-400 font-bold flex items-center space-x-1">
+                      <Phone className="w-3 h-3 text-emerald-400" />
+                      <span>{selectedCustomer.phone || "(Belum ada WA)"}</span>
+                    </span>
+                    {selectedCustomer.phone ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const clean = selectedCustomer.phone?.replace(/^0/, "62").replace(/\D/g, "");
+                          const kName = selectedCustomer.kpspamsName || "KPSPAMS Lemo Baru";
+                          const text = encodeURIComponent(
+                            `Yth. Bpk/Ibu ${selectedCustomer.name}, tagihan air bersih ${kName} periode Oktober 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${selectedCustomer.connectionNo}`
+                          );
+                          window.open(`https://wa.me/${clean}?text=${text}`, "_blank");
+                        }}
+                        className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold flex items-center space-x-1 shadow-xs transition"
+                        title="Kirim Pesan Pengingat Tagihan WhatsApp Langsung"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        <span>Kirim WA</span>
+                      </button>
+                    ) : null}
                   </div>
                 </div>
                 {selectedCustomer.latitude && selectedCustomer.longitude && (
@@ -1370,6 +1443,16 @@ function PenagihanLapanganContent() {
           </div>
         </div>
       )}
+
+      {/* Modal Broadcast WhatsApp Massal Tagihan */}
+      <WaBroadcastModal
+        isOpen={broadcastModalOpen}
+        onClose={() => setBroadcastModalOpen(false)}
+        customers={broadcastList}
+        defaultKpspamsName={selectedCustomer?.kpspamsName || "KPSPAMS Lemo Baru"}
+        defaultPeriodName="Oktober 2026"
+        defaultDueDate="20 Oktober 2026"
+      />
     </div>
   );
 }
