@@ -1626,7 +1626,7 @@ function PelangganContent() {
       {/* Modal Tambah Pelanggan & SR Baru */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl lg:max-w-4xl w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
@@ -2365,7 +2365,7 @@ function PelangganContent() {
       {/* Modal Edit Pelanggan & Titik Google Maps */}
       {editModalOpen && editingCustomer && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl lg:max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div>
                 <div className="flex items-center space-x-2">

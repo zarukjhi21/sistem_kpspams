@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Navigation, Layers, Satellite, Compass, Sparkles } from "lucide-react";
+import {
+  MapPin,
+  Navigation,
+  Layers,
+  Satellite,
+  Compass,
+  Sparkles,
+  Maximize2,
+  Minimize2,
+  RotateCcw,
+  Check,
+  X,
+} from "lucide-react";
 import L from "leaflet";
 
 interface GisLocationPickerProps {
@@ -33,6 +45,16 @@ export function GisLocationPicker({
   const [mapType, setMapType] = useState<"google-hybrid" | "google-streets">("google-hybrid");
   const [isLocating, setIsLocating] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Invalidate map size whenever fullscreen/expanded mode is toggled
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize();
+      }, 250);
+    }
+  }, [isExpanded]);
 
   // Validate coordinates: prevent sea coordinates (<= -3.45 and <= 119.35)
   const isInvalidSeaCoord = (lat: number, lng: number) => {
@@ -222,110 +244,206 @@ export function GisLocationPicker({
     }
   };
 
+  // Handler untuk memusatkan peta kembali ke pusat dusun
+  const handleRecenter = (dName?: string) => {
+    const target = KUAJANG_DUSUN_COORDS[dName || dusunName] || { lat: -3.4349, lng: 119.3768 };
+    if (mapInstanceRef.current && markerRef.current) {
+      markerRef.current.setLatLng([target.lat, target.lng]);
+      mapInstanceRef.current.flyTo([target.lat, target.lng], 19);
+      onChange(target.lat, target.lng);
+    }
+  };
+
   return (
-    <div className="space-y-2.5">
-      {/* Header Bar with Action Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="flex items-center space-x-2">
-          <MapPin className="w-4 h-4 text-brand-gold-500" />
-          <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Titik Koordinat Sambungan (GIS)
-          </span>
-          {gpsAccuracy && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-              GPS Akurat: {gpsAccuracy}
-            </span>
+    <>
+      {/* Backdrop saat mode layar penuh / diperluas aktif */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99998] transition-opacity"
+          onClick={() => setIsExpanded(false)}
+        />
+      )}
+
+      <div
+        className={
+          isExpanded
+            ? "fixed inset-2 sm:inset-5 z-[99999] bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border-2 border-brand-gold-500/70 flex flex-col justify-between overflow-hidden animate-in zoom-in-95 duration-200"
+            : "space-y-3"
+        }
+      >
+        {/* Header Bar with Action Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center space-x-2">
+            <div className="p-1.5 rounded-lg bg-brand-gold-500/10 text-brand-gold-600">
+              <MapPin className="w-4 h-4 text-brand-gold-600" />
+            </div>
+            <div>
+              <span className="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider block">
+                {isExpanded
+                  ? "📍 Penentuan Titik Koordinat Rumah & Meteran (Layar Penuh)"
+                  : "Titik Koordinat Sambungan (GIS)"}
+              </span>
+              {isExpanded && (
+                <span className="text-[11px] text-slate-500">
+                  Ketuk pada atap rumah warga atau geser pin meteran ke lokasi yang tepat.
+                </span>
+              )}
+            </div>
+            {gpsAccuracy && (
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                GPS: {gpsAccuracy}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
+            {/* Quick Recenter Button */}
+            <button
+              type="button"
+              onClick={() => handleRecenter(dusunName)}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center space-x-1 shadow-sm active:scale-95"
+              title={`Pusatkan ke Dusun ${dusunName}`}
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>Pusatkan Dusun</span>
+            </button>
+
+            {/* Layer Toggle */}
+            <div className="flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => toggleMapLayer("google-hybrid")}
+                className={`px-2.5 py-1 rounded-lg transition flex items-center space-x-1 ${
+                  mapType === "google-hybrid"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Satellite className="w-3 h-3 text-amber-400" />
+                <span>Google Satelit</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleMapLayer("google-streets")}
+                className={`px-2.5 py-1 rounded-lg transition flex items-center space-x-1 ${
+                  mapType === "google-streets"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Layers className="w-3 h-3 text-emerald-400" />
+                <span>Google Jalan</span>
+              </button>
+            </div>
+
+            {/* Quick GPS Auto-Detect Button */}
+            <button
+              type="button"
+              onClick={handleGetGpsLocation}
+              disabled={isLocating}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition flex items-center space-x-1.5 active:scale-95 disabled:opacity-50"
+            >
+              <Navigation className={`w-3.5 h-3.5 ${isLocating ? "animate-spin" : ""}`} />
+              <span>{isLocating ? "Mencari GPS..." : "GPS Lokasi Saya"}</span>
+            </button>
+
+            {/* Fullscreen / Perbesar Peta Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className={`px-3 py-1.5 rounded-xl font-bold text-xs shadow-md transition flex items-center space-x-1.5 active:scale-95 ${
+                isExpanded
+                  ? "bg-slate-900 hover:bg-slate-800 text-white"
+                  : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black shadow-amber-500/20"
+              }`}
+              title={isExpanded ? "Kecilkan Tampilan Peta" : "Perbesar Peta ke Layar Penuh"}
+            >
+              {isExpanded ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Kecilkan Peta</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Perbesar Peta</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Map Container Viewport */}
+        <div
+          className={`relative rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100 ${
+            isExpanded ? "flex-1 my-2" : ""
+          }`}
+        >
+          <div
+            ref={mapContainerRef}
+            className={`w-full z-10 transition-all duration-200 ${
+              isExpanded
+                ? "h-[62vh] sm:h-[68vh]"
+                : "h-80 sm:h-96 md:h-[450px]"
+            }`}
+            style={{ minHeight: isExpanded ? "420px" : "360px" }}
+          />
+
+          {/* Overlay Instruction Hint */}
+          <div className="absolute bottom-3 left-3 right-3 z-20 pointer-events-none">
+            <div className="px-3.5 py-2 rounded-xl bg-slate-950/85 backdrop-blur-md text-white text-xs font-medium flex flex-wrap items-center justify-between border border-white/10 shadow-lg gap-2">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>💡 Geser pin merah atau ketuk pada peta untuk menandai atap/meteran rumah warga.</span>
+              </span>
+              <div className="flex items-center space-x-2 font-mono text-amber-300 font-bold text-xs">
+                <span>📍 {currentLat.toFixed(6)}, {currentLng.toFixed(6)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar: Lat Lng Readout Inputs & Done Button */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pt-1">
+          <div className="grid grid-cols-2 gap-3 text-xs flex-1 max-w-xl">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                Latitude (Garis Lintang)
+              </label>
+              <input
+                type="number"
+                step="0.000001"
+                value={latitude !== 0 ? latitude : currentLat}
+                onChange={(e) => onChange(parseFloat(e.target.value) || 0, longitude)}
+                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                Longitude (Garis Bujur)
+              </label>
+              <input
+                type="number"
+                step="0.000001"
+                value={longitude !== 0 ? longitude : currentLng}
+                onChange={(e) => onChange(latitude, parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+              />
+            </div>
+          </div>
+
+          {isExpanded && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(false)}
+              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-lg shadow-emerald-700/30 flex items-center justify-center space-x-2 transition active:scale-95 whitespace-nowrap self-stretch sm:self-auto"
+            >
+              <Check className="w-4 h-4" />
+              <span>Selesai &amp; Gunakan Titik Ini</span>
+            </button>
           )}
         </div>
-
-        <div className="flex items-center space-x-1.5 self-end sm:self-auto">
-          {/* Layer Toggle */}
-          <div className="flex items-center p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-[11px] font-bold">
-            <button
-              type="button"
-              onClick={() => toggleMapLayer("google-hybrid")}
-              className={`px-2.5 py-1 rounded-md transition flex items-center space-x-1 ${
-                mapType === "google-hybrid"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Satellite className="w-3 h-3 text-amber-400" />
-              <span>Google Satelit</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => toggleMapLayer("google-streets")}
-              className={`px-2.5 py-1 rounded-md transition flex items-center space-x-1 ${
-                mapType === "google-streets"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Layers className="w-3 h-3 text-emerald-400" />
-              <span>Google Jalan</span>
-            </button>
-          </div>
-
-          {/* Quick GPS Auto-Detect Button */}
-          <button
-            type="button"
-            onClick={handleGetGpsLocation}
-            disabled={isLocating}
-            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition flex items-center space-x-1.5 active:scale-95 disabled:opacity-50"
-          >
-            <Navigation className={`w-3.5 h-3.5 ${isLocating ? "animate-spin" : ""}`} />
-            <span>{isLocating ? "Mencari GPS..." : "GPS Lokasi Saya"}</span>
-          </button>
-        </div>
       </div>
-
-      {/* Map Container Viewport */}
-      <div className="relative rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100">
-        <div
-          ref={mapContainerRef}
-          className="w-full h-56 sm:h-64 z-10"
-          style={{ minHeight: "220px" }}
-        />
-
-        {/* Overlay Instruction Hint */}
-        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-20 pointer-events-none">
-          <div className="px-3 py-1.5 rounded-xl bg-slate-950/80 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-medium flex items-center justify-between border border-white/10 shadow-lg">
-            <span>💡 Geser pin atau ketuk pada peta untuk mengatur posisi meteran.</span>
-            <span className="font-mono text-amber-300 font-bold hidden sm:inline">
-              {currentLat.toFixed(5)}, {currentLng.toFixed(5)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Lat Lng Readout Inputs */}
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
-            Latitude (Garis Lintang)
-          </label>
-          <input
-            type="number"
-            step="0.000001"
-            value={latitude !== 0 ? latitude : currentLat}
-            onChange={(e) => onChange(parseFloat(e.target.value) || 0, longitude)}
-            className="w-full px-3 py-1.5 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white"
-          />
-        </div>
-        <div>
-          <label className="block text-[11px] font-bold text-slate-600 mb-0.5">
-            Longitude (Garis Bujur)
-          </label>
-          <input
-            type="number"
-            step="0.000001"
-            value={longitude !== 0 ? longitude : currentLng}
-            onChange={(e) => onChange(latitude, parseFloat(e.target.value) || 0)}
-            className="w-full px-3 py-1.5 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white"
-          />
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
