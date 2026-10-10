@@ -462,47 +462,47 @@ export function PublicGisMap() {
 
       {/* Summary Stat Badges - Hidden in fullscreen to maximize map canvas */}
       {!isFullscreen && (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 font-black">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 font-black flex-shrink-0">
             <Droplets className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-base font-black text-white">{connections.length} SR</div>
-            <div className="text-[11px] text-slate-400">Sambungan Aktif</div>
+            <div className="text-sm sm:text-base font-black text-white">{connections.length} SR</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400">Sambungan Aktif</div>
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-black">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-black flex-shrink-0">
             <MapPin className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-base font-black text-white">Dusun Lemo Baru</div>
-            <div className="text-[11px] text-slate-400">Wilayah Sebaran SR</div>
+            <div className="text-sm sm:text-base font-black text-white">Dusun Lemo Baru</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400">Wilayah Sebaran SR</div>
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-950 border border-amber-800/60 flex items-center justify-center text-amber-400 font-black">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-amber-950 border border-amber-800/60 flex items-center justify-center text-amber-400 font-black flex-shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-base font-black text-white">100% Gravitasi</div>
-            <div className="text-[11px] text-slate-400">Bebas Listrik PLN</div>
+            <div className="text-sm sm:text-base font-black text-white">100% Gravitasi</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400">Bebas Listrik PLN</div>
           </div>
         </div>
 
-        <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-950 border border-blue-800/60 flex items-center justify-center text-blue-400 font-black">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-blue-950 border border-blue-800/60 flex items-center justify-center text-blue-400 font-black flex-shrink-0">
             <Activity className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-base font-black text-emerald-400 flex items-center space-x-1">
+            <div className="text-sm sm:text-base font-black text-emerald-400 flex items-center space-x-1">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>99.4% Normal</span>
             </div>
-            <div className="text-[11px] text-slate-400">Kelancaran Debit</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-400">Kelancaran Debit</div>
           </div>
         </div>
       </div>
@@ -513,7 +513,7 @@ export function PublicGisMap() {
         className={
           isFullscreen
             ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 mt-1"
-            : "relative rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 h-[460px] sm:h-[540px]"
+            : "relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950 h-[380px] sm:h-[480px] lg:h-[520px]"
         }
       >
         {/* Floating Search Bar */}
