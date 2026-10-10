@@ -27,10 +27,10 @@ async function main() {
       updated_at = NOW()
     WHERE id = 1
   `, [
-    'Kas Operasional KPSPAMS "Wai Kaili" Lemo Baru',
+    'Kas Operasional KPSPAMS Lemo Baru',
     opening.toString(),
     '2026-10-01',
-    'Saldo awal kas riil pengurus KPSPAMS Wai Kaili Lemo Baru sebelum penerapan aplikasi digital',
+    'Saldo awal kas riil pengurus KPSPAMS Lemo Baru sebelum penerapan aplikasi digital',
     current.toString()
   ]);
 
