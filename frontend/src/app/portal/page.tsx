@@ -356,10 +356,6 @@ function CitizenPortalContent() {
                   <Droplet className="w-6 h-6 sm:w-7 sm:h-7 text-brand-maroon-800" />
                 </div>
 
-                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-brand-gold-50 text-brand-gold-900 border border-brand-gold-300 mb-2.5 sm:mb-3">
-                  <span>Layanan Mandiri Warga Desa Kuajang</span>
-                </div>
-
                 <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
                   Cek Rekening &amp; Tagihan Air Bersih
                 </h1>
