@@ -833,7 +833,25 @@ export async function onRequest(context: any) {
         let custId = b.customer_id ? b.customer_id.toString() : "1";
         let kpspamsId = b.kpspams_id ? b.kpspams_id.toString() : "1";
 
-        // Jika invoice_id belum ada, cari atau buat invoice untuk pelanggan ini
+        // 1. Jika invoiceId diberikan, pastikan tagihan belum berstatus PAID
+        if (invoiceId) {
+          const invCheck = await sql.query(`SELECT id, status, total_amount, paid_amount FROM invoices WHERE id = $1 LIMIT 1`, [invoiceId]);
+          if (invCheck.length > 0 && String(invCheck[0].status).toUpperCase() === 'PAID') {
+            const existingPay = await sql.query(`SELECT * FROM payments WHERE invoice_id = $1 ORDER BY id DESC LIMIT 1`, [invoiceId]);
+            return jsonResponse({
+              status: "success",
+              message: "Tagihan ini sudah tercatat lunas sebelumnya.",
+              data: {
+                receipt_number: existingPay[0]?.receipt_number || `KW-ALREADY-PAID-${invoiceId}`,
+                payment: existingPay[0] || null,
+                invoice_id: invoiceId,
+                already_paid: true,
+              }
+            });
+          }
+        }
+
+        // 2. Jika invoice_id belum ada, cari atau buat invoice untuk pelanggan ini
         if (!invoiceId) {
           const invRows = await sql.query(`
             SELECT * FROM invoices 
@@ -844,9 +862,31 @@ export async function onRequest(context: any) {
             invoiceId = invRows[0].id;
             kpspamsId = invRows[0].kpspams_id || kpspamsId;
           } else {
-            // Buat invoice lunas langsung
+            // Cek apakah untuk periode berjalan warga ini SUDAH PERNAH LUNAS (Cegah pembayaran ganda akibat double-tap)
             const bpRows = await sql.query(`SELECT id FROM billing_periods WHERE CAST(kpspams_id AS text) = $1 AND status = 'OPEN' ORDER BY id DESC LIMIT 1`, [kpspamsId]);
             const bpId = bpRows.length > 0 ? bpRows[0].id.toString() : "6";
+
+            const alreadyPaidInv = await sql.query(`
+              SELECT * FROM invoices 
+              WHERE (customer_id = $1 OR connection_id = $2) AND billing_period_id = $3 AND status = 'PAID'
+              ORDER BY id DESC LIMIT 1
+            `, [custId, b.connection_id ? b.connection_id.toString() : custId, bpId]);
+
+            if (alreadyPaidInv.length > 0) {
+              const existingPay = await sql.query(`SELECT * FROM payments WHERE invoice_id = $1 ORDER BY id DESC LIMIT 1`, [alreadyPaidInv[0].id]);
+              return jsonResponse({
+                status: "success",
+                message: "Iuran warga untuk periode berjalan ini sudah lunas tercatat sebelumnya.",
+                data: {
+                  receipt_number: existingPay[0]?.receipt_number || `KW-ALREADY-PAID-${alreadyPaidInv[0].id}`,
+                  payment: existingPay[0] || null,
+                  invoice_id: alreadyPaidInv[0].id,
+                  already_paid: true,
+                }
+              });
+            }
+
+            // Jika belum ada invoice sama sekali, buat invoice lunas langsung
             const invNum = `INV/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP0${kpspamsId}/${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
             const newInv = await sql.query(`
               INSERT INTO invoices (

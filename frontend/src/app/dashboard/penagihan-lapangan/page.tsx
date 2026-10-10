@@ -95,6 +95,7 @@ import {
   Mountain,
   Zap,
   MessageCircle,
+  RefreshCw,
 } from "lucide-react";
 import { WaBroadcastModal, BroadcastCustomer } from "@/components/billing/WaBroadcastModal";
 
@@ -1349,10 +1350,11 @@ function PenagihanLapanganContent() {
                   variant="gold"
                   size="lg"
                   className="font-bold shadow-lg"
+                  disabled={isSubmittingPayment}
                   onClick={handleConfirmPayment}
-                  icon={<Check className="w-4 h-4" />}
+                  icon={isSubmittingPayment ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 >
-                  Konfirmasi Lunas & Kirim Struk WA
+                  {isSubmittingPayment ? "Menyimpan Pembayaran..." : "Konfirmasi Lunas & Kirim Struk WA"}
                 </Button>
               )}
             </div>
