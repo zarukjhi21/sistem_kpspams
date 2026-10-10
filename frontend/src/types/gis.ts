@@ -15,6 +15,8 @@ export interface MasterGisCustomer {
   longitude: number;
   billingStatus: "PAID" | "UNPAID";
   unpaidAmount?: number;
+  meterCondition?: "GOOD" | "STUCK" | "DAMAGED" | "BROKEN" | string;
+  isMeterDamaged?: boolean;
   activeComplaint?: {
     id: number;
     ticketNumber: string;

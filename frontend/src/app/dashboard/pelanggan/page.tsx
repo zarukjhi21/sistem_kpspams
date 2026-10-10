@@ -76,6 +76,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     longitude: safeLng,
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
+    meterCondition: item.meter_condition || primaryConn?.meter?.condition || "GOOD",
+    isMeterDamaged: item.meter_condition === "STUCK" || item.is_meter_damaged || primaryConn?.meter?.condition === "STUCK",
   };
 };
 
@@ -285,6 +287,7 @@ function PelangganContent() {
   const [editLastReading, setEditLastReading] = useState("0.00");
   const [editTariffType, setEditTariffType] = useState("Rumah Tangga");
   const [editStatus, setEditStatus] = useState<"ACTIVE" | "SEALED" | "DISCONNECTED">("ACTIVE");
+  const [editMeterCondition, setEditMeterCondition] = useState<string>("GOOD");
   const [editLatitude, setEditLatitude] = useState<number>(-3.4349);
   const [editLongitude, setEditLongitude] = useState<number>(119.3768);
   const [editError, setEditError] = useState<string | null>(null);
@@ -675,6 +678,7 @@ function PelangganContent() {
     setEditLastReading(String(cust.lastReading));
     setEditTariffType(cust.tariffType);
     setEditStatus(cust.status);
+    setEditMeterCondition(cust.meterCondition || (cust.isMeterDamaged ? "STUCK" : "GOOD"));
     const dTarget = KUAJANG_DUSUN_COORDS[cust.dusun] || { lat: -3.4349, lng: 119.3768 };
     const safeLat = !isInvalidSeaCoord(cust.latitude, cust.longitude) ? cust.latitude! : dTarget.lat;
     const safeLng = !isInvalidSeaCoord(cust.latitude, cust.longitude) ? cust.longitude! : dTarget.lng;
@@ -735,6 +739,7 @@ function PelangganContent() {
         meter_serial: editMeterSerial.trim() || undefined,
         initial_reading: parseFloat(editLastReading) || 0,
         last_reading: parseFloat(editLastReading) || 0,
+        meter_condition: editMeterCondition,
         status: editStatus,
       };
 
@@ -1459,7 +1464,14 @@ function PelangganContent() {
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                   <div>
                     <div className="text-[10px] uppercase font-bold text-slate-400">Seri Meter Fisik</div>
-                    <div className="font-mono font-bold text-xs text-slate-700">{cust.meterSerial}</div>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-mono font-bold text-xs text-slate-700">{cust.meterSerial}</span>
+                      {(cust.meterCondition === "STUCK" || cust.isMeterDamaged) && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-100 text-orange-700 border border-orange-200">
+                          ⚠️ Jarum Macet
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] uppercase font-bold text-slate-400">Stand Terakhir</div>
@@ -1578,7 +1590,14 @@ function PelangganContent() {
                         <div className="text-[10px] text-slate-400">{cust.kpspamsName}</div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-slate-600">
-                        {cust.meterSerial}
+                        <div className="flex items-center space-x-1.5">
+                          <span>{cust.meterSerial}</span>
+                          {(cust.meterCondition === "STUCK" || cust.isMeterDamaged) && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-orange-100 text-orange-700 border border-orange-200 whitespace-nowrap">
+                              ⚠️ Jarum Macet
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 text-right font-tabular font-bold text-slate-800">
                         {cust.lastReading.toFixed(2)} m³
@@ -2290,6 +2309,18 @@ function PelangganContent() {
                 <span className="text-slate-500">Nomor Seri Meter:</span>
                 <span className="font-mono font-bold text-slate-800">{selectedCustomer.meterSerial}</span>
               </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50">
+                <span className="text-slate-500">Kondisi Fisik Meter:</span>
+                {selectedCustomer.meterCondition === "STUCK" || selectedCustomer.isMeterDamaged ? (
+                  <Badge variant="warning" size="sm" className="bg-orange-100 text-orange-800 border-orange-200 font-bold">
+                    ⚠️ Jarum Macet / Perlu Ganti
+                  </Badge>
+                ) : (
+                  <Badge variant="success" size="sm" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                    ✓ Berfungsi Normal
+                  </Badge>
+                )}
+              </div>
               <div className="flex justify-between py-1 border-b border-slate-50">
                 <span className="text-slate-500">Stand Meter Terakhir:</span>
                 <span className="font-tabular font-bold text-slate-900">{selectedCustomer.lastReading.toFixed(2)} m³</span>
@@ -2633,6 +2664,24 @@ function PelangganContent() {
                       <option value="ACTIVE">Aktif (Teraliri Air)</option>
                       <option value="SEALED">Disegel (Tunggakan)</option>
                       <option value="DISCONNECTED">Diputus Permanen</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Kondisi Fisik Meteran Air
+                    </label>
+                    <select
+                      value={editMeterCondition}
+                      onChange={(e) => setEditMeterCondition(e.target.value)}
+                      className={`w-full px-3 py-2 text-xs font-bold border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 ${
+                        editMeterCondition === "STUCK"
+                          ? "bg-orange-50 border-orange-300 text-orange-800"
+                          : "bg-white border-slate-300 text-slate-800"
+                      }`}
+                    >
+                      <option value="GOOD">✓ Berfungsi Normal (Jarum Berputar)</option>
+                      <option value="STUCK">⚠️ Jarum Macet / Rusak (Air Mengalir - Perlu Ganti)</option>
                     </select>
                   </div>
                 </div>

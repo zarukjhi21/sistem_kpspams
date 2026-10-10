@@ -64,6 +64,8 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
     })(),
     billingStatus: item.billing_status || "UNPAID",
     ktpPhotoUrl: item.ktp_photo_path,
+    meterCondition: item.meter_condition || primaryConn?.meter?.condition || "GOOD",
+    isMeterDamaged: item.meter_condition === "STUCK" || item.is_meter_damaged || primaryConn?.meter?.condition === "STUCK",
   };
 };
 import {
@@ -274,6 +276,8 @@ function PenagihanLapanganContent() {
   );
   // Opsi Mode Opname Stand Awal untuk meteran yang baru pertama kali dicatat
   const [isInitialSetup, setIsInitialSetup] = useState<boolean>(selectedCustomer.lastReading === 0);
+  // Opsi Penanda Meteran Rusak / Jarum Macet tapi air mengalir
+  const [isMeterDamaged, setIsMeterDamaged] = useState<boolean>(false);
 
   // Step 3: Pembayaran Tunai
   const [tenderAmount, setTenderAmount] = useState<number>(10000);
@@ -293,6 +297,8 @@ function PenagihanLapanganContent() {
       if (selectedCustomer.lastReading === 0) {
         setIsInitialSetup(true);
       }
+      const cond = (selectedCustomer as any).meter_condition || (selectedCustomer as any).meterCondition;
+      setIsMeterDamaged(cond === "STUCK" || cond === "DAMAGED");
     }
   }, [selectedCustomerId, selectedCustomer]);
 
@@ -395,8 +401,12 @@ function PenagihanLapanganContent() {
             kpspams_id: selectedCustomer.kpspamsId,
             current_reading: currentNum,
             is_initial_setup: isInitialSetup,
+            meter_condition: isMeterDamaged ? "STUCK" : "GOOD",
+            is_meter_damaged: isMeterDamaged,
             reading_date: new Date().toISOString().split("T")[0],
-            notes: isInitialSetup
+            notes: isMeterDamaged
+              ? `Jarum meteran macet / tidak berputar (air tetap mengalir). Dicatat oleh ${user?.name || "Petugas Lapangan"}`
+              : isInitialSetup
               ? `Pencatatan perdana stand awal (${currentNum.toFixed(2)} m³)`
               : `Dicatat tunai di tempat oleh ${user?.name || "Petugas Lapangan"}`,
           }),
@@ -1023,6 +1033,33 @@ function PenagihanLapanganContent() {
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
                     Centang ini jika meteran fisik warga sudah berjalan berbulan-bulan sebelumnya. Angka yang Anda catat hari ini ({parseFloat(currentReading) || 0} m³) akan ditetapkan sebagai <strong>titik nol baru (baseline)</strong>, dan tagihan warga bulan ini otomatis <strong>Paket Beban Dasar (Rp 10.000)</strong> agar warga tidak terbebani selisih akumulasi bulan lalu.
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {/* Opsi Penanda Meteran Rusak / Jarum Macet */}
+            <div className={`p-3.5 rounded-2xl border transition-all ${
+              isMeterDamaged 
+                ? "bg-rose-50/90 border-rose-300 ring-2 ring-rose-400/30" 
+                : "bg-slate-50 border-slate-200 hover:bg-slate-100/60"
+            }`}>
+              <label className="flex items-start space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isMeterDamaged}
+                  onChange={(e) => setIsMeterDamaged(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500"
+                />
+                <div className="space-y-0.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-900">
+                      Tandai: Jarum Meteran Macet / Tidak Berfungsi (Air Tetap Mengalir)
+                    </span>
+                    <Badge variant="danger" size="sm" className="text-[9px]">Perlu Ganti</Badge>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Centang ini jika air mengalir normal ke rumah warga namun jarum angka meteran fisik tidak bergerak. Sistem akan mencatat meteran ini rusak dan menandainya di Peta GIS untuk ditindaklanjuti penggantian oleh KPSPAMS.
                   </p>
                 </div>
               </label>

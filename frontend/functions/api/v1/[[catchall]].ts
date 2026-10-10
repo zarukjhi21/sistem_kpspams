@@ -267,6 +267,7 @@ export async function onRequest(context: any) {
             m.id as meter_id,
             m.serial_number as meter_serial,
             m.brand as meter_brand,
+            COALESCE(m.condition, 'GOOD') as meter_condition,
             COALESCE(m.initial_reading, 0) as initial_reading,
             COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
             COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
@@ -409,6 +410,7 @@ export async function onRequest(context: any) {
           m.id as meter_id,
           m.serial_number as meter_serial,
           m.brand as meter_brand,
+          COALESCE(m.condition, 'GOOD') as meter_condition,
           COALESCE(m.initial_reading, 0) as initial_reading,
           COALESCE(NULLIF(mr.current_reading, '')::numeric, m.initial_reading, 0) as last_reading,
           COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
@@ -487,7 +489,7 @@ export async function onRequest(context: any) {
         ]);
       }
 
-      if (b.meter_serial !== undefined || b.initial_reading !== undefined || b.last_reading !== undefined) {
+      if (b.meter_serial !== undefined || b.initial_reading !== undefined || b.last_reading !== undefined || b.meter_condition !== undefined || b.condition !== undefined) {
         const connRows = await sql.query(`SELECT id, meter_id, kpspams_id FROM connections WHERE CAST(customer_id AS text) = $1 LIMIT 1`, [custId.toString()]);
         const readingVal = b.initial_reading !== undefined && b.initial_reading !== null 
           ? Number(b.initial_reading) 
@@ -498,9 +500,10 @@ export async function onRequest(context: any) {
             UPDATE meters SET 
               serial_number = COALESCE($1, serial_number),
               initial_reading = COALESCE($2, initial_reading),
+              condition = COALESCE($3, condition),
               updated_at = NOW() 
-            WHERE id = $3
-          `, [b.meter_serial || null, readingVal, connRows[0].meter_id]);
+            WHERE id = $4
+          `, [b.meter_serial || null, readingVal, b.meter_condition || b.condition || null, connRows[0].meter_id]);
 
           // Jika ada record meter_readings, sinkronkan pembacaan terbaru
           if (readingVal !== null) {
@@ -516,8 +519,8 @@ export async function onRequest(context: any) {
         } else if (connRows.length > 0) {
           const newMeter = await sql.query(`
             INSERT INTO meters (kpspams_id, serial_number, brand, initial_reading, is_active, condition, created_at, updated_at)
-            VALUES ($1, $2, 'Onda Multi-Jet', $3, true, 'GOOD', NOW(), NOW()) RETURNING id
-          `, [connRows[0].kpspams_id || 1, b.meter_serial || `MTR-${custId}`, readingVal || 0]);
+            VALUES ($1, $2, 'Onda Multi-Jet', $3, true, COALESCE($4, 'GOOD'), NOW(), NOW()) RETURNING id
+          `, [connRows[0].kpspams_id || 1, b.meter_serial || `MTR-${custId}`, readingVal || 0, b.meter_condition || b.condition || 'GOOD']);
           await sql.query(`UPDATE connections SET meter_id = $1 WHERE id = $2`, [newMeter[0].id, connRows[0].id]);
         }
       }
@@ -743,9 +746,14 @@ export async function onRequest(context: any) {
 
         const newMeterReadingId = mrRes[0]?.id;
 
-        // Update stand meter fisik pada tabel meters
+        // Update stand meter fisik & kondisi meteran pada tabel meters
         if (meterId) {
-          await sql.query(`UPDATE meters SET initial_reading = $1, updated_at = NOW() WHERE id = $2`, [currentReading, meterId]);
+          const conditionUpdate = b.meter_condition || (b.is_meter_damaged || b.is_meter_broken ? "STUCK" : null);
+          if (conditionUpdate) {
+            await sql.query(`UPDATE meters SET initial_reading = $1, condition = $2, updated_at = NOW() WHERE id = $3`, [currentReading, conditionUpdate, meterId]);
+          } else {
+            await sql.query(`UPDATE meters SET initial_reading = $1, updated_at = NOW() WHERE id = $2`, [currentReading, meterId]);
+          }
         }
 
         // Buat atau perbarui invoice

@@ -217,6 +217,8 @@ export interface DemoCustomer {
   longitude?: number;
   billingStatus?: 'PAID' | 'UNPAID';
   ktpPhotoUrl?: string;
+  meterCondition?: 'GOOD' | 'STUCK' | 'DAMAGED' | 'BROKEN' | string;
+  isMeterDamaged?: boolean;
 }
 
 export const DEMO_CUSTOMERS: DemoCustomer[] = [
