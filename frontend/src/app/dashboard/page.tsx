@@ -27,6 +27,8 @@ import {
   Smartphone,
   RefreshCw,
   Gauge,
+  Map,
+  Compass,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -235,6 +237,11 @@ function DashboardContent() {
             >
               Segarkan Data
             </Button>
+            <Link href="/dashboard/peta-gis">
+              <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                Peta Master GIS
+              </Button>
+            </Link>
             <Link href="/dashboard/penagihan-lapangan">
               <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
                 Catat & Tagih Lapangan
@@ -242,6 +249,36 @@ function DashboardContent() {
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Quick Access Card: Peta Master GIS Sebaran Jaringan Air Bersih Desa Kuajang */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-950/50">
+            <Compass className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm sm:text-base font-extrabold text-white">
+                Peta Master GIS Sebaran Jaringan Air Bersih Desa Kuajang
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-300 border border-brand-gold-500/30 text-[10px] font-bold">
+                Fitur Visual Spasial 37+ Titik
+              </span>
+            </div>
+            <p className="text-xs text-slate-300">
+              Pantau seluruh titik rumah warga dengan indikator warna: 🟢 Lunas, 🔴 Menunggak, 🟡 Pengaduan Gangguan Pipa Bocor/Air Mati, serta 🔵 5 Bak Reservoir &amp; Jalur Pipa Aliran.
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href="/dashboard/peta-gis"
+          className="flex-shrink-0 flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-lg shadow-cyan-950/40 transition active:scale-95 border border-cyan-400/30"
+        >
+          <Map className="w-4 h-4" />
+          <span>Buka Peta Satelit Master GIS &rarr;</span>
+        </Link>
       </div>
 
       {/* KPI Cards Grid (Responsive 1 col on mobile, 2 cols on tablet, 3 cols on desktop) */}

@@ -17,6 +17,7 @@ import {
   UserCheck,
   Smartphone,
   MessageCircle,
+  Map,
 } from "lucide-react";
 
 export function AppSidebar() {
@@ -52,6 +53,7 @@ export function AppSidebar() {
             { label: "Pelanggan & SR (Dusun)", href: "/dashboard/pelanggan", icon: Users },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
             { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
           ],
         },
         {
@@ -76,6 +78,7 @@ export function AppSidebar() {
           category: "Jaringan & Lapangan",
           items: [
             { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
             { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
           ],
@@ -108,6 +111,7 @@ export function AppSidebar() {
         category: "Jaringan & Lapangan",
         items: [
           { label: "Pelanggan & SR", href: "/dashboard/pelanggan", icon: Users },
+          { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
           { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
           { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
         ],
