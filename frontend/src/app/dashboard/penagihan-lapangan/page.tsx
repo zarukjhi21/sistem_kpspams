@@ -578,23 +578,16 @@ function PenagihanLapanganContent() {
     <div className="space-y-3.5 sm:space-y-5 max-w-3xl mx-auto pb-32 md:pb-12">
       {/* Top Banner Mode Lapangan */}
       <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-brand-maroon-800">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-gold-400">
-              Operasional Petugas Lapangan
-            </span>
-          </div>
-          <Badge variant="brand" size="sm" className="text-[9px] sm:text-[10px]">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-lg sm:text-xl font-black tracking-tight">
+            Catat Meter &amp; Penagihan di Tempat
+          </h1>
+          <Badge variant="brand" size="sm" className="text-[9px] sm:text-[10px] flex-shrink-0">
             {selectedCustomer.kpspamsName}
           </Badge>
         </div>
-
-        <h1 className="text-lg sm:text-xl font-black tracking-tight mt-1">
-          Catat Meter & Penagihan di Tempat
-        </h1>
-        <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
-          Kunjungi rumah warga &rarr; Catat meteran &rarr; Hitung tarif otomatis &rarr; Terima uang tunai &rarr; Kirim struk WA.
+        <p className="text-[11px] sm:text-xs text-slate-300 mt-1">
+          Pencatatan meteran fisik warga dan penerimaan iuran air langsung di lapangan.
         </p>
 
         {/* Stepper Progress (Sleek Compact Bar) */}

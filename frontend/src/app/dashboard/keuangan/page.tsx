@@ -638,46 +638,42 @@ function KeuanganContent() {
     <>
       <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8 print:hidden">
         {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
-            <Wallet className="w-3.5 h-3.5" />
-            <span>Manajemen Buku Kas & Pembukuan Terpadu</span>
+        <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight">
+              Buku Kas Operasional KPSPAMS
+            </h1>
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Sistem kas terpadu per unit (kas tunai &amp; rekening bank). Pencatatan mutasi kas riil terintegrasi dengan Dasbor Utama.
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-            Buku Kas Operasional KPSPAMS
-          </h1>
-          <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Sistem kas terpadu per unit (kas tunai & rekening bank disatukan). Bebas catat pemasukan dan pengeluaran secara riil yang langsung terintegrasi ke Dasbor Utama.
-          </p>
-        </div>
 
-        {/* Action Buttons in Banner */}
-        <div className="flex flex-wrap items-center gap-2">
-          {!isPetugasLapangan && (
-            <>
-              <Button
-                variant="gold"
-                size="sm"
-                icon={<PlusCircle className="w-4 h-4" />}
-                onClick={handleOpenIncomeModal}
-                className="font-bold shadow-sm"
-              >
-                + Catat Pemasukan
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                icon={<MinusCircle className="w-4 h-4" />}
-                onClick={handleOpenExpenseModal}
-                className="font-bold shadow-sm"
-              >
-                - Catat Pengeluaran
-              </Button>
-            </>
-          )}
+          {/* Action Buttons in Banner */}
+          <div className="flex flex-wrap items-center gap-2">
+            {!isPetugasLapangan && (
+              <>
+                <Button
+                  variant="gold"
+                  size="sm"
+                  icon={<PlusCircle className="w-4 h-4" />}
+                  onClick={handleOpenIncomeModal}
+                  className="font-bold shadow-sm flex-1 sm:flex-initial text-xs"
+                >
+                  + Pemasukan
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={<MinusCircle className="w-4 h-4" />}
+                  onClick={handleOpenExpenseModal}
+                  className="font-bold shadow-sm flex-1 sm:flex-initial text-xs"
+                >
+                  - Pengeluaran
+                </Button>
+              </>
+            )}
 
-          <Button
+            <Button
             variant="outline"
             size="sm"
             className="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 font-extrabold shadow-md"

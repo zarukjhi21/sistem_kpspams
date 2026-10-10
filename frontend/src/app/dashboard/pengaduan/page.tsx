@@ -271,17 +271,13 @@ function PengaduanContent() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
-            <AlertCircle className="w-3.5 h-3.5" />
-            <span>Respons Cepat Gangguan Air Bersih Terpadu</span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-            Pengaduan Layanan & SPK Teknisi
+            Pengaduan Layanan &amp; SPK Teknisi
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Penerimaan tiket keluhan, penerbitan Surat Perintah Kerja (SPK), dan pemantauan perbaikan pipa secara realtime terhubung ke database.
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+            Penerimaan tiket keluhan, penerbitan Surat Perintah Kerja (SPK), dan pemantauan perbaikan pipa realtime.
           </p>
         </div>
         <Button

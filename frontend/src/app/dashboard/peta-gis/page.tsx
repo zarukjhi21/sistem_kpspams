@@ -191,46 +191,38 @@ export default function PetaGisPage() {
     <DashboardLayout>
       <div className="space-y-6 max-w-7xl mx-auto pb-24">
         {/* Header Hero Section */}
-        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-brand-maroon-800">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-            <div className="space-y-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-gold-500/20 text-brand-gold-300 border border-brand-gold-500/30 text-xs font-bold">
-                <Compass className="w-3.5 h-3.5 text-brand-gold-400" />
-                <span>Geographic Information System (GIS) • Desa Kuajang</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center space-x-3">
-                <Map className="w-8 h-8 text-brand-gold-400" />
-                <span>Peta GIS Sambungan Rumah &amp; Kondisi Fisik Meteran</span>
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-                Pemantauan spasial riil seluruh titik Sambungan Rumah (SR) warga Desa Kuajang,
-                status kelancaran putaran jarum meter air, deteksi meteran macet/rusak yang perlu diganti,
-                serta status pembayaran iuran warga secara langsung dari lapangan.
-              </p>
-            </div>
+        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-brand-maroon-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white flex items-center space-x-2.5">
+              <Map className="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold-400 flex-shrink-0" />
+              <span>Peta GIS Sambungan Rumah &amp; Kondisi Meteran</span>
+            </h1>
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Pemantauan spasial 83 sambungan rumah (SR), status kelancaran meter air, dan pembayaran iuran Desa Kuajang.
+            </p>
+          </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={fetchAllGisData}
-                disabled={isLoading}
-                className="flex items-center space-x-1.5 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-sm transition border border-white/10"
-                title="Sinkronkan data GIS realtime dari database"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-brand-gold-400" : ""}`} />
-                <span>Segarkan Peta</span>
-              </button>
+          {/* Quick Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={fetchAllGisData}
+              disabled={isLoading}
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-sm transition border border-white/10 active:scale-95"
+              title="Sinkronkan data GIS realtime dari database"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-brand-gold-400" : ""}`} />
+              <span>Segarkan Peta</span>
+            </button>
 
-              <Link
-                href="/dashboard/penagihan-lapangan"
-                className="flex items-center space-x-1.5 px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-xl shadow-emerald-950/40 transition"
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>Catat &amp; Tagih Lapangan</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+            <Link
+              href="/dashboard/penagihan-lapangan"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition active:scale-95"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Catat Lapangan</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 

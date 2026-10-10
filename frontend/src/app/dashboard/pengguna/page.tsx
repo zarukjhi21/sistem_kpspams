@@ -355,17 +355,13 @@ function PenggunaContent() {
   return (
     <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
       {/* Title & Action Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Manajemen Pengguna & Otoritas</span>
-          </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
             Akun Pengguna Sistem KPSPAMS
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Pengelolaan akun login pengurus, bendahara/kasir, admin desa, teknisi lapangan, dan warga desa terhubung resmi ke basis data.
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+            Pengelolaan akun login pengurus, bendahara/kasir, admin desa, dan teknisi lapangan.
           </p>
         </div>
 

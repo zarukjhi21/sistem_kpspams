@@ -290,12 +290,8 @@ export default function BillingPage() {
     <DashboardLayout>
       <div className="space-y-6 max-w-7xl mx-auto pb-24">
         {/* Header Section (Clean & Sleek) */}
-        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-brand-maroon-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-brand-maroon-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold mb-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Billing &amp; Penagihan Warga</span>
-            </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
               Billing &amp; Pengingat Tagihan (Broadcast WA)
             </h1>
@@ -305,11 +301,11 @@ export default function BillingPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => setIsBroadcastOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition active:scale-95 border border-emerald-400/30"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition active:scale-95 border border-emerald-400/30"
             >
               <MessageCircle className="w-4 h-4 text-emerald-100" />
               <span>Broadcast WA</span>
@@ -317,7 +313,7 @@ export default function BillingPage() {
 
             <Link
               href="/dashboard/penagihan-lapangan"
-              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs backdrop-blur-sm transition border border-white/10"
+              className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs backdrop-blur-sm transition border border-white/10"
             >
               <Smartphone className="w-3.5 h-3.5 text-brand-gold-400" />
               <span>Mode Lapangan</span>

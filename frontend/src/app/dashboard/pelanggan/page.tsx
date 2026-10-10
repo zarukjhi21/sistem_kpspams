@@ -1278,13 +1278,13 @@ function PelangganContent() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Title & Action Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-            Data Pelanggan & Jaringan Air
+            Data Pelanggan &amp; Jaringan Air
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Register nomor SR, seri meter fisik dial, dan status penyegelan sambungan warga Desa Kuajang.
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+            Register nomor SR, nomor seri meteran, dan status sambungan 83 warga Desa Kuajang.
           </p>
         </div>
 
@@ -1292,7 +1292,7 @@ function PelangganContent() {
           <button
             type="button"
             onClick={() => setShowPrintModal(true)}
-            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center space-x-1.5 border border-white/20 shadow-sm active:scale-95"
+            className="flex-1 sm:flex-initial justify-center px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center space-x-1.5 border border-white/20 shadow-sm active:scale-95"
             title="Cetak Buku Register Pelanggan Resmi (A4 / PDF)"
           >
             <Printer className="w-3.5 h-3.5 text-brand-gold-400" />
@@ -1301,7 +1301,7 @@ function PelangganContent() {
           <button
             type="button"
             onClick={handleExportExcel}
-            className="px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 text-xs font-bold transition flex items-center space-x-1.5 border border-emerald-500/40 shadow-sm active:scale-95"
+            className="flex-1 sm:flex-initial justify-center px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 text-xs font-bold transition flex items-center space-x-1.5 border border-emerald-500/40 shadow-sm active:scale-95"
             title="Unduh Data Pelanggan ke Format Spreadsheet Excel (.csv)"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-300" />
@@ -1312,8 +1312,9 @@ function PelangganContent() {
             size="sm"
             icon={<Plus className="w-4 h-4" />}
             onClick={handleOpenCreateModal}
+            className="flex-1 sm:flex-initial justify-center text-xs font-bold"
           >
-            + Tambah Pelanggan &amp; SR Baru
+            + Tambah Pelanggan
           </Button>
         </div>
       </div>
