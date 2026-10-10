@@ -575,69 +575,69 @@ function PenagihanLapanganContent() {
   const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone || "6281234567890"}&text=${getWhatsAppMessage()}`;
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-3xl mx-auto pb-36 md:pb-12">
+    <div className="space-y-3.5 sm:space-y-5 max-w-3xl mx-auto pb-32 md:pb-12">
       {/* Top Banner Mode Lapangan */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-5 rounded-3xl shadow-xl border border-brand-maroon-800">
+      <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-brand-maroon-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-gold-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-gold-400">
               Operasional Petugas Lapangan
             </span>
           </div>
-          <Badge variant="brand" size="sm">
+          <Badge variant="brand" size="sm" className="text-[9px] sm:text-[10px]">
             {selectedCustomer.kpspamsName}
           </Badge>
         </div>
 
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight mt-1.5">
+        <h1 className="text-lg sm:text-xl font-black tracking-tight mt-1">
           Catat Meter & Penagihan di Tempat
         </h1>
-        <p className="text-xs text-slate-300 mt-1">
-          Kunjungi rumah warga &rarr; Catat meteran air &rarr; Hitung tagihan otomatis &rarr; Terima uang tunai &rarr; Kirim struk instan ke WhatsApp warga.
+        <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
+          Kunjungi rumah warga &rarr; Catat meteran &rarr; Hitung tarif otomatis &rarr; Terima uang tunai &rarr; Kirim struk WA.
         </p>
 
-        {/* Stepper Progress */}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-4 mt-2 border-t border-slate-800 text-center text-xs">
+        {/* Stepper Progress (Sleek Compact Bar) */}
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-3 mt-2 border-t border-slate-800 text-center text-xs">
           <div
-            className={`p-1.5 sm:p-2 rounded-xl border ${
+            className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 1
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[9px] sm:text-[10px] opacity-75">1. Rumah</span>
-            <span className="truncate block text-[11px] sm:text-xs">Pilih Warga</span>
+            <span className="block text-[8px] sm:text-[9px] opacity-75">1. Rumah</span>
+            <span className="truncate block text-[10px] sm:text-xs">Pilih Warga</span>
           </div>
           <div
-            className={`p-1.5 sm:p-2 rounded-xl border ${
+            className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 2
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[9px] sm:text-[10px] opacity-75">2. Meter</span>
-            <span className="truncate block text-[11px] sm:text-xs">Catat & Tarif</span>
+            <span className="block text-[8px] sm:text-[9px] opacity-75">2. Meter</span>
+            <span className="truncate block text-[10px] sm:text-xs">Catat & Tarif</span>
           </div>
           <div
-            className={`p-1.5 sm:p-2 rounded-xl border ${
+            className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 3
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[9px] sm:text-[10px] opacity-75">3. Bayar</span>
-            <span className="truncate block text-[11px] sm:text-xs">Terima Tunai</span>
+            <span className="block text-[8px] sm:text-[9px] opacity-75">3. Bayar</span>
+            <span className="truncate block text-[10px] sm:text-xs">Terima Tunai</span>
           </div>
           <div
-            className={`p-1.5 sm:p-2 rounded-xl border ${
+            className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 4
                 ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
-            <span className="block text-[9px] sm:text-[10px] opacity-75">4. Struk WA</span>
-            <span className="truncate block text-[11px] sm:text-xs">Kirim Struk</span>
+            <span className="block text-[8px] sm:text-[9px] opacity-75">4. Struk</span>
+            <span className="truncate block text-[10px] sm:text-xs">Kirim WA</span>
           </div>
         </div>
       </div>
@@ -724,11 +724,12 @@ function PenagihanLapanganContent() {
                 <button
                   type="button"
                   onClick={() => setBroadcastModalOpen(true)}
-                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-95"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm active:scale-95"
                   title="Kirim pengingat tagihan massal via WhatsApp ke warga"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>Kirim Pengingat Tagihan (Broadcast WA)</span>
+                  <span>Broadcast WA</span>
+                  <span className="hidden sm:inline">Tagihan</span>
                 </button>
 
                 <div className="flex items-center space-x-3 text-xs font-bold bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-xs">

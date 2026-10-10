@@ -208,26 +208,26 @@ function DashboardContent() {
       : "0";
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-3.5 sm:space-y-5">
       {/* Scope Status Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 rounded-3xl p-5 sm:p-7 text-white shadow-xl border border-brand-maroon-700/60 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-brand-maroon-700/60 relative overflow-hidden">
         {/* Glow Decor */}
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-brand-gold-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-brand-gold-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>{overviewData?.context?.period || "Periode Berjalan Oktober 2026"}</span>
             </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white">
               {activeKpspamsId === null
                 ? (overviewData?.context?.scope_label || "Dashboard Konsolidasi Desa Kuajang")
                 : `Dashboard Operasional ${activeKpspamsName}`}
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -235,7 +235,7 @@ function DashboardContent() {
               onClick={fetchOverview}
               disabled={isLoadingOverview}
             >
-              Segarkan Data
+              Segarkan
             </Button>
             <Link href="/dashboard/peta-gis">
               <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
@@ -244,214 +244,214 @@ function DashboardContent() {
             </Link>
             <Link href="/dashboard/penagihan-lapangan">
               <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
-                Catat & Tagih Lapangan
+                Catat & Tagih
               </Button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Quick Access Card: Peta Master GIS Sebaran Jaringan Air Bersih Desa Kuajang */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-950/50">
-            <Compass className="w-6 h-6 animate-pulse" />
+      {/* Quick Access Strip: Peta Master GIS (Sleek Compact Bar) */}
+      <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center space-x-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0">
+            <Compass className="w-4 h-4 animate-pulse" />
           </div>
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm sm:text-base font-extrabold text-white">
-                Peta Master GIS Sebaran Jaringan Air Bersih Desa Kuajang
-              </h3>
-              <span className="px-2 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-300 border border-brand-gold-500/30 text-[10px] font-bold">
-                Fitur Visual Spasial 37+ Titik
-              </span>
+          <div className="min-w-0">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-black text-white truncate">Peta Master GIS Jaringan Air Desa</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hidden sm:inline-block">37+ Titik SR</span>
             </div>
-            <p className="text-xs text-slate-300">
-              Pantau seluruh titik rumah warga dengan indikator warna: 🟢 Lunas, 🔴 Menunggak, 🟡 Pengaduan Gangguan Pipa Bocor/Air Mati, serta 🔵 5 Bak Reservoir &amp; Jalur Pipa Aliran.
+            <p className="text-[11px] text-slate-300 truncate">
+              Pantau titik SR warga, indikator Lunas/Tunggakan, dan bak reservoir desa.
             </p>
           </div>
         </div>
 
         <Link
           href="/dashboard/peta-gis"
-          className="flex-shrink-0 flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs shadow-lg shadow-cyan-950/40 transition active:scale-95 border border-cyan-400/30"
+          className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition active:scale-95 border border-cyan-400/30 shadow-sm"
         >
-          <Map className="w-4 h-4" />
-          <span>Buka Peta Satelit Master GIS &rarr;</span>
+          <Map className="w-3.5 h-3.5" />
+          <span>Buka Peta Satelit &rarr;</span>
         </Link>
       </div>
 
-      {/* KPI Cards Grid (Responsive 1 col on mobile, 2 cols on tablet, 3 cols on desktop) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-        {/* Metric 1 */}
-        <Card className="p-4 sm:p-5">
+      {/* KPI Cards Grid (Compact 2 cols on mobile, 3 cols on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+        {/* Metric 1: Pelanggan Aktif */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Pelanggan Aktif
             </span>
-            <div className="p-2 rounded-xl bg-blue-50 text-blue-700">
-              <Users className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-700">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 font-tabular">
               {realCustomerCount}
-              <span className="text-xs sm:text-sm font-semibold text-slate-400 ml-1.5">
-                Sambungan Rumah (SR)
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-400 ml-1">
+                SR
               </span>
             </span>
-            <span className="text-[11px] text-emerald-600 font-bold hidden sm:flex items-center">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />
-              Aktif Terdata
+            <span className="text-[10px] text-emerald-600 font-bold hidden sm:flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
+              Aktif
             </span>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
             {overviewData?.kpi?.active_connections !== undefined
               ? `${overviewData.kpi.active_connections} SR aktif • ${overviewData.kpi.sealed_connections || 0} tersegel`
-              : `${realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem`}
+              : `${realCustomerCount} SR terdaftar aktif`}
           </p>
         </Card>
 
         {/* Metric 2: Pemakaian Air Bulan Berjalan */}
-        <Card className="p-4 sm:p-5">
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Pemakaian Air Bulan Ini
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Pakai Bulan Ini
             </span>
-            <div className="p-2 rounded-xl bg-cyan-50 text-cyan-700">
-              <Activity className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-cyan-50 text-cyan-700">
+              <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 font-tabular">
               {Number(totalUsage).toLocaleString("id-ID")}
-              <span className="text-xs sm:text-sm font-normal text-slate-500 ml-1">m³</span>
+              <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">m³</span>
             </span>
-            <Badge variant="brand" size="sm">Bulan Berjalan</Badge>
+            <Badge variant="brand" size="sm" className="hidden sm:inline-flex text-[9px] px-1.5 py-0">Bulan Ini</Badge>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
             {totalUsage === 0
-              ? "Masa transisi stand awal • Beban dasar Rp 10.000/SR"
+              ? "Beban dasar Rp 10.000/SR"
               : `Rata-rata ${(totalCustomers > 0 ? (Number(totalUsage) / totalCustomers).toFixed(1) : 0)} m³/SR`}
           </p>
         </Card>
 
         {/* Metric 3: Total Stand Fisik Meteran (Odometer SR) */}
-        <Card className="p-4 sm:p-5">
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Total Stand Fisik Meteran
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Stand Fisik Meteran
             </span>
-            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700">
-              <Gauge className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-indigo-50 text-indigo-700">
+              <Gauge className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-xl sm:text-3xl font-black text-indigo-950 font-tabular">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-lg sm:text-2xl font-black text-indigo-950 font-tabular truncate">
               {Number(totalPhysicalMeter).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-              <span className="text-xs sm:text-sm font-normal text-slate-500 ml-1">m³</span>
+              <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">m³</span>
             </span>
-            <Badge variant="neutral" size="sm">Odometer SR</Badge>
+            <Badge variant="neutral" size="sm" className="hidden sm:inline-flex text-[9px] px-1.5 py-0">Odometer</Badge>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            Total akumulasi putaran meter fisik {realCustomerCount} SR di lapangan
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+            Total putaran meter {realCustomerCount} SR
           </p>
         </Card>
 
         {/* Metric 4: Penerimaan Iuran Air */}
-        <Card className="p-4 sm:p-5">
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Penerimaan Iuran Air
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Penerimaan Iuran
             </span>
-            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-700">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-lg sm:text-2xl font-black text-emerald-700 font-tabular truncate">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-emerald-700 font-tabular truncate">
               Rp {Number(totalCollected).toLocaleString("id-ID")}
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
               {collectionRate}%
             </span>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
             {totalCollected === 0
-              ? "Realisasi Rp 0 • Penagihan periode berjalan"
-              : `Total uang fisik iuran dari ${Math.round(totalCollected / 10000)} SR terbayar lunas`}
+              ? "Penagihan periode berjalan"
+              : `${Math.round(totalCollected / 10000)} SR terbayar lunas`}
           </p>
         </Card>
 
-        {/* Metric 4 */}
-        <Card className="p-4 sm:p-5">
+        {/* Metric 5: Tunggakan Berjalan */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Tunggakan Berjalan
             </span>
-            <div className="p-2 rounded-xl bg-rose-50 text-rose-700">
-              <AlertTriangle className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-rose-50 text-rose-700">
+              <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-lg sm:text-2xl font-black text-rose-700 font-tabular truncate">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-rose-700 font-tabular truncate">
               Rp {Number(totalArrears).toLocaleString("id-ID")}
             </span>
             {totalArrears === 0 ? (
-              <Badge variant="success" size="sm">Nihil</Badge>
+              <Badge variant="success" size="sm" className="text-[9px] px-1.5 py-0">Nihil</Badge>
             ) : (
-              <Badge variant="danger" size="sm">Outstanding</Badge>
+              <Badge variant="danger" size="sm" className="text-[9px] px-1.5 py-0">Belum</Badge>
             )}
           </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            {totalArrears === 0 ? "Tidak ada piutang tertunggak" : "Piutang berjalan di database"}
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+            {totalArrears === 0 ? "Tidak ada piutang" : "Piutang belum terbayar"}
           </p>
         </Card>
 
-        {/* Metric 5 */}
-        <Card className="p-4 sm:p-5">
+        {/* Metric 6: Saldo Kas Unit */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Saldo Kas Unit
             </span>
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
-              <Wallet className="w-4 h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-50 text-amber-700">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-lg sm:text-2xl font-black text-slate-900 font-tabular truncate">
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
               Rp {Number(totalCash).toLocaleString("id-ID")}
             </span>
           </div>
-          <p className="text-[10px] sm:text-[11px] text-emerald-600 font-medium mt-1 truncate">
+          <p className="text-[9px] sm:text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
             {totalCash === 0
-              ? "Buku kas operasional tersinkronisasi"
-              : `Buku Kas: Saldo Awal Rp 29.766.000 + Iuran Masuk Rp ${Number(totalCollected).toLocaleString("id-ID")}`}
+              ? "Kas tersinkronisasi"
+              : `Awal Rp 29.766k + Masuk Rp ${Math.round(totalCollected / 1000)}k`}
           </p>
         </Card>
 
-        {/* Metric 6 */}
-        <Card className="p-4 sm:p-5">
+        {/* Metric 7: Pengaduan Aktif (col-span-2 on mobile, col-span-1 on desktop) */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl col-span-2 lg:col-span-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              Pengaduan Aktif
-            </span>
-            <div className="p-2 rounded-xl bg-purple-50 text-purple-700">
-              <Building className="w-4 h-4" />
+            <div className="flex items-center space-x-2">
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-50 text-purple-700">
+                <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
+                  Pengaduan Warga Aktif
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Keluhan gangguan pipa bocor/air mati yang dalam penanganan
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-base sm:text-xl font-black text-slate-900 font-tabular">
+                {overviewData?.kpi?.active_complaints ?? 0}{" "}
+                <span className="text-xs font-normal text-slate-500">Tiket</span>
+              </span>
+              <Badge variant={(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "warning" : "success"} size="sm" className="text-[9px] sm:text-[10px]">
+                {(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "Perlu Respons" : "Layanan Normal"}
+              </Badge>
             </div>
           </div>
-          <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
-            <span className="text-xl sm:text-3xl font-black text-slate-900 font-tabular">
-              {overviewData?.kpi?.active_complaints ?? 0}{" "}
-              <span className="text-xs sm:text-sm font-normal text-slate-500">Tiket</span>
-            </span>
-            <Badge variant={(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "warning" : "success"} size="sm">
-              {(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "Perlu Respons" : "Layanan Normal"}
-            </Badge>
-          </div>
-          <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1 truncate">
-            Keluhan warga aktif yang dalam penanganan SPK
-          </p>
         </Card>
       </div>
 
