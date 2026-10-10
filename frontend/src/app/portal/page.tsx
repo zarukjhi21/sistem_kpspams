@@ -24,10 +24,13 @@ import {
   ChevronRight,
   ShieldCheck,
   ExternalLink,
+  Download,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getApiBaseUrl } from "@/lib/api-client";
+import { downloadReceiptAsImage } from "@/lib/receipt-canvas";
 
 interface CustomerData {
   id: number;
@@ -283,6 +286,48 @@ function CitizenPortalContent() {
     } catch {
       return dateStr;
     }
+  };
+
+  const handleDownloadReceiptImage = () => {
+    if (!data?.current_bill || !data?.connection || !data?.customer) return;
+    downloadReceiptAsImage({
+      isPaid: true,
+      kpspamsName: data.connection.kpspams_name || "KPSPAMS Lemo Baru",
+      receiptNumber: data.current_bill.receipt_number || "KW/202610/KP01/LUNAS",
+      invoiceNumber: data.current_bill.invoice_number,
+      connectionNo: data.connection.connection_no,
+      customerName: data.customer.full_name,
+      dusun: data.customer.dusun,
+      periodName: data.current_bill.period_name,
+      meterBrand: data.connection.meter_brand,
+      meterSerial: data.connection.meter_serial,
+      usageM3: data.current_bill.usage_m3,
+      waterAmount: data.current_bill.water_amount,
+      adminFee: data.current_bill.admin_fee,
+      totalAmount: data.current_bill.total_amount,
+      paidAt: data.current_bill.paid_at,
+      paymentMethod: data.current_bill.payment_method || "Kasir Lapangan (Tunai)",
+    });
+  };
+
+  const handleDownloadInvoiceImage = () => {
+    if (!data?.current_bill || !data?.connection || !data?.customer) return;
+    downloadReceiptAsImage({
+      isPaid: false,
+      kpspamsName: data.connection.kpspams_name || "KPSPAMS Lemo Baru",
+      invoiceNumber: data.current_bill.invoice_number,
+      connectionNo: data.connection.connection_no,
+      customerName: data.customer.full_name,
+      dusun: data.customer.dusun,
+      periodName: data.current_bill.period_name,
+      meterBrand: data.connection.meter_brand,
+      meterSerial: data.connection.meter_serial,
+      usageM3: data.current_bill.usage_m3,
+      waterAmount: data.current_bill.water_amount,
+      adminFee: data.current_bill.admin_fee,
+      totalAmount: data.current_bill.total_amount,
+      dueDate: formatDateIndo(data.current_bill.due_date),
+    });
   };
 
   // Helper calculation for history max bar
@@ -655,47 +700,67 @@ function CitizenPortalContent() {
                   </div>
 
                   {/* Action Buttons depending on payment status */}
-                  <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                     {data.current_bill.is_paid ? (
                       <>
                         <button
                           type="button"
                           onClick={() => setReceiptModalOpen(true)}
-                          className="px-4 py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs sm:text-sm shadow-xl transition active:scale-95 flex items-center justify-center space-x-2"
+                          className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-1.5"
                         >
                           <Printer className="w-4 h-4" />
-                          <span>Cetak Kwitansi Lunas</span>
+                          <span>Kwitansi Lunas</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleDownloadReceiptImage}
+                          className="px-3.5 py-2.5 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
+                          title="Unduh Gambar Struk ke Galeri HP"
+                        >
+                          <Download className="w-4 h-4 text-emerald-300" />
+                          <span>Simpan Gambar</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setInvoiceModalOpen(true)}
-                          className="px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
+                          className="px-3 py-2.5 rounded-xl sm:rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 font-medium text-xs border border-white/10 transition active:scale-95 flex items-center justify-center space-x-1"
                         >
-                          <FileText className="w-4 h-4" />
-                          <span>Rincian Faktur</span>
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Faktur</span>
                         </button>
                       </>
                     ) : (
                       <>
+                        <button
+                          type="button"
+                          onClick={() => setInvoiceModalOpen(true)}
+                          className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-1.5"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>Lihat Struk Tagihan</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleDownloadInvoiceImage}
+                          className="px-3.5 py-2.5 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
+                          title="Unduh Lembar Tagihan ke Galeri HP"
+                        >
+                          <Download className="w-4 h-4 text-amber-300" />
+                          <span>Simpan Gambar</span>
+                        </button>
+
                         <a
                           href={getWhatsAppLink(false)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition active:scale-95 flex items-center justify-center space-x-2"
+                          className="px-3.5 py-2.5 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition active:scale-95 flex items-center justify-center space-x-1.5"
                         >
-                          <Phone className="w-4 h-4" />
-                          <span>Bayar via Petugas (WA)</span>
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Bayar via WA</span>
                         </a>
-
-                        <button
-                          type="button"
-                          onClick={() => setInvoiceModalOpen(true)}
-                          className="px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition active:scale-95 flex items-center justify-center space-x-1.5"
-                        >
-                          <FileText className="w-4 h-4" />
-                          <span>Rincian Faktur</span>
-                        </button>
                       </>
                     )}
                   </div>
@@ -958,14 +1023,17 @@ function CitizenPortalContent() {
         </div>
       )}
 
-      {/* Modal Rincian Faktur Resmi */}
+      {/* Modal Lembar Tagihan Resmi (Printable Official Invoice Slip) */}
       {invoiceModalOpen && data?.current_bill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-100 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            {/* Header Dialog */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 print:hidden">
               <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5 text-brand-maroon-700" />
-                <h4 className="text-base font-extrabold text-slate-900">Rincian Faktur Resmi</h4>
+                <FileText className="w-5 h-5 text-amber-600" />
+                <h4 className="text-base font-extrabold text-slate-900">
+                  {data.current_bill.is_paid ? "Rincian Faktur Tagihan" : "Lembar Tagihan Iuran Air Resmi"}
+                </h4>
               </div>
               <button
                 type="button"
@@ -976,68 +1044,130 @@ function CitizenPortalContent() {
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            {/* Printable Invoice Paper */}
+            <div
+              id="printable-invoice-card"
+              className="p-4 sm:p-5 rounded-2xl bg-amber-50/50 border-2 border-dashed border-amber-300 space-y-4 font-mono text-slate-800"
+            >
+              {/* Kop Invoice */}
+              <div className="text-center border-b border-dashed border-amber-300 pb-3">
+                <p className="text-[10px] tracking-widest uppercase text-slate-500 font-bold">PEMERINTAH DESA KUAJANG</p>
+                <h3 className="text-base font-black text-slate-950 uppercase">{data.connection.kpspams_name}</h3>
+                <p className="text-[10px] text-slate-600">
+                  {data.connection.kpspams_address || "Dusun Lemo Baru RT 02, Desa Kuajang, Kec. Binuang"}
+                </p>
+                <p className="text-[10px] text-amber-800 font-black mt-1">
+                  {data.current_bill.is_paid ? "FAKTUR RINCIAN IURAN AIR" : "LEMBAR PEMBERITAHUAN TAGIHAN RESMI"}
+                </p>
+              </div>
+
+              {/* Data Tagihan & Pelanggan */}
+              <div className="text-xs space-y-1.5 border-b border-dashed border-amber-300 pb-3">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Nomor Faktur:</span>
-                  <span className="font-mono font-bold text-slate-900">{data.current_bill.invoice_number}</span>
+                  <span className="text-slate-600">No. Tagihan (Invoice):</span>
+                  <span className="font-bold text-slate-900">{data.current_bill.invoice_number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Pelanggan:</span>
-                  <span className="font-bold text-slate-900">{data.customer.full_name}</span>
+                  <span className="text-slate-600">No. Sambungan (SR):</span>
+                  <span className="font-bold text-brand-maroon-900">{data.connection.connection_no}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">No. Sambungan (SR):</span>
-                  <span className="font-mono font-bold text-brand-maroon-800">{data.connection.connection_no}</span>
+                  <span className="text-slate-600">Nama Pelanggan:</span>
+                  <span className="font-black text-slate-950 uppercase">{data.customer.full_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Periode Tagihan:</span>
-                  <span className="font-medium text-slate-700">{data.current_bill.period_name}</span>
+                  <span className="text-slate-600">Wilayah / Dusun:</span>
+                  <span>Dusun {data.customer.dusun}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Jatuh Tempo:</span>
-                  <span className="font-medium text-slate-700">{formatDateIndo(data.current_bill.due_date)}</span>
+                  <span className="text-slate-600">Periode Tagihan:</span>
+                  <span className="font-bold text-slate-900">{data.current_bill.period_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Batas Jatuh Tempo:</span>
+                  <span className="font-bold text-rose-700">{formatDateIndo(data.current_bill.due_date)}</span>
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-slate-600">
-                  <span>Pemakaian Air ({data.current_bill.usage_m3} m³):</span>
-                  <span className="font-tabular font-medium">Rp {data.current_bill.water_amount.toLocaleString("id-ID")}</span>
+              {/* Rincian Meter & Kubikasi */}
+              <div className="text-xs space-y-1.5 border-b border-dashed border-amber-300 pb-3">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Meteran Air:</span>
+                  <span>{data.connection.meter_brand} ({data.connection.meter_serial})</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Biaya Administrasi &amp; Operasional:</span>
-                  <span className="font-tabular font-medium">Rp {data.current_bill.admin_fee.toLocaleString("id-ID")}</span>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Volume Pemakaian:</span>
+                  <span className="font-black text-slate-900">{data.current_bill.usage_m3} m³</span>
                 </div>
-                {data.current_bill.maintenance_fee > 0 && (
-                  <div className="flex justify-between text-slate-600">
-                    <span>Biaya Pemeliharaan Meter:</span>
-                    <span className="font-tabular font-medium">Rp {data.current_bill.maintenance_fee.toLocaleString("id-ID")}</span>
+                <div className="flex justify-between text-slate-700">
+                  <span>Biaya Pemakaian Air:</span>
+                  <span>Rp {data.current_bill.water_amount.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between text-slate-700">
+                  <span>Beban Administrasi:</span>
+                  <span>Rp {data.current_bill.admin_fee.toLocaleString("id-ID")}</span>
+                </div>
+              </div>
+
+              {/* Total Tagihan */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-sm font-black text-slate-950 pt-1">
+                  <span>TOTAL TAGIHAN:</span>
+                  <span className="text-amber-900 font-black">Rp {data.current_bill.total_amount.toLocaleString("id-ID")},-</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold">
+                  <span>STATUS PEMBAYARAN:</span>
+                  <span className={data.current_bill.is_paid ? "text-emerald-700" : "text-amber-800"}>
+                    {data.current_bill.is_paid ? "✓ LUNAS" : "● MENUNGGU PEMBAYARAN"}
+                  </span>
+                </div>
+                {!data.current_bill.is_paid && (
+                  <div className="text-[11px] text-slate-600 pt-1">
+                    <span>Rekening Pembayaran BRI: <strong>0214-01-002345-53-1</strong> (KPSPAMS)</span>
+                    <br />
+                    <span>Atau serahkan tunai langsung kepada petugas penagih keliling resmi.</span>
                   </div>
                 )}
-                {data.current_bill.penalty_fee > 0 && (
-                  <div className="flex justify-between text-rose-600">
-                    <span>Denda Keterlambatan:</span>
-                    <span className="font-tabular font-medium">Rp {data.current_bill.penalty_fee.toLocaleString("id-ID")}</span>
-                  </div>
-                )}
-                <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-sm text-slate-900">
-                  <span>Total Tagihan:</span>
-                  <span className="font-tabular text-brand-maroon-900">Rp {data.current_bill.total_amount.toLocaleString("id-ID")}</span>
+              </div>
+
+              {/* Cap Stempel Digital */}
+              <div className="pt-3 border-t border-dashed border-amber-300 flex items-center justify-between text-[10px] text-slate-500">
+                <div className="flex items-center space-x-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Validitas Digital SI-KPSPAMS</span>
                 </div>
-                <div className="flex justify-between font-semibold text-xs pt-1">
-                  <span>Status Pembayaran:</span>
-                  <Badge variant={data.current_bill.is_paid ? "success" : "danger"} size="sm">
-                    {data.current_bill.is_paid ? "LUNAS" : "BELUM LUNAS"}
-                  </Badge>
-                </div>
+                <span className="font-mono text-[9px]">Kuajang, Polman</span>
               </div>
             </div>
 
-            <div className="mt-5 pt-3 border-t border-slate-100 flex justify-end">
-              <Button variant="primary" size="sm" onClick={() => setInvoiceModalOpen(false)}>
-                Tutup
-              </Button>
+            {/* Modal Action Buttons */}
+            <div className="mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 print:hidden">
+              <span className="text-[11px] text-slate-500">
+                Lembar tagihan resmi terdaftar di server desa.
+              </span>
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                <Button variant="secondary" size="sm" onClick={() => setInvoiceModalOpen(false)}>
+                  Tutup
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadInvoiceImage}
+                  icon={<Download className="w-4 h-4 text-amber-600" />}
+                  className="font-bold border-amber-300 text-amber-900 hover:bg-amber-50"
+                >
+                  Simpan Gambar
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => window.print()}
+                  icon={<Printer className="w-4 h-4" />}
+                  className="font-bold bg-amber-600 hover:bg-amber-700 text-white"
+                >
+                  Cetak / PDF
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -1063,7 +1193,10 @@ function CitizenPortalContent() {
             </div>
 
             {/* Printable Receipt Paper */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/40 border-2 border-dashed border-amber-300/80 space-y-4 font-mono text-slate-800">
+            <div
+              id="printable-receipt-card"
+              className="p-4 sm:p-5 rounded-2xl bg-amber-50/40 border-2 border-dashed border-amber-300/80 space-y-4 font-mono text-slate-800"
+            >
               {/* Kop Kwitansi */}
               <div className="text-center border-b border-dashed border-amber-300/80 pb-3">
                 <p className="text-[10px] tracking-widest uppercase text-slate-500 font-bold">PEMERINTAH DESA KUAJANG</p>
@@ -1156,9 +1289,18 @@ function CitizenPortalContent() {
               <span className="text-[11px] text-slate-500">
                 Struk ini sah sebagai bukti pembayaran iuran air resmi.
               </span>
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
                 <Button variant="secondary" size="sm" onClick={() => setReceiptModalOpen(false)}>
                   Tutup
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadReceiptImage}
+                  icon={<Download className="w-4 h-4 text-emerald-600" />}
+                  className="font-bold border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                >
+                  Simpan Gambar
                 </Button>
                 <Button
                   variant="primary"

@@ -93,14 +93,32 @@ body {
   z-index: 20 !important;
 }
 
-/* Print optimization for official A4 reports (Customer & Financial Reports) */
+/* Print optimization for official A4 reports (Customer & Financial Reports) & Receipts */
 @media print {
   .print\:hidden {
     display: none !important;
   }
   @page {
-    size: A4 portrait;
-    margin: 10mm 12mm;
+    size: auto;
+    margin: 8mm 10mm;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  #printable-financial-report {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: black !important;
+  }
+  #printable-receipt-card,
+  #printable-invoice-card {
+    border: 1px solid #94a3b8 !important;
+    background: white !important;
+    box-shadow: none !important;
   }
 }
+
 
