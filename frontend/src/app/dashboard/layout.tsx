@@ -45,20 +45,20 @@ export default function DashboardRootLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-bg antialiased selection:bg-brand-maroon-800 selection:text-white print:bg-white print:min-h-0">
-      {/* Sticky Header */}
-      <div className="print:hidden">
+    <div className="h-screen flex flex-col bg-surface-bg antialiased selection:bg-brand-maroon-800 selection:text-white overflow-hidden print:h-auto print:min-h-0 print:bg-white print:overflow-visible">
+      {/* Sticky Fixed Header */}
+      <div className="flex-shrink-0 z-30 print:hidden">
         <AppHeader onOpenMobileDrawer={() => setMobileDrawerOpen(true)} />
       </div>
 
       {/* Body Container */}
       <div className="flex-1 flex overflow-hidden print:overflow-visible">
-        {/* Desktop Sidebar (hidden on mobile) */}
-        <div className="print:hidden">
+        {/* Desktop Sidebar (Fixed and Pinned on left, never moves) */}
+        <div className="hidden md:flex flex-shrink-0 h-full print:hidden">
           <AppSidebar />
         </div>
 
-        {/* Main Workspace Area with responsive bottom padding for MobileBottomNav */}
+        {/* Main Workspace Area: The ONLY area that scrolls */}
         <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-28 md:pb-8 overflow-y-auto max-w-7xl mx-auto w-full print:p-0 print:m-0 print:max-w-none print:w-full print:overflow-visible">
           {children}
         </main>

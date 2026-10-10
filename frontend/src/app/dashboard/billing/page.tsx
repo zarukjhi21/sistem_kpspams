@@ -68,6 +68,8 @@ export default function BillingPage() {
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
 
   // State Billing Cycle Rollover (Tutup Buku Akhir Bulan)
   const [rolloverStatus, setRolloverStatus] = useState<any>(null);
@@ -236,6 +238,19 @@ export default function BillingPage() {
       return true;
     });
   }, [filteredByTenant, filterDusun, filterStatus, searchQuery]);
+
+  // Reset pagination ke halaman 1 saat filter atau pageSize berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterDusun, filterStatus, pageSize]);
+
+  const totalPages = Math.ceil(tableData.length / (pageSize > 0 ? pageSize : 15)) || 1;
+
+  const paginatedData = useMemo(() => {
+    if (pageSize >= 100) return tableData;
+    const start = (currentPage - 1) * pageSize;
+    return tableData.slice(start, start + pageSize);
+  }, [tableData, currentPage, pageSize]);
 
   // Build Personalized WA Draft Message
   const getPersonalWaMessage = (customer: DemoCustomer) => {
@@ -563,10 +578,122 @@ export default function BillingPage() {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+          {/* Mobile Card View (< md) */}
+          <div className="md:hidden space-y-3">
+            {paginatedData.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                Tidak ada data pelanggan yang cocok dengan filter pencarian.
+              </div>
+            ) : (
+              paginatedData.map((c) => {
+                const isPaid = c.billingStatus === "PAID";
+                const isCopied = copiedId === c.id;
+
+                return (
+                  <div
+                    key={c.id}
+                    className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs space-y-3"
+                  >
+                    {/* Header Row: SR Badge & Status */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2.5 py-1 rounded-lg border border-brand-maroon-200">
+                        {c.connectionNo}
+                      </span>
+                      <Badge
+                        variant={isPaid ? "success" : "danger"}
+                        size="sm"
+                        className="font-bold text-[10px]"
+                      >
+                        {isPaid ? "✓ Lunas" : "● Belum Bayar"}
+                      </Badge>
+                    </div>
+
+                    {/* Customer Name & Info */}
+                    <div>
+                      <div className="font-black text-slate-900 text-sm">{c.name}</div>
+                      <div className="flex items-center space-x-2 text-[11px] text-slate-500 mt-0.5">
+                        <span className="px-1.5 py-0.5 bg-slate-100 rounded text-slate-700 font-medium">{c.dusun}</span>
+                        <span>•</span>
+                        <span className="font-mono text-slate-400">{c.meterSerial}</span>
+                      </div>
+                    </div>
+
+                    {/* Meter & Bill Row */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block uppercase font-bold">Stand Meter</span>
+                        <span className="font-mono font-bold text-slate-800">{c.lastReading.toFixed(2)} m³</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 block uppercase font-bold">Tagihan</span>
+                        <span className="font-black font-tabular text-slate-900">Rp 10.000,-</span>
+                      </div>
+                    </div>
+
+                    {/* Phone & Actions */}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 gap-2">
+                      <div className="text-[11px] font-mono text-slate-600 truncate">
+                        {c.phone ? (
+                          <span className="text-emerald-700 font-semibold">{c.phone}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">(Belum ada nomor WA)</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-1.5 flex-shrink-0">
+                        {c.phone ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleSendWa(c)}
+                              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs transition active:scale-95"
+                              title="Kirim Pesan WhatsApp Personal"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5 text-emerald-200" />
+                              <span>Kirim WA</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyMessage(c)}
+                              className={`p-1.5 rounded-lg border text-xs transition ${
+                                isCopied
+                                  ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                                  : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600"
+                              }`}
+                              title="Salin Teks Pesan"
+                            >
+                              {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setIsBroadcastOpen(true)}
+                            className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[11px] font-bold"
+                          >
+                            + Input WA
+                          </button>
+                        )}
+                        <Link
+                          href="/dashboard/penagihan-lapangan"
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition"
+                          title="Mode Catat Lapangan"
+                        >
+                          <Smartphone className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View (>= md) */}
+          <div className="hidden md:block overflow-x-auto border border-slate-200 rounded-2xl max-h-[620px] overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+              <thead className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-xs text-slate-700 font-bold border-b border-slate-200 shadow-2xs">
                 <tr>
                   <th className="py-3 px-4">No. SR</th>
                   <th className="py-3 px-4">Nama Pelanggan</th>
@@ -579,7 +706,7 @@ export default function BillingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {tableData.length === 0 ? (
+                {paginatedData.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-slate-400">
                       <AlertCircle className="w-8 h-8 mx-auto mb-2 text-slate-300" />
@@ -587,7 +714,7 @@ export default function BillingPage() {
                     </td>
                   </tr>
                 ) : (
-                  tableData.map((c) => {
+                  paginatedData.map((c) => {
                     const isPaid = c.billingStatus === "PAID";
                     const isCopied = copiedId === c.id;
 
@@ -685,21 +812,63 @@ export default function BillingPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 px-1">
-            <span>
-              Menampilkan <strong>{tableData.length}</strong> dari <strong>{filteredByTenant.length}</strong> pelanggan
-            </span>
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <span>Lunas: {stats.paid}</span>
-              </span>
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                <span>Belum: {stats.unpaid}</span>
-              </span>
+          {/* Pagination Controls */}
+          {tableData.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 px-1 text-xs text-slate-500 border-t border-slate-200">
+              <div>
+                Menampilkan <strong>{(currentPage - 1) * pageSize + 1}</strong> -{" "}
+                <strong>{Math.min(tableData.length, currentPage * pageSize)}</strong> dari{" "}
+                <strong>{tableData.length}</strong> pelanggan
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-xs transition"
+                >
+                  « Sebelumnya
+                </button>
+                <span className="font-semibold text-slate-700 px-1">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium shadow-xs transition"
+                >
+                  Berikutnya »
+                </button>
+
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="ml-2 px-2 py-1 text-xs border border-slate-200 rounded-lg bg-white font-medium"
+                >
+                  <option value={15}>15 / hal</option>
+                  <option value={25}>25 / hal</option>
+                  <option value={50}>50 / hal</option>
+                  <option value={100}>Semua</option>
+                </select>
+              </div>
+
+              <div className="hidden sm:flex items-center space-x-4">
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-2 rounded-full h-2 bg-emerald-500"></span>
+                  <span>Lunas: {stats.paid}</span>
+                </span>
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-2 rounded-full h-2 bg-rose-500"></span>
+                  <span>Belum: {stats.unpaid}</span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </Card>
       </div>
 

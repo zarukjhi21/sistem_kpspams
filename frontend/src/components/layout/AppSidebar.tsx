@@ -141,7 +141,7 @@ export function AppSidebar() {
   const navGroups = getNavGroups();
 
   return (
-    <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex-col min-h-[calc(100vh-4rem)] border-r border-slate-800 selection:bg-brand-maroon-800">
+    <aside className="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col h-full border-r border-slate-800 selection:bg-brand-maroon-800">
       {/* Navigation Groups */}
       <div className="p-4 flex-1 space-y-6 overflow-y-auto">
         {navGroups.map((group, idx) => (
@@ -176,8 +176,8 @@ export function AppSidebar() {
         ))}
       </div>
 
-      {/* Role & Scope Footer */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
+      {/* Role & Scope Footer (Pinned at Bottom of Sidebar) */}
+      <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 flex-shrink-0">
         <div className="flex items-center space-x-2 mb-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-brand-gold-500" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
