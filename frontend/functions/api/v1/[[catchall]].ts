@@ -1475,59 +1475,124 @@ export async function onRequest(context: any) {
       });
     }
 
-    // 16. Portal Mandiri Warga (Cek Tagihan Bebas Login via NIK / No. SR)
+    // 16. Portal Mandiri Warga (Cek Tagihan Bebas Login via NIK / No. SR / Nama)
     if (path === "portal/check-sr") {
       const q = (url.searchParams.get("sr") || url.searchParams.get("nik") || url.searchParams.get("q") || "").trim();
-      if (!q) {
+      const exactCustId = url.searchParams.get("id");
+
+      if (!q && !exactCustId) {
         return jsonResponse({
           status: "fail",
-          message: "Silakan masukkan Nomor Sambungan Rumah (No. SR) atau NIK Anda.",
+          message: "Silakan masukkan Nomor Sambungan Rumah (No. SR), NIK, atau Nama Anda.",
         }, 400);
       }
 
-      const custRows = await sql.query(`
-        SELECT c.*, 
-          conn.id as connection_id, conn.connection_no, conn.status as connection_status,
-          m.serial_number as meter_serial, m.brand as meter_brand,
-          k.name as kpspams_name, k.id as kpspams_id,
-          ct.name as tariff_name
-        FROM customers c
-        LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
-        LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
-        LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
-        LEFT JOIN customer_types ct ON CAST(c.customer_type_id AS integer) = ct.id
-        WHERE (c.nik = $1 OR conn.connection_no ILIKE $1 OR c.phone = $1 OR c.code = $1)
+      let custRows: any[] = [];
+      if (exactCustId) {
+        custRows = await sql.query(`
+          SELECT c.*, 
+            conn.id as connection_id, conn.connection_no, conn.status as connection_status,
+            m.serial_number as meter_serial, m.brand as meter_brand, m.diameter_inch as meter_diameter, m.initial_reading as meter_initial,
+            k.name as kpspams_name, k.id as kpspams_id, k.contact_phone as kpspams_phone, k.bank_account_info as kpspams_bank,
+            k.office_address as kpspams_address, ct.name as tariff_name
+          FROM customers c
+          LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
+          LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+          LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
+          LEFT JOIN customer_types ct ON CAST(c.customer_type_id AS integer) = ct.id
+          WHERE c.id = $1 AND c.deleted_at IS NULL
+          LIMIT 1
+        `, [Number(exactCustId)]);
+      } else {
+        custRows = await sql.query(`
+          SELECT c.*, 
+            conn.id as connection_id, conn.connection_no, conn.status as connection_status,
+            m.serial_number as meter_serial, m.brand as meter_brand, m.diameter_inch as meter_diameter, m.initial_reading as meter_initial,
+            k.name as kpspams_name, k.id as kpspams_id, k.contact_phone as kpspams_phone, k.bank_account_info as kpspams_bank,
+            k.office_address as kpspams_address, ct.name as tariff_name
+          FROM customers c
+          LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
+          LEFT JOIN meters m ON CAST(conn.meter_id AS integer) = m.id
+          LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
+          LEFT JOIN customer_types ct ON CAST(c.customer_type_id AS integer) = ct.id
+          WHERE (
+            c.nik = $1 
+            OR c.nik ILIKE '%' || $1 || '%'
+            OR conn.connection_no ILIKE '%' || $1 || '%'
+            OR c.phone ILIKE '%' || $1 || '%'
+            OR c.code ILIKE '%' || $1 || '%'
+            OR c.full_name ILIKE '%' || $1 || '%'
+          )
           AND c.deleted_at IS NULL
-        LIMIT 1
-      `, [q]);
+          ORDER BY (c.nik = $1 OR conn.connection_no ILIKE $1) DESC, c.id ASC
+          LIMIT 10
+        `, [q]);
+      }
 
       if (custRows.length === 0) {
         return jsonResponse({
           status: "fail",
-          message: `Data dengan NIK / No. SR '${q}' tidak ditemukan dalam basis data resmi Desa Kuajang. Silakan pastikan NIK sesuai KTP Anda atau hubungi kantor desa.`,
+          message: `Data dengan kata kunci '${q}' tidak ditemukan dalam basis data resmi Desa Kuajang. Silakan pastikan NIK, No. SR, atau Nama sesuai dengan KTP Anda.`,
         }, 404);
+      }
+
+      // If multiple customers match and query is not exact 16-digit NIK or exact SR, return matches list for selection
+      const isExactSearch = (q.length === 16 && /^\d+$/.test(q)) || (custRows.length === 1 && custRows[0].connection_no?.toLowerCase() === q.toLowerCase());
+      if (custRows.length > 1 && !exactCustId && !isExactSearch) {
+        return jsonResponse({
+          status: "multiple_matches",
+          message: `Ditemukan ${custRows.length} sambungan yang sesuai dengan pencarian '${q}'. Silakan pilih sambungan Anda:`,
+          data: {
+            matches: custRows.map((c: any) => ({
+              id: c.id,
+              connection_id: c.connection_id || c.id,
+              connection_no: c.connection_no || `SR-LMB-${String(c.id).padStart(5, "0")}`,
+              full_name: c.full_name,
+              nik_masked: c.nik && c.nik.length >= 8 ? c.nik.substring(0, 6) + "******" + c.nik.substring(c.nik.length - 4) : (c.nik || "-"),
+              dusun: c.dusun || "Lemo Baru",
+              tariff_name: c.tariff_name || "Rumah Tangga",
+              kpspams_name: c.kpspams_name || "KPSPAMS Lemo Baru"
+            }))
+          }
+        });
       }
 
       const cust = custRows[0];
       const custIdStr = cust.id.toString();
       const connIdStr = cust.connection_id ? cust.connection_id.toString() : "0";
+      const kpspamsIdStr = (cust.kpspams_id || 1).toString();
 
-      // Ambil tagihan terbaru dan riwayat pemakaian meter secara paralel
-      const [invRows, mrRows] = await Promise.all([
+      // Parallel queries: latest invoice with payment record, 6-month periods & readings, and recent complaints
+      const [invRows, bps, mrs, compRows] = await Promise.all([
         sql.query(`
-          SELECT inv.*, bp.name as period_name, bp.due_date
+          SELECT inv.*, bp.name as period_name, bp.due_date,
+                 pay.receipt_number, pay.payment_date, pay.payment_method, pay.reference_number, pay.notes as payment_notes, pay.amount_paid
           FROM invoices inv
           LEFT JOIN billing_periods bp ON CAST(inv.billing_period_id AS integer) = bp.id
+          LEFT JOIN payments pay ON CAST(pay.invoice_id AS text) = CAST(inv.id AS text)
           WHERE CAST(inv.customer_id AS text) = $1 OR inv.connection_id = $2
           ORDER BY inv.id DESC LIMIT 1
         `, [custIdStr, connIdStr]),
         sql.query(`
-          SELECT mr.*, bp.name as period_name
-          FROM meter_readings mr
-          LEFT JOIN billing_periods bp ON CAST(mr.billing_period_id AS integer) = bp.id
-          WHERE CAST(mr.connection_id AS text) = $1
-          ORDER BY mr.id DESC LIMIT 6
+          SELECT id, name, month, year 
+          FROM billing_periods 
+          WHERE CAST(kpspams_id AS text) = $1
+          ORDER BY id ASC
+          LIMIT 6
+        `, [kpspamsIdStr]),
+        sql.query(`
+          SELECT DISTINCT ON (billing_period_id)
+            billing_period_id, usage_m3, previous_reading, current_reading, reading_date, notes
+          FROM meter_readings
+          WHERE CAST(connection_id AS text) = $1
+          ORDER BY billing_period_id, id DESC
         `, [connIdStr]),
+        sql.query(`
+          SELECT id, ticket_number, category, description, status, created_at, resolved_at
+          FROM complaints
+          WHERE CAST(customer_id AS text) = $1 OR CAST(connection_id AS text) = $2
+          ORDER BY id DESC LIMIT 5
+        `, [custIdStr, connIdStr])
       ]);
 
       const latestInv = invRows[0];
@@ -1536,14 +1601,28 @@ export async function onRequest(context: any) {
         ? cust.nik.substring(0, 6) + "******" + cust.nik.substring(cust.nik.length - 4)
         : (cust.nik || "-");
 
-      const consumptionHistory = mrRows.map((mr: any) => ({
-        period_name: mr.period_name || "Oktober 2026",
-        month: mr.period_name || "Okt 2026",
-        reading_date: mr.reading_date || mr.created_at ? new Date(mr.reading_date || mr.created_at).toISOString().split("T")[0] : "2026-10-01",
-        previous_reading: Number(mr.previous_reading) || 0,
-        current_reading: Number(mr.current_reading) || 0,
-        usage_m3: Number(mr.usage_m3) || 0,
-      }));
+      // Build structured 6-month historical consumption
+      const mrMap = new Map();
+      for (const mr of mrs) {
+        mrMap.set(String(mr.billing_period_id), mr);
+      }
+
+      const monthNames = ["", "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+      const consumptionHistory = bps.map((bp: any) => {
+        const mr = mrMap.get(String(bp.id));
+        const mNum = parseInt(bp.month, 10) || 10;
+        const shortMonth = `${monthNames[mNum] || "Okt"} '${String(bp.year).slice(-2)}`;
+        return {
+          period_id: bp.id,
+          period_name: bp.name,
+          month: shortMonth,
+          usage_m3: mr ? Number(mr.usage_m3) || 0 : 0,
+          previous_reading: mr ? Number(mr.previous_reading) || 0 : 0,
+          current_reading: mr ? Number(mr.current_reading) || 0 : 0,
+          has_reading: !!mr,
+          reading_date: mr?.reading_date || null
+        };
+      });
 
       return jsonResponse({
         status: "success",
@@ -1556,32 +1635,54 @@ export async function onRequest(context: any) {
             tariff_type: cust.tariff_name || "Rumah Tangga",
             address: cust.identity_address || `Dusun ${cust.dusun || "Lemo Baru"}, Desa Kuajang`,
             dusun: cust.dusun || "Lemo Baru",
+            village: cust.village || "KUAJANG",
+            district: cust.district || "BINUANG",
           },
           connection: {
             id: cust.connection_id || cust.id,
             connection_no: cust.connection_no || `SR-LMB-${String(cust.id).padStart(5, "0")}`,
             meter_serial: cust.meter_serial || "MTR-LMB-1001",
             meter_brand: cust.meter_brand || "Onda Multi-Jet",
+            meter_diameter: cust.meter_diameter || '1/2"',
+            meter_initial: Number(cust.meter_initial) || 0,
             status: cust.connection_status || cust.status || "ACTIVE",
             kpspams_id: Number(cust.kpspams_id) || 1,
             kpspams_name: cust.kpspams_name || "KPSPAMS Lemo Baru",
+            kpspams_phone: cust.kpspams_phone || "082199887766",
+            kpspams_bank: cust.kpspams_bank || "BRI Unit Binuang: 0214-01-002345-53-1 a.n KPSPAMS Lemo Baru",
+            kpspams_address: cust.kpspams_address || "Dusun Lemo Baru RT 02, Desa Kuajang",
           },
           current_bill: latestInv ? {
             invoice_id: latestInv.id,
             invoice_number: latestInv.invoice_number,
-            period_name: latestInv.period_name || "Oktober 2026",
+            receipt_number: latestInv.receipt_number || `KW/${latestInv.invoice_number.replace("INV/", "")}`,
+            period_name: latestInv.period_name || "Periode Oktober 2026",
             usage_m3: Number(latestInv.usage_m3) || 0,
-            water_amount: Number(latestInv.water_amount) || Number(latestInv.total_amount) || 10000,
-            admin_fee: Number(latestInv.admin_fee) || 0,
+            water_amount: Number(latestInv.water_amount) || (Number(latestInv.total_amount) > 10000 ? Number(latestInv.total_amount) - 10000 : 0),
+            admin_fee: Number(latestInv.admin_fee) || 10000,
             maintenance_fee: Number(latestInv.maintenance_fee) || 0,
             penalty_fee: Number(latestInv.penalty_fee) || 0,
             total_amount: Number(latestInv.total_amount) || 10000,
+            paid_amount: Number(latestInv.paid_amount) || (latestInv.status === "PAID" ? Number(latestInv.total_amount) : 0),
             balance_due: latestInv.status === "PAID" ? 0 : Number(latestInv.total_amount) || 10000,
             status: latestInv.status || "UNPAID",
             due_date: latestInv.due_date ? new Date(latestInv.due_date).toISOString().split("T")[0] : "2026-10-25",
+            paid_at: latestInv.paid_at || latestInv.payment_date || null,
+            payment_method: latestInv.payment_method === "CASH" ? "Kasir / Petugas Keliling (Tunai)" : (latestInv.payment_method || "Tunai"),
+            reference_number: latestInv.reference_number || null,
+            payment_notes: latestInv.payment_notes || "Diterima oleh petugas KPSPAMS",
             is_paid: latestInv.status === "PAID",
           } : null,
           consumption_history: consumptionHistory,
+          recent_complaints: compRows.map((c: any) => ({
+            id: c.id,
+            ticket_number: c.ticket_number,
+            category: c.category,
+            description: c.description,
+            status: c.status,
+            created_at: c.created_at ? new Date(c.created_at).toISOString().split("T")[0] : "2026-10-01",
+            resolved_at: c.resolved_at ? new Date(c.resolved_at).toISOString().split("T")[0] : null,
+          }))
         },
       });
     }
@@ -1591,12 +1692,19 @@ export async function onRequest(context: any) {
       const ticketNo = `TKT/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
       await sql.query(`
         INSERT INTO complaints (
-          kpspams_id, customer_id, ticket_number, category, description,
+          kpspams_id, customer_id, connection_id, ticket_number, category, description,
           priority, status, created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5, 'MEDIUM', 'SUBMITTED', NOW(), NOW()
+          $1, $2, $3, $4, $5, $6, 'MEDIUM', 'SUBMITTED', NOW(), NOW()
         )
-      `, [Number(b.kpspams_id) || 1, Number(b.customer_id) || 1, ticketNo, b.category || "LAINNYA", b.description || "Pengaduan mandiri warga"]);
+      `, [
+        Number(b.kpspams_id) || 1,
+        Number(b.customer_id) || 1,
+        b.connection_id ? String(b.connection_id) : null,
+        ticketNo,
+        b.category || "LAINNYA",
+        b.description || "Pengaduan mandiri warga"
+      ]);
 
       return jsonResponse({
         status: "success",
