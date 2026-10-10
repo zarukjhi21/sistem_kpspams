@@ -611,16 +611,15 @@ function CitizenPortalContent() {
 
                 <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
                   <div>
-                    <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/10 text-white text-[10px] sm:text-xs font-bold mb-2">
-                      <Sparkles className="w-3.5 h-3.5 text-brand-gold-400" />
-                      <span>{data.current_bill.period_name.toUpperCase()}</span>
-                    </div>
-
                     <div className="text-2xl sm:text-4xl lg:text-5xl font-black font-tabular tracking-tight">
                       Rp {data.current_bill.total_amount.toLocaleString("id-ID")},-
                     </div>
 
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
+                      <span className="text-amber-300/90 font-semibold">
+                        {data.current_bill.period_name}
+                      </span>
+                      <span>•</span>
                       <span className="text-slate-300">
                         No. Invoice: <strong className="font-mono text-white">{data.current_bill.invoice_number}</strong>
                       </span>
