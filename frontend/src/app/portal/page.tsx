@@ -338,7 +338,7 @@ function CitizenPortalContent() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
       {/* Citizen Header Bar */}
-      <header className="bg-slate-950/95 backdrop-blur-md text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
+      <header className="bg-slate-950/95 backdrop-blur-md text-white shadow-md border-b border-slate-800 sticky top-0 z-30 print:hidden">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/portal" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
@@ -386,7 +386,7 @@ function CitizenPortalContent() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full space-y-4 sm:space-y-6">
+      <main className={`flex-1 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full space-y-4 sm:space-y-6 ${invoiceModalOpen || receiptModalOpen ? "print:hidden" : ""}`}>
         {!data ? (
           /* ========================================================================= */
           /* STATE 1: SEARCH SCREEN (Form Pencarian Fleksibel: No SR, NIK, atau Nama)  */
@@ -918,7 +918,7 @@ function CitizenPortalContent() {
       </main>
 
       {/* Clean Footer */}
-      <footer className="max-w-4xl w-full mx-auto px-4 text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-8 space-y-1">
+      <footer className="max-w-4xl w-full mx-auto px-4 text-center py-6 text-xs text-slate-400 border-t border-slate-200 mt-8 space-y-1 print:hidden">
         <p className="font-medium text-slate-600">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
         <p className="text-[11px] text-slate-400">
           SI-KPSPAMS KUAJANG • Layanan Transparansi Air Bersih Terpadu
@@ -1025,8 +1025,8 @@ function CitizenPortalContent() {
 
       {/* Modal Lembar Tagihan Resmi (Printable Official Invoice Slip) */}
       {invoiceModalOpen && data?.current_bill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4 print:static print:inset-auto print:bg-white print:p-0 print:m-0 print:block print:overflow-visible">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto print:rounded-none print:shadow-none print:border-none print:p-0 print:m-0 print:max-h-none print:max-w-none print:w-full print:overflow-visible">
             {/* Header Dialog */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 print:hidden">
               <div className="flex items-center space-x-2">
@@ -1175,8 +1175,8 @@ function CitizenPortalContent() {
 
       {/* Modal Kwitansi Lunas Resmi (Printable Official Receipt) */}
       {receiptModalOpen && data?.current_bill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4 print:static print:inset-auto print:bg-white print:p-0 print:m-0 print:block print:overflow-visible">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-7 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto print:rounded-none print:shadow-none print:border-none print:p-0 print:m-0 print:max-h-none print:max-w-none print:w-full print:overflow-visible">
             {/* Header Dialog */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4 print:hidden">
               <div className="flex items-center space-x-2">

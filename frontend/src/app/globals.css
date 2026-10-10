@@ -99,25 +99,43 @@ body {
     display: none !important;
   }
   @page {
-    size: auto;
-    margin: 8mm 10mm;
+    size: A4 portrait;
+    margin: 10mm 12mm;
   }
-  body {
-    background: white !important;
-    color: black !important;
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   #printable-financial-report {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    color: black !important;
+    color: #000000 !important;
+    overflow: visible !important;
   }
   #printable-receipt-card,
   #printable-invoice-card {
-    border: 1px solid #94a3b8 !important;
-    background: white !important;
+    border: 1.5px dashed #475569 !important;
+    background: #ffffff !important;
     box-shadow: none !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+  table {
+    page-break-inside: auto !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  thead {
+    display: table-header-group !important;
   }
 }
 

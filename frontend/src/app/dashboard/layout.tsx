@@ -45,32 +45,40 @@ export default function DashboardRootLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-bg antialiased selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-surface-bg antialiased selection:bg-brand-maroon-800 selection:text-white print:bg-white print:min-h-0">
       {/* Sticky Header */}
-      <AppHeader onOpenMobileDrawer={() => setMobileDrawerOpen(true)} />
+      <div className="print:hidden">
+        <AppHeader onOpenMobileDrawer={() => setMobileDrawerOpen(true)} />
+      </div>
 
       {/* Body Container */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden print:overflow-visible">
         {/* Desktop Sidebar (hidden on mobile) */}
-        <AppSidebar />
+        <div className="print:hidden">
+          <AppSidebar />
+        </div>
 
         {/* Main Workspace Area with responsive bottom padding for MobileBottomNav */}
-        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-28 md:pb-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 pb-28 md:pb-8 overflow-y-auto max-w-7xl mx-auto w-full print:p-0 print:m-0 print:max-w-none print:w-full print:overflow-visible">
           {children}
         </main>
       </div>
 
       {/* Mobile Slide-out Drawer */}
-      <MobileDrawer
-        isOpen={mobileDrawerOpen}
-        onClose={() => setMobileDrawerOpen(false)}
-      />
+      <div className="print:hidden">
+        <MobileDrawer
+          isOpen={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+        />
+      </div>
 
       {/* Mobile Docked Bottom Navigation Bar */}
-      <MobileBottomNav
-        isMenuOpen={mobileDrawerOpen}
-        onOpenMenu={() => setMobileDrawerOpen(true)}
-      />
+      <div className="print:hidden">
+        <MobileBottomNav
+          isMenuOpen={mobileDrawerOpen}
+          onOpenMenu={() => setMobileDrawerOpen(true)}
+        />
+      </div>
     </div>
   );
 }

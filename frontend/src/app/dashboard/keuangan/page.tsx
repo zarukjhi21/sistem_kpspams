@@ -635,8 +635,9 @@ function KeuanganContent() {
   };
 
   return (
-    <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
-      {/* Header Banner */}
+    <>
+      <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8 print:hidden">
+        {/* Header Banner */}
       <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-brand-maroon-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-brand-gold-500/20 text-brand-gold-400 text-[11px] font-bold mb-1.5">
@@ -1476,11 +1477,12 @@ function KeuanganContent() {
           </div>
         </div>
       )}
+      </div>
 
       {/* Modal Cetak Laporan Keuangan Bulanan (Print-Friendly A4 & WhatsApp) */}
       {showReportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 print:static print:inset-auto print:bg-white print:p-0 print:m-0 print:block print:overflow-visible">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 border border-slate-100 animate-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto print:rounded-none print:shadow-none print:border-none print:p-0 print:m-0 print:max-h-none print:max-w-none print:w-full print:overflow-visible">
             {/* Header Modal & Tombol Aksi Cetak */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-6 print:hidden">
               <div className="flex items-center space-x-2">
@@ -1563,7 +1565,7 @@ function KeuanganContent() {
               </div>
 
               {/* Ringkasan Eksekutif Neraca Kas */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="grid grid-cols-2 sm:grid-cols-4 print:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
                   <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Awal</div>
                   <div className="text-sm font-extrabold font-tabular text-slate-800">
@@ -1646,9 +1648,9 @@ function KeuanganContent() {
                     82 Lunas • 1 Belum Lunas (Nurul Pratiwi)
                   </span>
                 </div>
-                <div className="overflow-x-auto max-h-72 border border-slate-300 rounded">
+                <div className="overflow-x-auto max-h-72 print:max-h-none print:overflow-visible border border-slate-300 rounded">
                   <table className="w-full text-left border-collapse text-[10px] min-w-[500px]">
-                    <thead className="sticky top-0 bg-slate-100 font-bold border-b border-slate-300 text-slate-700">
+                    <thead className="sticky top-0 print:static bg-slate-100 font-bold border-b border-slate-300 text-slate-700">
                       <tr>
                         <th className="p-1.5 border border-slate-300 text-center w-8">No</th>
                         <th className="p-1.5 border border-slate-300 font-mono">No. SR</th>
@@ -1703,7 +1705,7 @@ function KeuanganContent() {
               </div>
 
               {/* IV. Tanda Tangan & Pengesahan Resmi 4 Pihak (Kepala Desa, BPD, Ketua KPSPAMS, Bendahara) */}
-              <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+              <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 print:grid-cols-4 gap-4 text-center text-xs print:break-inside-avoid">
                 <div>
                   <div className="text-[10px] text-slate-500">Mengetahui,</div>
                   <div className="font-bold text-slate-900">Kepala Desa Kuajang</div>
@@ -1761,6 +1763,6 @@ function KeuanganContent() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
