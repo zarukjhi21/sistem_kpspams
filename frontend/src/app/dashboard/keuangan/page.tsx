@@ -620,66 +620,66 @@ function KeuanganContent() {
         </div>
       )}
 
-      {/* Financial Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-4 sm:p-5">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Total Saldo Kas Terpadu</span>
-            <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl">
-              <Wallet className="w-4 h-4" />
+      {/* Financial Summary KPI Cards (2 cols on mobile, 4 cols on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
+            <span>Saldo Kas Riil</span>
+            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-700 rounded-lg sm:rounded-xl">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900 font-tabular">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
             Rp {totalLiquidCash.toLocaleString("id-ID")}
           </div>
-          <div className="mt-1 text-[11px] text-emerald-600 font-semibold flex items-center space-x-1">
-            <CheckCircle2 className="w-3 h-3" />
-            <span>Kas operasional terpadu (Tunai & Bank)</span>
+          <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-emerald-600 font-semibold flex items-center space-x-1 truncate">
+            <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
+            <span>Kas fisik & rekening</span>
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-5">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Saldo Awal (Opening)</span>
-            <div className="p-2 bg-amber-50 text-amber-700 rounded-xl">
-              <RefreshCw className="w-4 h-4" />
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
+            <span>Saldo Awal</span>
+            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-700 rounded-lg sm:rounded-xl">
+              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-amber-900 font-tabular">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-amber-900 font-tabular truncate">
             Rp {totalOpeningBalance.toLocaleString("id-ID")}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
-            Audit serah terima kepengurusan
+          <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-slate-400 truncate">
+            Audit serah terima
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-5">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Total Pemasukan Kas</span>
-            <div className="p-2 bg-sky-50 text-sky-700 rounded-xl">
-              <ArrowDownLeft className="w-4 h-4" />
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
+            <span>Pemasukan</span>
+            <div className="p-1.5 sm:p-2 bg-sky-50 text-sky-700 rounded-lg sm:rounded-xl">
+              <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-emerald-700 font-tabular">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-emerald-700 font-tabular truncate">
             + Rp {totalIncome.toLocaleString("id-ID")}
           </div>
-          <div className="mt-1 text-[11px] text-emerald-600 font-semibold">
-            Termasuk penerimaan iuran warga & setoran kasir
+          <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-emerald-600 font-semibold truncate">
+            Iuran air & setoran kasir
           </div>
         </Card>
 
-        <Card className="p-4 sm:p-5">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-            <span>Beban & Pengeluaran</span>
-            <div className="p-2 bg-rose-50 text-rose-700 rounded-xl">
-              <ArrowUpRight className="w-4 h-4" />
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
+            <span>Pengeluaran</span>
+            <div className="p-1.5 sm:p-2 bg-rose-50 text-rose-700 rounded-lg sm:rounded-xl">
+              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-rose-700 font-tabular">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-rose-700 font-tabular truncate">
             - Rp {totalExpense.toLocaleString("id-ID")}
           </div>
-          <div className="mt-1 text-[11px] text-rose-600 font-semibold">
-            Listrik PLN, pipa, honor & operasional
+          <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-rose-600 font-semibold truncate">
+            Operasional & pipa
           </div>
         </Card>
       </div>
@@ -698,13 +698,13 @@ function KeuanganContent() {
             return (
               <div
                 key={acc.id}
-                className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-3"
+                className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/90 space-y-2.5"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs font-bold text-slate-800 bg-white px-2 py-0.5 rounded-md border border-slate-200">
                     {acc.code}
                   </span>
-                  <Badge variant="brand" size="sm">{kpspams?.name || "Unit"}</Badge>
+                  <Badge variant="brand" size="sm" className="text-[10px]">{kpspams?.name || "Unit"}</Badge>
                 </div>
 
                 <div>
@@ -729,7 +729,7 @@ function KeuanganContent() {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] text-slate-400">Saldo Kas Riil</div>
-                    <div className="font-black text-slate-900 font-tabular">
+                    <div className="font-black text-slate-900 font-tabular text-sm">
                       Rp {acc.currentBalance.toLocaleString("id-ID")}
                     </div>
                   </div>
@@ -740,7 +740,7 @@ function KeuanganContent() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full font-bold"
+                      className="w-full font-bold text-xs"
                       onClick={() => handleOpenEditOpening(acc)}
                     >
                       Atur Saldo Awal (Opening Balance)
@@ -818,7 +818,7 @@ function KeuanganContent() {
         />
 
         {/* Filter Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
@@ -861,24 +861,40 @@ function KeuanganContent() {
           </div>
         </div>
 
-        {/* Mobile View (< md) */}
+        {/* Mobile View (< md): Sleek Transaction Cards with Left Border Accent */}
         <div className="md:hidden space-y-2.5">
           {filteredTx.length === 0 ? (
-            <div className="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl">
+            <div className="p-6 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-200">
               Belum ada mutasi transaksi yang sesuai dengan filter.
             </div>
           ) : (
             <>
               {paginatedTx.map((tx) => (
-                <div key={tx.id} className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-1.5">
+                <div
+                  key={tx.id}
+                  className={`p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-2 border-l-4 ${
+                    tx.type === "INCOME" ? "border-l-emerald-500" : "border-l-rose-500"
+                  }`}
+                >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono font-bold text-slate-700">{tx.txNumber}</span>
-                    <span className="text-slate-400 text-[10px]">{tx.date}</span>
+                    <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                      {tx.txNumber}
+                    </span>
+                    <span className="text-slate-400 text-[11px] font-medium">{tx.date}</span>
                   </div>
-                  <div className="font-semibold text-slate-900 text-xs">{tx.description}</div>
-                  <div className="flex items-center justify-between pt-1">
+
+                  <div>
+                    <div className="font-bold text-slate-900 text-xs leading-snug">
+                      {tx.description}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      {tx.accountName} • {tx.kpspamsName}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                         tx.type === "INCOME"
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           : "bg-rose-50 text-rose-700 border border-rose-200"
@@ -887,7 +903,7 @@ function KeuanganContent() {
                       {tx.type === "INCOME" ? "+ Pemasukan" : "- Pengeluaran"} • {getCategoryLabel(tx.category)}
                     </span>
                     <span
-                      className={`font-black font-tabular text-xs ${
+                      className={`font-black font-tabular text-sm ${
                         tx.type === "INCOME" ? "text-emerald-700" : "text-rose-700"
                       }`}
                     >

@@ -103,6 +103,7 @@ import {
   Activity,
   Receipt,
   Phone,
+  MessageCircle,
   X,
   Sparkles,
   ChevronRight,
@@ -1432,62 +1433,89 @@ function PelangganContent() {
             {paginatedCustomers.map((cust) => (
               <div
                 key={cust.id}
-                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-3"
+                className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-xs space-y-2.5"
               >
                 {/* Header row: Connection No & Status */}
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                  <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2.5 py-0.5 rounded-lg border border-brand-maroon-200">
                     {cust.connectionNo}
                   </span>
-                  {cust.status === "ACTIVE" ? (
-                    <Badge variant="success" size="sm">Aktif</Badge>
-                  ) : cust.status === "SEALED" ? (
-                    <Badge variant="warning" size="sm">Disegel</Badge>
-                  ) : (
-                    <Badge variant="danger" size="sm">Diputus</Badge>
-                  )}
+                  <div className="flex items-center space-x-1.5">
+                    {cust.billingStatus === "PAID" ? (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        ✓ Lunas
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                        ● Belum
+                      </span>
+                    )}
+                    {cust.status === "ACTIVE" ? (
+                      <Badge variant="success" size="sm" className="text-[9px]">Aktif</Badge>
+                    ) : cust.status === "SEALED" ? (
+                      <Badge variant="warning" size="sm" className="text-[9px]">Disegel</Badge>
+                    ) : (
+                      <Badge variant="danger" size="sm" className="text-[9px]">Diputus</Badge>
+                    )}
+                  </div>
                 </div>
 
-                {/* Customer Info */}
+                {/* Customer Info & WhatsApp Link */}
                 <div>
-                  <div className="font-bold text-slate-900 text-sm">{cust.name}</div>
-                  <div className="text-[11px] text-slate-500 font-mono mt-0.5">NIK: {cust.nik}</div>
-                  <div className="text-[11px] text-slate-600 mt-1 flex items-center space-x-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="font-black text-slate-900 text-sm leading-snug">{cust.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">NIK: {cust.nik || "-"}</div>
+                    </div>
+                    {cust.phone ? (
+                      <a
+                        href={`https://wa.me/${cust.phone.replace(/^0/, "62").replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold border border-emerald-200 flex items-center space-x-1 shadow-xs active:scale-95 flex-shrink-0"
+                        title="Chat WhatsApp Warga"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Chat WA</span>
+                      </a>
+                    ) : null}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-1 flex items-center space-x-1">
                     <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                     <span>{cust.dusun}</span>
                     <span className="text-slate-300">•</span>
-                    <span className="text-slate-500">{cust.kpspamsName}</span>
+                    <span>{cust.kpspamsName}</span>
                   </div>
                 </div>
 
                 {/* Meter Info Box */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-slate-400">Seri Meter Fisik</div>
-                    <div className="flex items-center space-x-1.5">
+                    <div className="text-[9px] uppercase font-bold text-slate-400">Seri Meter Fisik</div>
+                    <div className="flex items-center space-x-1.5 mt-0.5">
                       <span className="font-mono font-bold text-xs text-slate-700">{cust.meterSerial}</span>
                       {(cust.meterCondition === "STUCK" || cust.isMeterDamaged) && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-100 text-orange-700 border border-orange-200">
-                          ⚠️ Jarum Macet
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-orange-100 text-orange-700 border border-orange-200">
+                          ⚠️ Macet
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] uppercase font-bold text-slate-400">Stand Terakhir</div>
-                    <div className="font-tabular font-black text-sm text-slate-900">
+                    <div className="text-[9px] uppercase font-bold text-slate-400">Stand Terakhir</div>
+                    <div className="font-tabular font-black text-sm text-slate-900 mt-0.5">
                       {cust.lastReading.toFixed(2)} m³
                     </div>
                   </div>
                 </div>
 
                 {/* Direct Actions: Clean 2-tier buttons without overlap */}
-                <div className="pt-2 space-y-2 border-t border-slate-100">
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="pt-1.5 space-y-1.5 border-t border-slate-100">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full text-[11px] px-1.5"
+                      className="w-full text-[11px] px-1 py-1.5"
                       onClick={() => setSelectedCustomer(cust)}
                       icon={<Eye className="w-3.5 h-3.5" />}
                     >
@@ -1496,7 +1524,7 @@ function PelangganContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full text-[11px] px-1.5 text-amber-700 border-amber-300 hover:bg-amber-50"
+                      className="w-full text-[11px] px-1 py-1.5 text-amber-700 border-amber-300 hover:bg-amber-50"
                       onClick={() => handleOpenEditModal(cust)}
                       icon={<Pencil className="w-3.5 h-3.5 text-amber-600" />}
                     >
@@ -1505,7 +1533,7 @@ function PelangganContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full text-[11px] px-1.5 text-rose-700 border-rose-300 hover:bg-rose-50"
+                      className="w-full text-[11px] px-1 py-1.5 text-rose-700 border-rose-300 hover:bg-rose-50"
                       onClick={() => handleOpenActionModal(cust)}
                       icon={<Trash2 className="w-3.5 h-3.5 text-rose-600" />}
                     >
@@ -1513,7 +1541,7 @@ function PelangganContent() {
                     </Button>
                   </div>
                   <Link href="/dashboard/penagihan-lapangan" className="block w-full">
-                    <Button variant="primary" size="sm" className="w-full font-bold shadow-sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
+                    <Button variant="primary" size="sm" className="w-full font-bold shadow-sm py-2 text-xs" icon={<Smartphone className="w-3.5 h-3.5" />}>
                       Catat & Tagih Warga Ini
                     </Button>
                   </Link>
