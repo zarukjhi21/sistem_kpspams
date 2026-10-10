@@ -296,6 +296,26 @@ export async function onRequest(context: any) {
 
       if (method === "POST") {
         const b = await request.json().catch(() => ({}));
+        const rawNik = (b.nik || "").trim();
+
+        // Pencegahan Duplikasi NIK (Cegah double-tap / double submit dari lapangan)
+        if (rawNik && rawNik.length >= 16) {
+          const existingCust = await sql.query(`
+            SELECT c.id, c.full_name, conn.connection_no 
+            FROM customers c
+            LEFT JOIN connections conn ON c.id = CAST(conn.customer_id as integer)
+            WHERE c.nik = $1 AND c.deleted_at IS NULL
+            LIMIT 1
+          `, [rawNik]);
+
+          if (existingCust && existingCust.length > 0) {
+            return jsonResponse({
+              status: "error",
+              message: `Pendaftaran Ditolak: Warga dengan NIK ${rawNik} sudah terdaftar atas nama "${existingCust[0].full_name}" (No. SR: ${existingCust[0].connection_no || '-'}).`,
+            }, 409);
+          }
+        }
+
         const kpspamsId = Number(b.kpspams_id) || 1;
         const newCode = b.code || `CUST-${kpspamsId}-${Date.now().toString().slice(-6)}`;
         const prefix = kpspamsId === 1 ? "SR-LMB" : kpspamsId === 2 ? "SR-LMT" : "SR-KP1";

@@ -110,6 +110,7 @@ import {
   Scan,
   RotateCcw,
   Check,
+  Loader2,
   AlertTriangle,
   Shield,
   Lock,
@@ -262,6 +263,7 @@ function PelangganContent() {
   const [newLongitude, setNewLongitude] = useState<number>(119.3768);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSavingCustomer, setIsSavingCustomer] = useState(false);
 
   // Modal State Edit Pelanggan & Titik Google Maps
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -503,12 +505,24 @@ function PelangganContent() {
   const handleCreateCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isSavingCustomer) return;
+
     if (!newFullName.trim()) {
       setErrorMessage("Nama lengkap pelanggan wajib diisi.");
       return;
     }
-    if (newNik.trim().length !== 16) {
+    const cleanNik = newNik.trim();
+    if (cleanNik.length !== 16) {
       setErrorMessage("NIK harus tepat 16 digit angka.");
+      return;
+    }
+
+    // Validasi Duplikasi NIK sebelum kirim (Cegah input ganda di lapangan)
+    const existingCust = customers.find((c) => c.nik?.trim() === cleanNik);
+    if (existingCust) {
+      setErrorMessage(
+        `Pendaftaran Ditolak: NIK ${cleanNik} sudah terdaftar di sistem atas nama "${existingCust.name}" (No. SR: ${existingCust.connectionNo}). Pelanggan tidak boleh didaftarkan ganda.`
+      );
       return;
     }
 
@@ -537,6 +551,7 @@ function PelangganContent() {
     };
     const customerTypeId = typeMap[newTariffType] || 1;
 
+    setIsSavingCustomer(true);
     try {
       // 1. Unggah arsip foto fisik KTP ke Google Drive Desa jika foto ada
       let gdrivePhotoUrl: string | undefined = undefined;
@@ -635,6 +650,8 @@ function PelangganContent() {
       const errMsg = apiErr?.message || (apiErr?.errors ? Object.values(apiErr.errors).flat().join(", ") : "Gagal mendaftarkan ke server.");
       setErrorMessage(`Gagal menyimpan ke basis data: ${errMsg}`);
       return;
+    } finally {
+      setIsSavingCustomer(false);
     }
   };
 
@@ -2185,9 +2202,16 @@ function PelangganContent() {
                   variant="primary"
                   size="sm"
                   className="font-bold shadow-md"
-                  icon={<Check className="w-3.5 h-3.5" />}
+                  disabled={isSavingCustomer}
+                  icon={
+                    isSavingCustomer ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Check className="w-3.5 h-3.5" />
+                    )
+                  }
                 >
-                  Simpan Pelanggan ke Database
+                  {isSavingCustomer ? "Menyimpan Data..." : "Simpan Pelanggan ke Database"}
                 </Button>
               </div>
             </form>
