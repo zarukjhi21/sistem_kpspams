@@ -263,10 +263,10 @@ export default function LoginPage() {
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] space-y-1.5">
                 <div className="font-semibold text-slate-800">Format Akun Petugas Lemo Baru:</div>
                 <ul className="list-disc pl-4 space-y-1 text-slate-600">
-                  <li><span className="font-mono text-slate-700">admin.lemobaru</span> (Admin Unit)</li>
-                  <li><span className="font-mono text-slate-700">bendahara.lemobaru</span> (Keuangan)</li>
-                  <li><span className="font-mono text-slate-700">petugas.lemobaru</span> (Catat Meter)</li>
-                  <li><span className="font-mono text-slate-700">ketua.lemobaru</span> (Ketua Pengelola)</li>
+                  <li><span className="font-mono text-slate-700">ketua.lemobaru</span> (Ketua KPSPAMS - Fadli)</li>
+                  <li><span className="font-mono text-slate-700">sekretaris.lemobaru</span> (Sekretaris - Mada Ali)</li>
+                  <li><span className="font-mono text-slate-700">bendahara.lemobaru</span> (Bendahara - M. Darmawan)</li>
+                  <li><span className="font-mono text-slate-700">sapri.lemobaru</span> / <span className="font-mono text-slate-700">suardi.lemobaru</span> (Petugas Lapangan)</li>
                 </ul>
               </div>
               <p className="text-[11px] text-slate-500">
