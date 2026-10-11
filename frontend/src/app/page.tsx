@@ -29,6 +29,8 @@ import {
   MapPin,
   TrendingUp,
   Gauge,
+  Maximize2,
+  X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -65,6 +67,7 @@ const PublicGisMapSection = dynamic(
 export default function HomePage() {
   const router = useRouter();
   const [quickSearch, setQuickSearch] = useState("");
+  const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
   const [stats, setStats] = useState({
     lmbCash: 30616000,
     lmbCustomers: 86,
@@ -709,6 +712,77 @@ export default function HomePage() {
             </Link>
           </div>
         </section>
+        {/* Struktur Organisasi KPSPAMS Lemo Baru */}
+        <section id="struktur-organisasi" className="scroll-mt-28 space-y-3.5 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-brand-gold-500/10 border border-brand-gold-500/30 text-brand-gold-400 text-[10px] sm:text-xs font-bold mb-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>SK Kepala Desa Kuajang No. 19 Tahun 2026</span>
+              </div>
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white tracking-tight">
+                Struktur Pengurus &amp; Tim Kerja KPSPAMS
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                Kelompok Pengelola Sarana Penyediaan Air Minum dan Sanitasi (KPSPAMS) Lemo Baru Desa Kuajang
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsStructureModalOpen(true)}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition active:scale-95 self-start sm:self-auto cursor-pointer"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-brand-gold-400" />
+              <span>Perbesar Bagan</span>
+            </button>
+          </div>
+
+          <div className="rounded-2xl sm:rounded-3xl bg-slate-950/90 border border-slate-800 shadow-2xl overflow-hidden p-2.5 sm:p-5 relative group">
+            <div 
+              className="relative rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-slate-900 group"
+              onClick={() => setIsStructureModalOpen(true)}
+            >
+              <Image
+                src="/struktur-organisasi-lemobaru.jpg"
+                alt="Struktur Organisasi KPSPAMS Lemo Baru Desa Kuajang"
+                width={1200}
+                height={850}
+                className="w-full h-auto object-contain mx-auto rounded-xl transition duration-300 group-hover:scale-[1.01]"
+                priority
+              />
+              <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/20 transition flex items-center justify-center pointer-events-none">
+                <span className="opacity-0 group-hover:opacity-100 transition duration-200 px-4 py-2 rounded-xl bg-slate-900/90 text-white text-xs font-bold border border-slate-700 shadow-xl flex items-center space-x-2">
+                  <Maximize2 className="w-4 h-4 text-brand-gold-400" />
+                  <span>Klik untuk Memperbesar</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Ringkasan Nama Pengurus Berdasarkan SK No. 19/2026 */}
+            <div className="mt-3.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5 text-center">
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Ketua</span>
+                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Fadli</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
+                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">Sekretaris</span>
+                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Mada Ali</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
+                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Bendahara</span>
+                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">M. Darmawan</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
+                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Penagihan</span>
+                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Suardi &amp; Abdul W.</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 col-span-2 sm:col-span-1">
+                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">Pemeliharaan</span>
+                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Sapri &amp; Nurhanuddin</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
@@ -720,6 +794,8 @@ export default function HomePage() {
               <p className="text-slate-500 text-[11px] mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Desa (SI-KPSPAMS) v1.0</p>
             </div>
             <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
+              <a href="#struktur-organisasi" className="hover:text-white transition">Struktur Pengurus</a>
+              <span>•</span>
               <Link href="/portal" className="hover:text-white transition">Portal Warga</Link>
               <span>•</span>
               <Link href="/login" className="hover:text-white transition">Login Pengurus</Link>
@@ -735,6 +811,42 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Lightbox Modal: Struktur Organisasi Fullscreen */}
+      {isStructureModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in"
+          onClick={() => setIsStructureModalOpen(false)}
+        >
+          <div 
+            className="relative max-w-5xl w-full bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-800 p-3 sm:p-4 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800 px-1">
+              <div className="flex items-center space-x-2">
+                <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
+                <span className="text-xs sm:text-sm font-bold text-white">Struktur Pengurus KPSPAMS Lemo Baru (SK No. 19/2026)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStructureModalOpen(false)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-auto flex-1 flex items-center justify-center rounded-xl bg-slate-950 p-1 sm:p-2">
+              <Image
+                src="/struktur-organisasi-lemobaru.jpg"
+                alt="Struktur Organisasi KPSPAMS Lemo Baru"
+                width={1400}
+                height={1000}
+                className="w-auto h-auto max-h-[80vh] object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
