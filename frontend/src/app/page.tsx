@@ -313,14 +313,19 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                {/* Metric 2: Penerimaan Iuran (Clean & Real-Time) */}
+                {/* Metric 2: Penerimaan Iuran (Clean & Real-Time dengan Bulan Berjalan) */}
                 <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-emerald-500/40 shadow-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
                       Penerimaan Iuran
                     </span>
-                    <div className="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-800 text-emerald-300 border border-slate-700">
+                        {stats.billingPeriod.replace(/^Periode\s+/i, "")}
+                      </span>
+                      <div className="w-5 h-5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                        <CheckCircle2 className="w-3 h-3" />
+                      </div>
                     </div>
                   </div>
 
