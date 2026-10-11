@@ -716,10 +716,6 @@ export default function HomePage() {
         <section id="struktur-organisasi" className="scroll-mt-28 space-y-3.5 sm:space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800 pb-3">
             <div>
-              <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-brand-gold-500/10 border border-brand-gold-500/30 text-brand-gold-400 text-[10px] sm:text-xs font-bold mb-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>SK Kepala Desa Kuajang No. 19 Tahun 2026</span>
-              </div>
               <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white tracking-tight">
                 Struktur Pengurus &amp; Tim Kerja KPSPAMS
               </h3>
@@ -825,7 +821,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800 px-1">
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
-                <span className="text-xs sm:text-sm font-bold text-white">Struktur Pengurus KPSPAMS Lemo Baru (SK No. 19/2026)</span>
+                <span className="text-xs sm:text-sm font-bold text-white">Struktur Organisasi KPSPAMS Lemo Baru</span>
               </div>
               <button
                 type="button"
