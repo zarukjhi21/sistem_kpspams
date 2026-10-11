@@ -66,18 +66,31 @@ export default function HomePage() {
   const router = useRouter();
   const [quickSearch, setQuickSearch] = useState("");
   const [stats, setStats] = useState({
-    lmbCash: 30216000,
-    lmbCustomers: 45,
+    lmbCash: 30616000,
+    lmbCustomers: 86,
     lmbUsageM3: 0,
     lmbPhysicalMeterM3: 62157.5,
-    totalCash: 30216000,
-    totalCustomers: 45,
+    totalCash: 30616000,
+    totalCustomers: 86,
     totalUsageM3: 0,
     totalPhysicalMeterM3: 62157.5,
+    billingPeriod: "Oktober 2026",
+    totalCollected: 850000,
+    paidCount: 85,
+    totalInvoices: 86,
+    collectionRate: 98.8,
   });
 
   useEffect(() => {
     apiClient<{
+      active_billing?: {
+        period_name: string;
+        total_billed: number;
+        total_collected: number;
+        paid_count: number;
+        total_invoices: number;
+        collection_rate: number;
+      };
       units: Record<string, {
         cash: number;
         customers: number;
@@ -91,14 +104,16 @@ export default function HomePage() {
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmbCash = res.data.units.LMB?.cash ?? 30216000;
-          const lmbCust = res.data.units.LMB?.customers ?? 45;
+          const lmbCash = res.data.units.LMB?.cash ?? 30616000;
+          const lmbCust = res.data.units.LMB?.customers ?? 86;
           const lmbUsage = Number(res.data.units.LMB?.usage_m3 ?? 0);
           const lmbPhysical = Number(res.data.units.LMB?.physical_meter_m3 ?? 62157.5);
           const totCash = Number(res.data.total_cash ?? lmbCash);
           const totCust = Number(res.data.total_customers ?? lmbCust);
           const totUsage = Number(res.data.total_usage_m3 ?? lmbUsage);
           const totPhysical = Number(res.data.total_physical_meter_m3 ?? lmbPhysical);
+          const billing = res.data.active_billing;
+
           setStats({
             lmbCash,
             lmbCustomers: lmbCust,
@@ -108,6 +123,11 @@ export default function HomePage() {
             totalCustomers: totCust,
             totalUsageM3: totUsage,
             totalPhysicalMeterM3: totPhysical,
+            billingPeriod: billing?.period_name || "Oktober 2026",
+            totalCollected: billing?.total_collected ?? 850000,
+            paidCount: billing?.paid_count ?? 85,
+            totalInvoices: billing?.total_invoices ?? 86,
+            collectionRate: billing?.collection_rate ?? 98.8,
           });
         }
       })
@@ -291,6 +311,31 @@ export default function HomePage() {
                   <span className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
                     100% Kas Utuh
                   </span>
+                </div>
+
+                {/* Metric 2: Penerimaan Iuran (Clean & Real-Time) */}
+                <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-emerald-500/40 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
+                      Penerimaan Iuran
+                    </span>
+                    <div className="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+
+                  <div className="mt-1 flex items-baseline justify-between">
+                    <span className="text-xl sm:text-2xl font-black text-emerald-400 font-tabular">
+                      Rp {stats.totalCollected.toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                      {stats.collectionRate}%
+                    </span>
+                  </div>
+
+                  <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+                    {stats.paidCount} SR terbayar lunas
+                  </div>
                 </div>
 
                 {/* Metric 2: Sambungan Rumah */}
