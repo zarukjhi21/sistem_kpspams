@@ -24,15 +24,11 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const isPetugas = user?.role === "petugas_lapangan";
-  const isPelanggan = user?.role === "pelanggan";
-  const isPengurus =
-    user?.role === "ketua_kpspams" ||
-    user?.role === "admin_kpspams" ||
-    user?.role === "bendahara_kpspams";
+  const role = user?.role;
 
   const getNavGroups = () => {
-    if (isPelanggan) {
+    // 1. Pelanggan / Warga Biasa
+    if (role === "pelanggan") {
       return [
         {
           category: "Layanan Warga",
@@ -44,29 +40,8 @@ export function AppSidebar() {
       ];
     }
 
-    if (isPetugas) {
-      return [
-        {
-          category: "Operasional Lapangan",
-          items: [
-            { label: "Beranda Ringkasan", href: "/dashboard", icon: LayoutDashboard },
-            { label: "Pelanggan & SR (Dusun)", href: "/dashboard/pelanggan", icon: Users },
-            { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
-            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
-            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
-          ],
-        },
-        {
-          category: "Layanan & Kas",
-          items: [
-            { label: "Buku Kas Setoran", href: "/dashboard/keuangan", icon: Wallet },
-            { label: "Pengaduan & SPK", href: "/dashboard/pengaduan", icon: AlertCircle },
-          ],
-        },
-      ];
-    }
-
-    if (isPengurus) {
+    // 2. Bendahara / Kasir KPSPAMS (Fokus Finansial & Kasir Saja)
+    if (role === "bendahara_kpspams") {
       return [
         {
           category: "Utama",
@@ -75,18 +50,57 @@ export function AppSidebar() {
           ],
         },
         {
-          category: "Jaringan & Lapangan",
+          category: "Keuangan & Kasir",
           items: [
-            { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
-            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
-            { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
-            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
+            { label: "Buku Kas & Saldo Unit", href: "/dashboard/keuangan", icon: Wallet },
+            { label: "Status Iuran & Tagihan", href: "/dashboard/billing", icon: MessageCircle },
           ],
         },
         {
-          category: "Keuangan & Kas",
+          category: "Layanan Warga",
           items: [
-            { label: "Buku Kas & Saldo Unit", href: "/dashboard/keuangan", icon: Wallet },
+            { label: "Portal Warga Mandiri", href: "/portal", icon: Globe },
+          ],
+        },
+      ];
+    }
+
+    // 3. Petugas Lapangan (Fokus Catat Meter, Cek Titik Fisik & Tagih Lapangan)
+    if (role === "petugas_lapangan") {
+      return [
+        {
+          category: "Operasional Lapangan",
+          items: [
+            { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
+            { label: "Pelanggan & SR Dusun", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Peta GIS Sambungan Air", href: "/dashboard/peta-gis", icon: Map },
+          ],
+        },
+        {
+          category: "Layanan Lapangan",
+          items: [
+            { label: "Lapor Aduan / Pipa Bocor", href: "/dashboard/pengaduan", icon: AlertCircle },
+            { label: "Portal Warga Mandiri", href: "/portal", icon: Globe },
+          ],
+        },
+      ];
+    }
+
+    // 4. Sekretaris & Admin Unit KPSPAMS (Fokus Administrasi SR, Broadcast WA, SPK)
+    if (role === "admin_kpspams") {
+      return [
+        {
+          category: "Utama",
+          items: [
+            { label: "Dashboard Unit", href: "/dashboard", icon: LayoutDashboard },
+          ],
+        },
+        {
+          category: "Administrasi Sambungan",
+          items: [
+            { label: "Register Pelanggan & SR", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
           ],
         },
         {
@@ -99,7 +113,67 @@ export function AppSidebar() {
       ];
     }
 
-    // Default: Super Admin & Admin Desa
+    // 5. Ketua KPSPAMS (Supervisi Operasional & Keuangan Unit)
+    if (role === "ketua_kpspams") {
+      return [
+        {
+          category: "Utama",
+          items: [
+            { label: "Dashboard Unit", href: "/dashboard", icon: LayoutDashboard },
+          ],
+        },
+        {
+          category: "Pengawasan Operasional",
+          items: [
+            { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
+            { label: "Billing & Status Iuran", href: "/dashboard/billing", icon: MessageCircle },
+            { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
+          ],
+        },
+        {
+          category: "Keuangan Unit",
+          items: [
+            { label: "Buku Kas & Saldo Unit", href: "/dashboard/keuangan", icon: Wallet },
+          ],
+        },
+        {
+          category: "Layanan Warga",
+          items: [
+            { label: "Pengaduan Layanan Air", href: "/dashboard/pengaduan", icon: AlertCircle },
+            { label: "Portal Warga", href: "/portal", icon: Globe },
+          ],
+        },
+      ];
+    }
+
+    // 6. Kepala Desa (Supervisi Eksekutif Tingkat Desa, Laporan LPJ & Peta GIS)
+    if (role === "pemerintah_desa") {
+      return [
+        {
+          category: "Utama",
+          items: [
+            { label: "Dashboard Eksekutif Desa", href: "/dashboard", icon: LayoutDashboard },
+          ],
+        },
+        {
+          category: "Pengawasan & Transparansi",
+          items: [
+            { label: "Buku Kas & Laporan LPJ", href: "/dashboard/keuangan", icon: Wallet },
+            { label: "Peta Master GIS Desa", href: "/dashboard/peta-gis", icon: Map },
+            { label: "Data Pelanggan 3 Unit", href: "/dashboard/pelanggan", icon: Users },
+          ],
+        },
+        {
+          category: "Layanan Warga",
+          items: [
+            { label: "Pengaduan Warga Desa", href: "/dashboard/pengaduan", icon: AlertCircle },
+            { label: "Portal Transparansi Publik", href: "/portal", icon: Globe },
+          ],
+        },
+      ];
+    }
+
+    // 7. Default: Super Admin & Admin Desa (Akses Penuh Seluruh Sistem)
     return [
       {
         category: "Utama",

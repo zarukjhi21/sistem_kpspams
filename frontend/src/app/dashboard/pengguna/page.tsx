@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -351,6 +352,33 @@ function PenggunaContent() {
     }
     return true;
   });
+
+  const isSuperOrAdminDesa =
+    currentUser?.role === "super_admin" || currentUser?.role === "admin_desa";
+
+  if (!isLoading && currentUser && !isSuperOrAdminDesa) {
+    return (
+      <div className="p-8 max-w-lg mx-auto my-12 bg-white rounded-3xl border border-rose-200 shadow-xl text-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+          <Lock className="w-6 h-6" />
+        </div>
+        <div>
+          <h2 className="text-base font-black text-slate-900">Akses Dibatasi</h2>
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+            Halaman Manajemen Pengguna &amp; Hak Akses hanya dapat dikelola oleh <strong>Administrator Sistem</strong> atau <strong>Operator TI Desa Kuajang</strong>.
+          </p>
+        </div>
+        <div>
+          <Link
+            href="/dashboard"
+            className="inline-flex px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-sm"
+          >
+            &larr; Kembali ke Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
