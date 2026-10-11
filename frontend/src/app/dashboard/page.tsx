@@ -237,45 +237,148 @@ function DashboardContent() {
             >
               Segarkan
             </Button>
-            <Link href="/dashboard/peta-gis">
-              <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
-                Peta Master GIS
-              </Button>
-            </Link>
-            <Link href="/dashboard/penagihan-lapangan">
-              <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
-                Catat & Tagih
-              </Button>
-            </Link>
+
+            {/* Tombol Otoritas Berdasarkan Peran Pengguna */}
+            {user?.role === "bendahara_kpspams" && (
+              <>
+                <Link href="/dashboard/keuangan">
+                  <Button variant="gold" size="sm" icon={<Wallet className="w-3.5 h-3.5" />}>
+                    Buku Kas Unit
+                  </Button>
+                </Link>
+                <Link href="/dashboard/billing">
+                  <Button variant="secondary" size="sm" icon={<Receipt className="w-3.5 h-3.5 text-brand-gold-400" />}>
+                    Status Tagihan
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {user?.role === "petugas_lapangan" && (
+              <>
+                <Link href="/dashboard/penagihan-lapangan">
+                  <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
+                    Catat &amp; Tagih
+                  </Button>
+                </Link>
+                <Link href="/dashboard/peta-gis">
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                    Peta Sambungan
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {user?.role === "admin_kpspams" && (
+              <>
+                <Link href="/dashboard/pelanggan">
+                  <Button variant="secondary" size="sm" icon={<Users className="w-3.5 h-3.5 text-cyan-400" />}>
+                    Pelanggan &amp; SR
+                  </Button>
+                </Link>
+                <Link href="/dashboard/billing">
+                  <Button variant="gold" size="sm" icon={<Receipt className="w-3.5 h-3.5" />}>
+                    Billing &amp; Tagihan
+                  </Button>
+                </Link>
+                <Link href="/dashboard/peta-gis">
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                    Peta GIS
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {user?.role === "pemerintah_desa" && (
+              <>
+                <Link href="/dashboard/keuangan">
+                  <Button variant="gold" size="sm" icon={<Wallet className="w-3.5 h-3.5" />}>
+                    Buku Kas LPJ
+                  </Button>
+                </Link>
+                <Link href="/dashboard/peta-gis">
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                    Peta Master GIS
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {(user?.role === "super_admin" || user?.role === "admin_desa" || !user?.role) && (
+              <>
+                <Link href="/dashboard/peta-gis">
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                    Peta Master GIS
+                  </Button>
+                </Link>
+                <Link href="/dashboard/penagihan-lapangan">
+                  <Button variant="gold" size="sm" icon={<Smartphone className="w-3.5 h-3.5" />}>
+                    Catat &amp; Tagih
+                  </Button>
+                </Link>
+                <Link href="/dashboard/keuangan">
+                  <Button variant="secondary" size="sm" icon={<Wallet className="w-3.5 h-3.5 text-emerald-400" />}>
+                    Buku Kas
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Quick Access Strip: Peta Master GIS (Sleek Compact Bar) */}
-      <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex items-center space-x-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0">
-            <Compass className="w-4 h-4 animate-pulse" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-black text-white truncate">Peta Master GIS Jaringan Air Desa</span>
-              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hidden sm:inline-block">37+ Titik SR</span>
+      {/* Quick Access Strip: Sesuai Peran Pengguna */}
+      {user?.role === "bendahara_kpspams" ? (
+        <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-emerald-900/50 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <Wallet className="w-4 h-4 animate-pulse" />
             </div>
-            <p className="text-[11px] text-slate-300 truncate">
-              Pantau titik SR warga, indikator Lunas/Tunggakan, dan bak reservoir desa.
-            </p>
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black text-white truncate">Otoritas Kas &amp; Keuangan KPSPAMS</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 hidden sm:inline-block">Kasir &amp; LPJ</span>
+              </div>
+              <p className="text-[11px] text-slate-300 truncate">
+                Pencatatan kas masuk/keluar, penerimaan setoran iuran kantor, dan penerbitan laporan LPJ unit.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <Link
-          href="/dashboard/peta-gis"
-          className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition active:scale-95 border border-cyan-400/30 shadow-sm"
-        >
-          <Map className="w-3.5 h-3.5" />
-          <span>Buka Peta Satelit &rarr;</span>
-        </Link>
-      </div>
+          <Link
+            href="/dashboard/keuangan"
+            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs transition active:scale-95 border border-emerald-400/30 shadow-sm"
+          >
+            <Wallet className="w-3.5 h-3.5" />
+            <span>Buka Buku Kas &amp; Saldo &rarr;</span>
+          </Link>
+        </div>
+      ) : (
+        <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0">
+              <Compass className="w-4 h-4 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black text-white truncate">Peta Master GIS Jaringan Air Desa</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hidden sm:inline-block">37+ Titik SR</span>
+              </div>
+              <p className="text-[11px] text-slate-300 truncate">
+                Pantau titik SR warga, indikator Lunas/Tunggakan, dan bak reservoir desa.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard/peta-gis"
+            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition active:scale-95 border border-cyan-400/30 shadow-sm"
+          >
+            <Map className="w-3.5 h-3.5" />
+            <span>Buka Peta Satelit &rarr;</span>
+          </Link>
+        </div>
+      )}
 
       {/* KPI Cards Grid (Compact 2 cols on mobile, 3 cols on desktop) */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">

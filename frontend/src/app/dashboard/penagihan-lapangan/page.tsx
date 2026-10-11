@@ -96,6 +96,8 @@ import {
   Zap,
   MessageCircle,
   RefreshCw,
+  Wallet,
+  Receipt,
 } from "lucide-react";
 import { WaBroadcastModal, BroadcastCustomer } from "@/components/billing/WaBroadcastModal";
 
@@ -113,6 +115,37 @@ const GisBillingRouteMap = dynamic(
 );
 
 export default function PenagihanLapanganPage() {
+  const { user } = useAuth();
+
+  // Proteksi Akses: Bendahara tidak menangani input teknis catat meter di lapangan
+  if (user?.role === "bendahara_kpspams") {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-2">Akses Khusus Petugas Lapangan</h2>
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            Modul <strong>Catat &amp; Tagih di Tempat</strong> diperuntukkan khusus bagi <strong>Petugas Lapangan</strong> (pencatat meter fisik dan penagih dusun). Sebagai <strong>Bendahara KPSPAMS</strong>, tugas Anda difokuskan pada pengelolaan kas operasional dan penerimaan iuran di kasir kantor.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/dashboard/keuangan">
+              <Button variant="primary" icon={<Wallet className="w-4 h-4" />}>
+                Buka Buku Kas Unit
+              </Button>
+            </Link>
+            <Link href="/dashboard/billing">
+              <Button variant="secondary" icon={<Receipt className="w-4 h-4" />}>
+                Buka Billing &amp; Tagihan
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <PenagihanLapanganContent />

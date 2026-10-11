@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/context/AuthContext";
 import { DEMO_KPSPAMS_LIST } from "@/lib/demo-data";
@@ -103,6 +104,30 @@ const INITIAL_ACCOUNTS: CashAccountState[] = [
 const INITIAL_TX: FinancialTx[] = [];
 
 export default function KeuanganPage() {
+  const { user } = useAuth();
+
+  // Proteksi Akses: Petugas Lapangan dibatasi dari Buku Kas Keuangan
+  if (user?.role === "petugas_lapangan") {
+    return (
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto py-16 px-4 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-2">Akses Terbatas: Buku Kas Unit</h2>
+          <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+            Halaman Buku Kas &amp; Saldo Keuangan hanya dapat diakses oleh <strong>Bendahara KPSPAMS</strong>, <strong>Ketua KPSPAMS</strong>, dan <strong>Pemerintah Desa</strong>. Petugas Lapangan bertugas pada operasional pencatatan meter dan penagihan lapangan.
+          </p>
+          <Link href="/dashboard/penagihan-lapangan">
+            <Button variant="primary" icon={<Smartphone className="w-4 h-4" />}>
+              Buka Aplikasi Catat &amp; Tagih Lapangan
+            </Button>
+          </Link>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <KeuanganContent />
