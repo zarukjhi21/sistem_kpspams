@@ -503,7 +503,9 @@ function DashboardContent() {
             )}
           </div>
           <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
-            {totalArrears === 0 ? "Tidak ada piutang" : "Piutang belum terbayar"}
+            {totalArrears === 0
+              ? "Tidak ada piutang"
+              : `${Math.round(totalArrears / 10000)} SR belum terbayar`}
           </p>
         </Card>
 

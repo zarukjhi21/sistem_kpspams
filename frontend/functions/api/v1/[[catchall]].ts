@@ -606,6 +606,35 @@ export async function onRequest(context: any) {
           Number(b.longitude) || 119.3768
         ]);
 
+        // Otomatis terbitkan tagihan periode berjalan (status: UNPAID, beban dasar Rp 10.000)
+        let newInv = null;
+        try {
+          const bpRows = await sql.query(`
+            SELECT id FROM billing_periods 
+            WHERE (status = 'OPEN' OR status = 'open') AND CAST(kpspams_id AS integer) = $1 
+            ORDER BY id DESC LIMIT 1
+          `, [kpspamsId]);
+          const activeBpId = bpRows.length > 0 ? bpRows[0].id : (kpspamsId === 1 ? 6 : kpspamsId === 2 ? 12 : 18);
+          const invNum = `INV/${new Date().toISOString().slice(0, 7).replace(/-/g, "")}/KP0${kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
+
+          const invRes = await sql.query(`
+            INSERT INTO invoices (
+              kpspams_id, billing_period_id, connection_id, customer_id,
+              invoice_number, invoice_date, due_date, usage_m3,
+              water_amount, admin_fee, maintenance_fee, penalty_fee,
+              total_amount, paid_amount, balance_due, status, created_at, updated_at
+            ) VALUES (
+              $1, $2, $3, $4,
+              $5, NOW(), NOW() + interval '14 days', '0',
+              '0', '10000', '0', '0',
+              '10000', '0', '10000', 'UNPAID', NOW(), NOW()
+            ) RETURNING *
+          `, [kpspamsId.toString(), activeBpId.toString(), connInserted[0].id.toString(), newCust.id.toString(), invNum]);
+          newInv = invRes[0];
+        } catch (invErr) {
+          console.warn("Auto-invoice notice for new customer:", invErr);
+        }
+
         return jsonResponse({
           status: "success",
           message: "Pelanggan baru berhasil didaftarkan ke SI-KPSPAMS Desa Kuajang.",
@@ -613,6 +642,7 @@ export async function onRequest(context: any) {
             ...newCust,
             connection: connInserted[0],
             connection_no: connNo,
+            invoice: newInv,
             meter_serial: b.meter_serial || null,
             initial_reading: initialReading,
             last_reading: initialReading,
