@@ -50,7 +50,7 @@ export function DashboardAnalyticsCharts({
     setMounted(true);
     const loadData = async () => {
       try {
-        const res = await apiClient("/customers?per_page=100");
+        const res = await apiClient("/customers?per_page=1000");
         if (res?.status === "success" && Array.isArray(res.data)) {
           const mapped: DemoCustomer[] = res.data.map((c: any) => ({
             id: c.id,

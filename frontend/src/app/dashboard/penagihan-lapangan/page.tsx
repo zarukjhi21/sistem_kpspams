@@ -192,7 +192,7 @@ function PenagihanLapanganContent() {
 
   const fetchCustomersAndInvoices = async () => {
     try {
-      const custRes = await apiClient("/customers?per_page=100");
+      const custRes = await apiClient("/customers?per_page=1000");
       if (custRes?.status === "success" && Array.isArray(custRes.data) && custRes.data.length > 0) {
         const mapped = custRes.data.map(mapApiCustomerToDemo);
         setCustomers(mapped);
@@ -205,7 +205,7 @@ function PenagihanLapanganContent() {
     }
 
     try {
-      const invRes = await apiClient("/invoices?status=UNPAID&per_page=100");
+      const invRes = await apiClient("/invoices?status=UNPAID&per_page=1000");
       if (invRes?.status === "success" && Array.isArray(invRes.data)) {
         const invMap: Record<string, any> = {};
         invRes.data.forEach((inv: any) => {

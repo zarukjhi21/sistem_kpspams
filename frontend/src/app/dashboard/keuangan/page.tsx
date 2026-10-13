@@ -143,6 +143,7 @@ function KeuanganContent() {
   // Akun Kas Terpadu & Transaksi - Sinkronisasi Langsung ke REST API Server
   const [accounts, setAccounts] = useState<CashAccountState[]>(INITIAL_ACCOUNTS);
   const [transactions, setTransactions] = useState<FinancialTx[]>(INITIAL_TX);
+  const [serverSummary, setServerSummary] = useState<{ total_income: number; total_expense: number; total_count: number } | null>(null);
   const [isLoadingFinance, setIsLoadingFinance] = useState<boolean>(false);
 
   const fetchRealFinanceData = async () => {
@@ -165,27 +166,32 @@ function KeuanganContent() {
       }
 
       // 2. Ambil Riwayat Transaksi Mutasi Kas Resmi dari Server Backend
-      const txRes = await apiClient<any>("/finance/transactions?per_page=100");
-      if (txRes?.status === "success" && Array.isArray(txRes.data)) {
-        const mappedTx: FinancialTx[] = txRes.data.map((t: any) => ({
-          id: Number(t.id),
-          kpspamsId: Number(t.kpspams_id || 1),
-          kpspamsName:
-            t.cash_account?.kpspams?.name ||
-            (Number(t.kpspams_id) === 1
-              ? "KPSPAMS Lemo Baru"
-              : Number(t.kpspams_id) === 2
-              ? "KPSPAMS Lemo Tua"
-              : "KPSPAMS Sarampu 1 & Pakkandoang"),
-          txNumber: t.transaction_number,
-          date: t.transaction_date ? String(t.transaction_date).split("T")[0] : "-",
-          type: t.transaction_type,
-          category: t.category,
-          amount: parseFloat(t.amount) || 0,
-          description: t.description,
-          accountName: t.cash_account?.account_name || "Kas Operasional",
-        }));
-        setTransactions(mappedTx);
+      const txRes = await apiClient<any>("/finance/transactions?per_page=1000");
+      if (txRes?.status === "success") {
+        if (txRes.summary) {
+          setServerSummary(txRes.summary);
+        }
+        if (Array.isArray(txRes.data)) {
+          const mappedTx: FinancialTx[] = txRes.data.map((t: any) => ({
+            id: Number(t.id),
+            kpspamsId: Number(t.kpspams_id || 1),
+            kpspamsName:
+              t.cash_account?.kpspams?.name ||
+              (Number(t.kpspams_id) === 1
+                ? "KPSPAMS Lemo Baru"
+                : Number(t.kpspams_id) === 2
+                ? "KPSPAMS Lemo Tua"
+                : "KPSPAMS Sarampu 1 & Pakkandoang"),
+            txNumber: t.transaction_number,
+            date: t.transaction_date ? String(t.transaction_date).split("T")[0] : "-",
+            type: t.transaction_type,
+            category: t.category,
+            amount: parseFloat(t.amount) || 0,
+            description: t.description,
+            accountName: t.cash_account?.account_name || "Kas Operasional",
+          }));
+          setTransactions(mappedTx);
+        }
       }
     } catch (e) {
       console.warn("Sinkronisasi finance server offline:", e);
@@ -338,13 +344,19 @@ function KeuanganContent() {
   const totalLiquidCash = filteredAccounts.reduce((sum, a) => sum + a.currentBalance, 0);
   const totalOpeningBalance = filteredAccounts.reduce((sum, a) => sum + a.openingBalance, 0);
 
-  const totalIncome = filteredTx
-    .filter((t) => t.type === "INCOME")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome =
+    effectiveKpspamsId === null && typeFilter === "ALL" && categoryFilter === "ALL" && !debouncedQuery && serverSummary?.total_income !== undefined
+      ? serverSummary.total_income
+      : filteredTx
+          .filter((t) => t.type === "INCOME")
+          .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalExpense = filteredTx
-    .filter((t) => t.type === "EXPENSE")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense =
+    effectiveKpspamsId === null && typeFilter === "ALL" && categoryFilter === "ALL" && !debouncedQuery && serverSummary?.total_expense !== undefined
+      ? serverSummary.total_expense
+      : filteredTx
+          .filter((t) => t.type === "EXPENSE")
+          .reduce((sum, t) => sum + t.amount, 0);
 
   // Handler Atur Saldo Awal
   const handleOpenEditOpening = (acc: CashAccountState) => {
@@ -548,8 +560,8 @@ function KeuanganContent() {
     setIsLoadingLpj(true);
     try {
       const [invRes, custRes] = await Promise.all([
-        apiClient("/invoices?per_page=100"),
-        apiClient("/customers?per_page=100"),
+        apiClient("/invoices?per_page=1000"),
+        apiClient("/customers?per_page=1000"),
       ]);
 
       const custMap: Record<string, any> = {};

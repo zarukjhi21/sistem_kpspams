@@ -28,6 +28,7 @@ export interface ApiResponse<T = any> {
     per_page?: number;
     total?: number;
   };
+  summary?: any;
   errors?: Record<string, string[]>;
 }
 

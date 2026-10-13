@@ -162,7 +162,7 @@ function PelangganContent() {
   const fetchCustomersFromApi = async () => {
     setIsLoadingCustomers(true);
     try {
-      const res = await apiClient("/customers?per_page=100");
+      const res = await apiClient("/customers?per_page=1000");
       if (res?.status === "success" && Array.isArray(res.data)) {
         const mapped = res.data.map(mapApiCustomerToDemo);
         setCustomers(mapped);

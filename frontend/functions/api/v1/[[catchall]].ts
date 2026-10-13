@@ -1447,7 +1447,28 @@ export async function onRequest(context: any) {
       txQuery += ` ORDER BY ft.id DESC LIMIT $${paramIdx++}`;
       txParams.push(txPerPage);
 
-      const rows = await sql.query(txQuery, txParams);
+      // Server-side Aggregates untuk Total Mutasi Kas Resmi
+      let sumQuery = `
+        SELECT 
+          COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as total_income,
+          COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as total_expense,
+          count(*)::int as total_count
+        FROM financial_transactions ft
+        WHERE 1=1
+      `;
+      const sumParams: any[] = [];
+      if (txKpspamsId) {
+        sumQuery += ` AND CAST(ft.kpspams_id AS integer) = $1`;
+        sumParams.push(parseInt(txKpspamsId, 10));
+      }
+
+      const [rows, sumRows] = await Promise.all([
+        sql.query(txQuery, txParams),
+        sql.query(sumQuery, sumParams),
+      ]);
+
+      const summary = sumRows.length > 0 ? sumRows[0] : { total_income: 0, total_expense: 0, total_count: 0 };
+
       const mapped = rows.map((r: any) => ({
         ...r,
         cash_account: {
@@ -1461,7 +1482,15 @@ export async function onRequest(context: any) {
           },
         },
       }));
-      return jsonResponse({ status: "success", data: mapped });
+      return jsonResponse({
+        status: "success",
+        data: mapped,
+        summary: {
+          total_income: parseFloat(summary.total_income) || 0,
+          total_expense: parseFloat(summary.total_expense) || 0,
+          total_count: parseInt(summary.total_count, 10) || 0,
+        }
+      });
     }
 
     // 13d. Finance: Transfer Between Cash Accounts
