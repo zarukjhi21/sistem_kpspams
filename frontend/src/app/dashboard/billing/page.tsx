@@ -35,6 +35,8 @@ import {
   CheckCircle,
   FileText,
   AlertTriangle,
+  Undo2,
+  RotateCcw,
 } from "lucide-react";
 
 export default function BillingPage() {
@@ -77,6 +79,63 @@ export default function BillingPage() {
   const [isRolloverConfirmChecked, setIsRolloverConfirmChecked] = useState(false);
   const [isExecutingRollover, setIsExecutingRollover] = useState(false);
   const [rolloverSuccessMsg, setRolloverSuccessMsg] = useState<string | null>(null);
+
+  // State Revert / Anulir Pembayaran (Koreksi Salah Klik - Bendahara & Super Admin)
+  const [revertCustomer, setRevertCustomer] = useState<DemoCustomer | null>(null);
+  const [revertReason, setRevertReason] = useState<string>("Petugas lapangan salah klik pelunasan (uang belum diterima)");
+  const [isReverting, setIsReverting] = useState<boolean>(false);
+  const [revertSuccessMsg, setRevertSuccessMsg] = useState<string | null>(null);
+
+  const canRevertPayment =
+    user?.role === "bendahara_kpspams" ||
+    user?.role === "super_admin" ||
+    user?.role === "admin_desa";
+
+  const handleExecuteRevertPayment = async () => {
+    if (!revertCustomer) return;
+    setIsReverting(true);
+    const activeInv = unpaidInvoices[revertCustomer.connectionNo] || unpaidInvoices[`CUST_${revertCustomer.id}`];
+    try {
+      const res = await apiClient("/billing/revert-payment", {
+        method: "POST",
+        body: JSON.stringify({
+          invoice_id: activeInv?.id,
+          customer_id: revertCustomer.id,
+          connection_no: revertCustomer.connectionNo,
+          reason: revertReason,
+        }),
+      });
+      if (res?.status === "success") {
+        setRevertSuccessMsg(res.message);
+        setRevertCustomer(null);
+        if (typeof window !== "undefined") {
+          try {
+            const cached = localStorage.getItem("kpspams_customers");
+            if (cached) {
+              let list = JSON.parse(cached);
+              list = list.map((c: any) => {
+                if (c.id === revertCustomer.id || c.connectionNo === revertCustomer.connectionNo) {
+                  return { ...c, billingStatus: "UNPAID" };
+                }
+                return c;
+              });
+              localStorage.setItem("kpspams_customers", JSON.stringify(list));
+            }
+          } catch (e) {
+            console.warn("Local storage update error:", e);
+          }
+        }
+        await fetchData();
+        setTimeout(() => setRevertSuccessMsg(null), 6000);
+      } else {
+        alert(res?.message || "Gagal membatalkan pelunasan.");
+      }
+    } catch (err: any) {
+      alert("Terjadi kesalahan saat membatalkan pelunasan: " + (err?.message || err));
+    } finally {
+      setIsReverting(false);
+    }
+  };
 
   // Multi-tenant Isolation: Filter sesuai KPSPAMS aktif / user tenant
   const effectiveKpspamsId =
@@ -392,6 +451,13 @@ export default function BillingPage() {
           </div>
         </div>
 
+        {revertSuccessMsg && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-start space-x-2.5 shadow-sm animate-in fade-in">
+            <CheckCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{revertSuccessMsg}</span>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4 bg-white border border-slate-200/80 shadow-xs rounded-2xl">
@@ -600,13 +666,29 @@ export default function BillingPage() {
                       <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2.5 py-1 rounded-lg border border-brand-maroon-200">
                         {c.connectionNo}
                       </span>
-                      <Badge
-                        variant={isPaid ? "success" : "danger"}
-                        size="sm"
-                        className="font-bold text-[10px]"
-                      >
-                        {isPaid ? "✓ Lunas" : "● Belum Bayar"}
-                      </Badge>
+                      <div className="flex items-center space-x-1.5">
+                        <Badge
+                          variant={isPaid ? "success" : "danger"}
+                          size="sm"
+                          className="font-bold text-[10px]"
+                        >
+                          {isPaid ? "✓ Lunas" : "● Belum Bayar"}
+                        </Badge>
+                        {isPaid && canRevertPayment && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRevertReason("Petugas lapangan salah klik pelunasan (uang belum diterima)");
+                              setRevertCustomer(c);
+                            }}
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[10px] font-bold transition active:scale-95 shadow-2xs"
+                            title="Batalkan status lunas (koreksi salah klik)"
+                          >
+                            <Undo2 className="w-3 h-3 text-amber-700" />
+                            <span>Anulir</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Customer Name & Info */}
@@ -746,13 +828,29 @@ export default function BillingPage() {
                           Rp 10.000,-
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <Badge
-                            variant={isPaid ? "success" : "danger"}
-                            size="sm"
-                            className="font-bold text-[10px]"
-                          >
-                            {isPaid ? "✓ Lunas" : "● Belum Bayar"}
-                          </Badge>
+                          <div className="flex flex-col items-center justify-center space-y-1">
+                            <Badge
+                              variant={isPaid ? "success" : "danger"}
+                              size="sm"
+                              className="font-bold text-[10px]"
+                            >
+                              {isPaid ? "✓ Lunas" : "● Belum Bayar"}
+                            </Badge>
+                            {isPaid && canRevertPayment && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRevertReason("Petugas lapangan salah klik pelunasan (uang belum diterima)");
+                                  setRevertCustomer(c);
+                                }}
+                                className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-semibold transition active:scale-95 shadow-2xs"
+                                title="Anulir / Batalkan status lunas karena salah klik petugas"
+                              >
+                                <Undo2 className="w-3 h-3 text-amber-600" />
+                                <span>Anulir Lunas</span>
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-center">
                           <div className="flex items-center justify-center space-x-1.5">
@@ -967,6 +1065,112 @@ export default function BillingPage() {
                   <>
                     <Lock className="w-3.5 h-3.5 text-brand-gold-300" />
                     <span>Eksekusi Tutup Buku Sekarang</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Anulir / Batalkan Status Lunas (Koreksi Salah Klik) */}
+      {revertCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95">
+            <div className="p-5 bg-gradient-to-r from-amber-600 to-amber-700 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <RotateCcw className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm tracking-tight">Koreksi Salah Klik (Anulir Status Lunas)</h3>
+                  <p className="text-[11px] text-amber-100">Otorisasi Khusus: Bendahara &amp; Super Admin</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRevertCustomer(null)}
+                disabled={isReverting}
+                className="text-white/80 hover:text-white p-1 rounded-lg text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4 text-xs text-slate-600">
+              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl space-y-1.5">
+                <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wide">
+                  Detail Pelanggan:
+                </div>
+                <div className="font-extrabold text-slate-900 text-sm">
+                  {revertCustomer.name} <span className="font-mono text-xs text-brand-maroon-700">({revertCustomer.connectionNo})</span>
+                </div>
+                <div className="text-slate-600 text-[11px]">
+                  Dusun {revertCustomer.dusun} • Tagihan: <strong className="text-slate-900">Rp 10.000,-</strong>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl space-y-1 text-rose-900">
+                <div className="font-bold flex items-center space-x-1 text-[11px]">
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                  <span>Dampak Pembatalan Status Lunas:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-0.5 text-[11px] text-rose-800 pl-1">
+                  <li>Status tagihan dikembalikan menjadi <strong>Belum Bayar (UNPAID)</strong>.</li>
+                  <li>Saldo kas tunai bendahara dikurangi <strong>Rp 10.000,-</strong> (dikoreksi).</li>
+                  <li>Tercatat resmi di audit Buku Kas sebagai pengeluaran koreksi salah klik.</li>
+                </ul>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-slate-700">
+                  Alasan Pembatalan / Koreksi:
+                </label>
+                <select
+                  value={revertReason}
+                  onChange={(e) => setRevertReason(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-amber-500"
+                >
+                  <option value="Petugas lapangan salah klik pelunasan (uang belum diterima)">
+                    Petugas lapangan salah klik pelunasan (uang belum diterima)
+                  </option>
+                  <option value="Pelanggan membatalkan pembayaran tunai saat itu juga">
+                    Pelanggan membatalkan pembayaran tunai saat itu juga
+                  </option>
+                  <option value="Uang tunai kurang / nominal tidak sesuai">
+                    Uang tunai kurang / nominal tidak sesuai
+                  </option>
+                  <option value="Kesalahan input data sambungan rumah yang tertukar">
+                    Kesalahan input data sambungan rumah yang tertukar
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setRevertCustomer(null)}
+                disabled={isReverting}
+                className="rounded-xl text-xs font-bold"
+              >
+                Batal
+              </Button>
+              <button
+                type="button"
+                onClick={handleExecuteRevertPayment}
+                disabled={isReverting}
+                className="px-5 py-2.5 rounded-xl font-black text-xs text-white bg-amber-600 hover:bg-amber-700 shadow-md transition flex items-center space-x-2 active:scale-95 disabled:opacity-50"
+              >
+                {isReverting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Memproses Pembatalan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Undo2 className="w-3.5 h-3.5" />
+                    <span>Konfirmasi Anulir Lunas</span>
                   </>
                 )}
               </button>

@@ -878,6 +878,120 @@ export async function onRequest(context: any) {
       return jsonResponse({ status: "success", data: rows });
     }
 
+    // 11b. Invoices: Revert Payment / Anulir Pelunasan (Khusus Bendahara & Super Admin)
+    if ((path === "billing/revert-payment" || (path.startsWith("invoices/") && path.endsWith("/revert-payment"))) && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      let invoiceId = path.startsWith("invoices/") ? parseInt(pathParts[1], 10) : Number(b.invoice_id);
+      const reason = (b.reason || "Koreksi salah klik status lunas oleh Bendahara / Petugas").trim();
+
+      // Jika invoice_id tidak langsung diberikan, cari berdasarkan customer_id atau connection_no
+      if (!invoiceId && (b.customer_id || b.connection_no || b.connection_id)) {
+        const custId = b.customer_id ? b.customer_id.toString() : "";
+        const connId = b.connection_id ? b.connection_id.toString() : "";
+        const connNo = b.connection_no ? b.connection_no.toString() : "";
+        const findInv = await sql.query(`
+          SELECT inv.id 
+          FROM invoices inv
+          LEFT JOIN connections conn ON CAST(inv.connection_id AS text) = CAST(conn.id AS text)
+          WHERE (
+            ($1 != '' AND CAST(inv.customer_id AS text) = $1)
+            OR ($2 != '' AND CAST(inv.connection_id AS text) = $2)
+            OR ($3 != '' AND conn.connection_no = $3)
+          )
+          AND inv.status = 'PAID'
+          ORDER BY inv.id DESC LIMIT 1
+        `, [custId, connId, connNo]);
+        if (findInv.length > 0) {
+          invoiceId = findInv[0].id;
+        }
+      }
+
+      if (!invoiceId) {
+        return jsonResponse({ status: "fail", message: "Tagihan berstatus LUNAS untuk pelanggan ini tidak ditemukan." }, 404);
+      }
+
+      // 1. Cek invoice
+      const invRows = await sql.query(`SELECT * FROM invoices WHERE id = $1 LIMIT 1`, [invoiceId]);
+      if (invRows.length === 0) {
+        return jsonResponse({ status: "fail", message: "Tagihan tidak ditemukan dalam database." }, 404);
+      }
+      const inv = invRows[0];
+      if (inv.status !== "PAID") {
+        return jsonResponse({ status: "fail", message: "Tagihan ini memang belum berstatus Lunas (UNPAID)." }, 400);
+      }
+
+      const totalAmount = parseFloat(inv.total_amount) || 10000;
+      const kId = inv.kpspams_id ? inv.kpspams_id.toString() : "1";
+
+      // 2. Ambil data payment terkait
+      const payRows = await sql.query(`
+        SELECT * FROM payments 
+        WHERE invoice_id = $1 AND status != 'VOIDED' 
+        ORDER BY id DESC LIMIT 1
+      `, [invoiceId]);
+
+      let cashAccountId = payRows.length > 0 && payRows[0].cash_account_id ? payRows[0].cash_account_id.toString() : null;
+      if (!cashAccountId) {
+        const accList = await sql.query(`SELECT id FROM cash_accounts WHERE CAST(kpspams_id AS integer) = $1 AND is_active = '1' ORDER BY id ASC LIMIT 1`, [parseInt(kId, 10)]);
+        cashAccountId = accList.length > 0 ? accList[0].id.toString() : "1";
+      }
+
+      // 3. Update Invoice kembali ke UNPAID
+      await sql.query(`
+        UPDATE invoices SET
+          status = 'UNPAID',
+          paid_amount = '0',
+          balance_due = total_amount,
+          paid_at = NULL,
+          updated_at = NOW()
+        WHERE id = $1
+      `, [invoiceId]);
+
+      // 4. Update status payment menjadi VOIDED
+      if (payRows.length > 0) {
+        await sql.query(`
+          UPDATE payments SET
+            status = 'VOIDED',
+            notes = COALESCE(notes, '') || ' [DIBATALKAN/ANULIR: ' || $1 || ']',
+            updated_at = NOW()
+          WHERE id = $2
+        `, [reason, payRows[0].id]);
+      }
+
+      // 5. Catat mutasi koreksi pengeluaran kas (EXPENSE) dan kurangi saldo akun kas
+      const txNum = `TX/KOR/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+      await Promise.all([
+        sql.query(`
+          INSERT INTO financial_transactions (
+            kpspams_id, cash_account_id, transaction_number, transaction_date,
+            transaction_type, category, amount, reference_type, reference_id, description, created_at, updated_at
+          ) VALUES (
+            $1, $2, $3, NOW(), 'EXPENSE', 'KOREKSI_SALAH_KLIK', $4, 'INVOICE', $5,
+            $6, NOW(), NOW()
+          )
+        `, [
+          kId, cashAccountId, txNum, totalAmount.toString(), invoiceId.toString(),
+          `Anulir/Koreksi salah klik pelunasan tagihan No. ${inv.invoice_number} (${reason})`
+        ]),
+        sql.query(`
+          UPDATE cash_accounts SET
+            current_balance = (COALESCE(current_balance::numeric, 0) - $1)::text,
+            updated_at = NOW()
+          WHERE id = $2
+        `, [totalAmount, Number(cashAccountId)])
+      ]);
+
+      return jsonResponse({
+        status: "success",
+        message: `Tagihan ${inv.invoice_number} berhasil dibatalkan status lunasnya dan dikembalikan menjadi BELUM LUNAS. Saldo kas telah dikoreksi otomatis (dikurangi Rp ${totalAmount.toLocaleString("id-ID")}).`,
+        data: {
+          invoice_id: invoiceId,
+          status: "UNPAID",
+          deducted_amount: totalAmount
+        }
+      });
+    }
+
     // 12. Meter Readings
     if (path === "meter-readings") {
       if (method === "POST") {
