@@ -37,7 +37,13 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
   "occupation": "PEKERJAAN SESUAI KTP"
 }`;
 
-  const candidateModels = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-3.8-flash"];
+  const candidateModels = [
+    "gemini-flash-lite-latest",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3.8-flash",
+    "gemini-flash-latest",
+  ];
   let responseJson: any = null;
   let lastErrorMsg = "";
 
@@ -49,6 +55,7 @@ Tugas Anda: Baca foto KTP ini dan kembalikan HANYA dokumen JSON murni (tanpa tan
         headers: {
           "Content-Type": "application/json",
         },
+        signal: AbortSignal.timeout(7000),
         body: JSON.stringify({
           contents: [
             {
@@ -151,7 +158,7 @@ export async function scanKtpImage(
 
     // Strategi 1: Google Gemini jika API key dikonfigurasi
     if (apiKey && apiKey.trim() !== "") {
-      onProgress?.("Menghubungi Google Gemini Vision AI...");
+      onProgress?.("Menganalisis foto KTP dengan Google Gemini Vision AI (1-2 detik)...");
       try {
         const geminiData = await extractWithGemini(base64Data, apiKey.trim());
         const executionTimeMs = Date.now() - startTime;
@@ -170,9 +177,9 @@ export async function scanKtpImage(
     }
 
     // Strategi 2: Tesseract OCR di Browser Client via Web Worker
-    onProgress?.("Memuat mesin OCR Tesseract di peramban...");
+    onProgress?.("Memuat modul OCR lokal di peramban...");
     const { createWorker } = await import("tesseract.js");
-    const worker = await createWorker(["ind", "eng"]);
+    const worker = await createWorker("ind");
 
     onProgress?.("Menganalisis pola teks KTP...");
     const ret = await worker.recognize(dataUrl);

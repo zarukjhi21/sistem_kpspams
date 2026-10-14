@@ -372,7 +372,7 @@ function PelangganContent() {
       const objectUrl = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-        const maxDim = 1500; // Resolusi optimal tinggi untuk teks dokumen KTP
+        const maxDim = 1200; // Resolusi optimal tinggi untuk teks dokumen KTP
         let { width, height } = img;
         if (width > maxDim || height > maxDim) {
           if (width > height) {
@@ -396,8 +396,8 @@ function PelangganContent() {
         // Tingkatkan kontras dan kecerahan teks agar terbaca jernih oleh OCR
         ctx.filter = "contrast(1.15) brightness(1.02)";
         ctx.drawImage(img, 0, 0, width, height);
-        // Kualitas 0.90 menghasilkan teks tajam dan ukuran berkas sangat efisien
-        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.90);
+        // Kualitas 0.82 menghasilkan teks tajam dan ukuran berkas sangat efisien (~120KB) untuk transfer instan
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
         resolve(compressedDataUrl);
       };
       img.onerror = () => {
