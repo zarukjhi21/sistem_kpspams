@@ -675,7 +675,7 @@ function KeuanganContent() {
     <>
       <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8 print:hidden">
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">
               Buku Kas Operasional KPSPAMS
@@ -757,7 +757,7 @@ function KeuanganContent() {
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
             <span>Saldo Kas Riil</span>
-            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-700 rounded-lg sm:rounded-xl">
+            <div className="p-1.5 sm:p-2 bg-slate-100 text-slate-700 rounded-lg sm:rounded-xl">
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -773,11 +773,11 @@ function KeuanganContent() {
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
             <span>Saldo Awal</span>
-            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-700 rounded-lg sm:rounded-xl">
+            <div className="p-1.5 sm:p-2 bg-slate-100 text-slate-700 rounded-lg sm:rounded-xl">
               <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-amber-900 font-tabular truncate">
+          <div className="mt-1.5 sm:mt-2 text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
             Rp {totalOpeningBalance.toLocaleString("id-ID")}
           </div>
           <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-slate-400 truncate">
@@ -788,7 +788,7 @@ function KeuanganContent() {
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider">
             <span>Pemasukan</span>
-            <div className="p-1.5 sm:p-2 bg-sky-50 text-sky-700 rounded-lg sm:rounded-xl">
+            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-700 rounded-lg sm:rounded-xl">
               <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -928,7 +928,7 @@ function KeuanganContent() {
                       <td className="px-4 py-3.5 text-center">
                         <button
                           onClick={() => handleOpenEditOpening(acc)}
-                          className="px-2.5 py-1 text-[11px] font-bold text-brand-maroon-800 bg-brand-maroon-50 hover:bg-brand-maroon-100 rounded-lg border border-brand-maroon-200 transition"
+                          className="px-2.5 py-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition"
                         >
                           Atur Saldo Awal
                         </button>
@@ -958,7 +958,7 @@ function KeuanganContent() {
               placeholder="Cari No. Transaksi atau Uraian..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             />
           </div>
 
@@ -966,7 +966,7 @@ function KeuanganContent() {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
             >
               <option value="ALL">Semua Jenis Mutasi (+ / -)</option>
               <option value="INCOME">Pemasukan (+ Kas Masuk)</option>
@@ -978,7 +978,7 @@ function KeuanganContent() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
             >
               <option value="ALL">Semua Kategori</option>
               <option value="WATER_PAYMENT">Iuran Air Warga</option>
@@ -1139,7 +1139,7 @@ function KeuanganContent() {
                   required
                   min={0}
                   step={1000}
-                  className="w-full text-base px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 font-mono font-black"
+                  className="w-full text-base px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 font-mono font-black"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Gunakan angka nominal riil hasil audit serah terima jabatan pengurus.
@@ -1155,7 +1155,7 @@ function KeuanganContent() {
                   onChange={(e) => setOpeningNotes(e.target.value)}
                   rows={3}
                   required
-                  className="w-full text-xs p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  className="w-full text-xs p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                   placeholder="Misal: Berdasarkan Berita Acara Rekonsiliasi Kas Tanggal..."
                 />
               </div>
@@ -1216,7 +1216,7 @@ function KeuanganContent() {
                     disabled={!isDesaLevel}
                     value={incomeKpspamsId}
                     onChange={(e) => setIncomeKpspamsId(Number(e.target.value))}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     {DEMO_KPSPAMS_LIST.map((k) => (
                       <option key={k.id} value={k.id}>
@@ -1234,7 +1234,7 @@ function KeuanganContent() {
                   <select
                     value={incomePaymentMethod}
                     onChange={(e) => setIncomePaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="TUNAI">Kas Tunai Bendahara</option>
                     <option value="BANK_TRANSFER">Transfer Rekening Bank BRI</option>
@@ -1249,7 +1249,7 @@ function KeuanganContent() {
                   <select
                     value={incomeCategory}
                     onChange={(e) => setIncomeCategory(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="DANA_DESA">Penyertaan Modal / Dana Desa</option>
                     <option value="PEMASANGAN_BARU">Jasa Sambungan Baru (SR Baru)</option>
@@ -1270,7 +1270,7 @@ function KeuanganContent() {
                     required
                     value={incomeDate}
                     onChange={(e) => setIncomeDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1287,7 +1287,7 @@ function KeuanganContent() {
                     placeholder="Contoh: 500000"
                     value={incomeAmount}
                     onChange={(e) => setIncomeAmount(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1302,7 +1302,7 @@ function KeuanganContent() {
                     placeholder="Contoh: Bantuan operasional pompa dari Pemerintah Desa Kuajang"
                     value={incomeDesc}
                     onChange={(e) => setIncomeDesc(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1316,7 +1316,7 @@ function KeuanganContent() {
                     value={incomeProofNo}
                     onChange={(e) => setIncomeProofNo(e.target.value)}
                     placeholder="Contoh: BKM-015-2026 atau No. Kwitansi Transfer"
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
               </div>
@@ -1380,7 +1380,7 @@ function KeuanganContent() {
                     disabled={!isDesaLevel}
                     value={expenseKpspamsId}
                     onChange={(e) => setExpenseKpspamsId(Number(e.target.value))}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     {DEMO_KPSPAMS_LIST.map((k) => (
                       <option key={k.id} value={k.id}>
@@ -1398,7 +1398,7 @@ function KeuanganContent() {
                   <select
                     value={expensePaymentMethod}
                     onChange={(e) => setExpensePaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="TUNAI">Kas Tunai Bendahara</option>
                     <option value="BANK_TRANSFER">Transfer Rekening Bank BRI</option>
@@ -1413,7 +1413,7 @@ function KeuanganContent() {
                   <select
                     value={expenseCategory}
                     onChange={(e) => setExpenseCategory(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="OPERASIONAL">Listrik PLN Pompa / BBM Solar Genset</option>
                     <option value="MAINTENANCE">Perbaikan Pipa, Kran & Fitting</option>
@@ -1434,7 +1434,7 @@ function KeuanganContent() {
                     required
                     value={expenseDate}
                     onChange={(e) => setExpenseDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1451,7 +1451,7 @@ function KeuanganContent() {
                     placeholder="Contoh: 150000"
                     value={expenseAmount}
                     onChange={(e) => setExpenseAmount(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-base font-black font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1466,7 +1466,7 @@ function KeuanganContent() {
                     placeholder="Contoh: Pembelian Stop Kran 2 inch & Sambungan Pipa PVC Dusun Lemo Baru"
                     value={expenseDesc}
                     onChange={(e) => setExpenseDesc(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
 
@@ -1480,7 +1480,7 @@ function KeuanganContent() {
                     value={expenseProofNo}
                     onChange={(e) => setExpenseProofNo(e.target.value)}
                     placeholder="Contoh: BKK-092-2026 atau No. Nota Toko Bangunan"
-                    className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   />
                 </div>
               </div>
@@ -1519,7 +1519,7 @@ function KeuanganContent() {
             {/* Header Modal & Tombol Aksi Cetak */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-6 print:hidden">
               <div className="flex items-center space-x-2">
-                <FileText className="w-5 h-5 text-brand-maroon-700" />
+                <FileText className="w-5 h-5 text-sky-600" />
                 <h3 className="text-base font-extrabold text-slate-900">
                   Pratinjau Laporan Keuangan Resmi (A4)
                 </h3>
@@ -1555,7 +1555,7 @@ function KeuanganContent() {
                 <button
                   type="button"
                   onClick={handlePrintReport}
-                  className="px-3 py-1.5 rounded-xl bg-brand-maroon-800 hover:bg-brand-maroon-900 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak / PDF</span>
@@ -1576,7 +1576,7 @@ function KeuanganContent() {
                 <div className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-tight">
                   Pemerintah Desa Kuajang
                 </div>
-                <div className="text-xs font-extrabold text-brand-maroon-900 tracking-wide uppercase">
+                <div className="text-xs font-extrabold text-slate-900 tracking-wide uppercase">
                   Pengurus KPSPAMS Lemo Baru Desa Kuajang
                 </div>
                 <div className="text-[10px] text-slate-500">
@@ -1619,7 +1619,7 @@ function KeuanganContent() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Akhir Terpadu</div>
-                  <div className="text-sm font-black font-tabular text-brand-maroon-900">
+                  <div className="text-sm font-black font-tabular text-slate-900">
                     Rp {totalLiquidCash.toLocaleString("id-ID")}
                   </div>
                 </div>

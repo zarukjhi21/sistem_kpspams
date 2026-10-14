@@ -1278,7 +1278,7 @@ function PelangganContent() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Title & Action Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
             Data Pelanggan &amp; Jaringan Air
@@ -1295,7 +1295,7 @@ function PelangganContent() {
             className="flex-1 sm:flex-initial justify-center px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center space-x-1.5 border border-white/20 shadow-sm active:scale-95"
             title="Cetak Buku Register Pelanggan Resmi (A4 / PDF)"
           >
-            <Printer className="w-3.5 h-3.5 text-brand-gold-400" />
+            <Printer className="w-3.5 h-3.5 text-sky-400" />
             <span>Cetak PDF</span>
           </button>
           <button
@@ -1365,7 +1365,7 @@ function PelangganContent() {
               placeholder="Cari Nama, No. SR, atau NIK..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             />
           </div>
 
@@ -1373,7 +1373,7 @@ function PelangganContent() {
             <select
               value={selectedDusun}
               onChange={(e) => setSelectedDusun(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             >
               {isDesaLevel && <option value="ALL">Semua Dusun Layanan</option>}
               {allowedDusuns.map((d) => (
@@ -1388,7 +1388,7 @@ function PelangganContent() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             >
               <option value="ALL">Semua Status Sambungan</option>
               <option value="ACTIVE">Aktif (Teraliri Air)</option>
@@ -1438,7 +1438,7 @@ function PelangganContent() {
               >
                 {/* Header row: Connection No & Status */}
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2.5 py-0.5 rounded-lg border border-brand-maroon-200">
+                  <span className="font-mono font-extrabold text-xs text-sky-800 bg-sky-50 px-2.5 py-0.5 rounded-lg border border-sky-200">
                     {cust.connectionNo}
                   </span>
                   <div className="flex items-center space-x-1.5">
@@ -1607,7 +1607,7 @@ function PelangganContent() {
                 ) : (
                   paginatedCustomers.map((cust) => (
                     <tr key={cust.id} className="hover:bg-slate-50/80 transition">
-                      <td className="py-3.5 px-4 font-mono font-bold text-brand-maroon-900">
+                      <td className="py-3.5 px-4 font-mono font-bold text-sky-800">
                         {cust.connectionNo}
                       </td>
                       <td className="py-3.5 px-4">
@@ -1655,7 +1655,7 @@ function PelangganContent() {
                           )}
                           <button
                             onClick={() => setSelectedCustomer(cust)}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-brand-maroon-800 transition"
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-sky-700 transition"
                             title="Lihat Detail Sambungan"
                           >
                             <Eye className="w-4 h-4" />
@@ -1741,7 +1741,7 @@ function PelangganContent() {
             />
 
             {/* AI KTP Scanning & Auto-Extraction Card */}
-            <div className="mb-4 rounded-2xl bg-gradient-to-br from-indigo-950 via-slate-900 to-brand-maroon-950 text-white border border-indigo-700/50 shadow-md p-4 space-y-3">
+            <div className="mb-4 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white border border-slate-800 shadow-md p-4 space-y-3">
               {/* Header Badge */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -1922,7 +1922,7 @@ function PelangganContent() {
               {/* Section 1: Data Pokok KTP */}
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-brand-maroon-800" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
                   <span className="text-xs font-black text-slate-800 uppercase tracking-wider">
                     1. Data Pokok KTP (Hasil Ekstraksi AI &bull; Dapat Dikoreksi)
                   </span>
@@ -1940,7 +1940,7 @@ function PelangganContent() {
                       value={newFullName}
                       onChange={(e) => setNewFullName(e.target.value)}
                       placeholder="Contoh: DARMA"
-                      className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -1956,7 +1956,7 @@ function PelangganContent() {
                       value={newNik}
                       onChange={(e) => setNewNik(e.target.value.replace(/\D/g, ""))}
                       placeholder="16 Digit NIK KTP..."
-                      className="w-full px-3.5 py-2.5 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white text-slate-900"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white text-slate-900"
                     />
                   </div>
 
@@ -1970,7 +1970,7 @@ function PelangganContent() {
                       value={newBirthPlaceDate}
                       onChange={(e) => setNewBirthPlaceDate(e.target.value)}
                       placeholder="Contoh: LEMO BARU, 01-01-1990"
-                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -1982,7 +1982,7 @@ function PelangganContent() {
                     <select
                       value={newGender}
                       onChange={(e) => setNewGender(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="PEREMPUAN">PEREMPUAN</option>
                       <option value="LAKI-LAKI">LAKI-LAKI</option>
@@ -1999,7 +1999,7 @@ function PelangganContent() {
                       value={newReligion}
                       onChange={(e) => setNewReligion(e.target.value)}
                       placeholder="ISLAM"
-                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2013,7 +2013,7 @@ function PelangganContent() {
                       value={newMaritalStatus}
                       onChange={(e) => setNewMaritalStatus(e.target.value)}
                       placeholder="Contoh: CERAI HIDUP / KAWIN"
-                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2027,7 +2027,7 @@ function PelangganContent() {
                       value={newOccupation}
                       onChange={(e) => setNewOccupation(e.target.value)}
                       placeholder="Contoh: MENGURUS RUMAH TANGGA"
-                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
                 </div>
@@ -2053,7 +2053,7 @@ function PelangganContent() {
                       value={newAddress}
                       onChange={(e) => setNewAddress(e.target.value)}
                       placeholder="Contoh: LEMO BARU"
-                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2067,7 +2067,7 @@ function PelangganContent() {
                       value={newRtRw}
                       onChange={(e) => setNewRtRw(e.target.value)}
                       placeholder="000/000"
-                      className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2096,7 +2096,7 @@ function PelangganContent() {
                         setNewLatitude(targetCoords.lat);
                         setNewLongitude(targetCoords.lng);
                       }}
-                      className={`w-full px-3.5 py-2.5 text-xs font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 ${
+                      className={`w-full px-3.5 py-2.5 text-xs font-semibold border rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 ${
                         !isDesaLevel
                           ? "bg-slate-100 text-slate-700 cursor-not-allowed border-slate-300"
                           : "bg-white border-slate-300"
@@ -2156,7 +2156,7 @@ function PelangganContent() {
                       value={newPhone}
                       onChange={(e) => setNewPhone(e.target.value)}
                       placeholder="08xxxxxxxxxx"
-                      className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2168,7 +2168,7 @@ function PelangganContent() {
                     <select
                       value={newTariffType}
                       onChange={(e) => setNewTariffType(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="Rumah Tangga">Rumah Tangga (Standar Warga)</option>
                       <option value="Niaga">Niaga / Warung / Usaha</option>
@@ -2177,14 +2177,14 @@ function PelangganContent() {
                   </div>
 
                   {/* Unit Pengelola Info Card */}
-                  <div className="sm:col-span-2 p-3 rounded-xl bg-brand-maroon-50/70 border border-brand-maroon-200 flex items-center justify-between">
+                  <div className="sm:col-span-2 p-3 rounded-xl bg-sky-50/70 border border-sky-200 flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Building2 className="w-4 h-4 text-brand-maroon-800" />
+                      <Building2 className="w-4 h-4 text-sky-700" />
                       <div>
-                        <div className="font-bold text-brand-maroon-900">
+                        <div className="font-bold text-slate-900">
                           Unit Pengelola: {getKpspamsByDusun(newDusun).name}
                         </div>
-                        <div className="text-[10px] text-brand-maroon-700">
+                        <div className="text-[10px] text-sky-700">
                           Nomor SR otomatis disesuaikan dengan kode unit
                         </div>
                       </div>
@@ -2202,7 +2202,7 @@ function PelangganContent() {
                       value={newMeterSerial}
                       onChange={(e) => setNewMeterSerial(e.target.value)}
                       placeholder="Contoh: MTR-LMB-1003"
-                      className="w-full px-3.5 py-2.5 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2217,7 +2217,7 @@ function PelangganContent() {
                       value={newInitialReading}
                       onChange={(e) => setNewInitialReading(e.target.value)}
                       placeholder="0.00"
-                      className="w-full px-3.5 py-2.5 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2284,7 +2284,7 @@ function PelangganContent() {
             <div className="py-4 space-y-2.5 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-50">
                 <span className="text-slate-500">Nomor Sambungan:</span>
-                <span className="font-mono font-bold text-brand-maroon-900">{selectedCustomer.connectionNo}</span>
+                <span className="font-mono font-bold text-slate-900">{selectedCustomer.connectionNo}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50">
                 <span className="text-slate-500">Nama Pelanggan:</span>
@@ -2480,7 +2480,7 @@ function PelangganContent() {
               {/* Bagian 1: Identitas KTP */}
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-3">
                 <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                  <Shield className="w-3.5 h-3.5 text-brand-maroon-700" />
+                  <Shield className="w-3.5 h-3.5 text-sky-700" />
                   <span>1. Identitas Kependudukan (Sesuai KTP)</span>
                 </div>
 
@@ -2495,7 +2495,7 @@ function PelangganContent() {
                       maxLength={16}
                       value={editNik}
                       onChange={(e) => setEditNik(e.target.value.replace(/\D/g, ""))}
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2508,7 +2508,7 @@ function PelangganContent() {
                       required
                       value={editFullName}
                       onChange={(e) => setEditFullName(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2521,7 +2521,7 @@ function PelangganContent() {
                       value={editBirthPlaceDate}
                       onChange={(e) => setEditBirthPlaceDate(e.target.value.toUpperCase())}
                       placeholder="Contoh: LEMO BARU, 01-01-1990"
-                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2532,7 +2532,7 @@ function PelangganContent() {
                     <select
                       value={editGender}
                       onChange={(e) => setEditGender(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="LAKI-LAKI">LAKI-LAKI</option>
                       <option value="PEREMPUAN">PEREMPUAN</option>
@@ -2546,7 +2546,7 @@ function PelangganContent() {
                     <select
                       value={editReligion}
                       onChange={(e) => setEditReligion(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="ISLAM">ISLAM</option>
                       <option value="KRISTEN">KRISTEN</option>
@@ -2563,7 +2563,7 @@ function PelangganContent() {
                     <select
                       value={editMaritalStatus}
                       onChange={(e) => setEditMaritalStatus(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="BELUM KAWIN">BELUM KAWIN</option>
                       <option value="KAWIN">KAWIN</option>
@@ -2580,7 +2580,7 @@ function PelangganContent() {
                       type="text"
                       value={editOccupation}
                       onChange={(e) => setEditOccupation(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2593,7 +2593,7 @@ function PelangganContent() {
                       value={editPhone}
                       onChange={(e) => setEditPhone(e.target.value)}
                       placeholder="08xxxxxxxxxx"
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2607,14 +2607,14 @@ function PelangganContent() {
                         value={editAddress}
                         onChange={(e) => setEditAddress(e.target.value.toUpperCase())}
                         placeholder="Nama Jalan / Dusun"
-                        className="col-span-2 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                        className="col-span-2 px-3 py-2 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                       />
                       <input
                         type="text"
                         value={editRtRw}
                         onChange={(e) => setEditRtRw(e.target.value)}
                         placeholder="RT/RW (000/000)"
-                        className="px-3 py-2 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                        className="px-3 py-2 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                       />
                     </div>
                   </div>
@@ -2624,7 +2624,7 @@ function PelangganContent() {
               {/* Bagian 2: Data Sambungan & Meter Air */}
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-3">
                 <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                  <Gauge className="w-3.5 h-3.5 text-brand-maroon-700" />
+                  <Gauge className="w-3.5 h-3.5 text-sky-700" />
                   <span>2. Spesifikasi Meter & Status Sambungan</span>
                 </div>
 
@@ -2644,7 +2644,7 @@ function PelangganContent() {
                           setEditLongitude(targetCoords.lng);
                         }
                       }}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       {allowedDusuns.map((d) => (
                         <option key={d} value={d}>
@@ -2663,7 +2663,7 @@ function PelangganContent() {
                       required
                       value={editMeterSerial}
                       onChange={(e) => setEditMeterSerial(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2677,7 +2677,7 @@ function PelangganContent() {
                       required
                       value={editLastReading}
                       onChange={(e) => setEditLastReading(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-tabular font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     />
                   </div>
 
@@ -2688,7 +2688,7 @@ function PelangganContent() {
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value as "ACTIVE" | "SEALED" | "DISCONNECTED")}
-                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                      className="w-full px-3 py-2 text-xs font-bold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                     >
                       <option value="ACTIVE">Aktif (Teraliri Air)</option>
                       <option value="SEALED">Disegel (Tunggakan)</option>
@@ -2703,7 +2703,7 @@ function PelangganContent() {
                     <select
                       value={editMeterCondition}
                       onChange={(e) => setEditMeterCondition(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs font-bold border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 ${
+                      className={`w-full px-3 py-2 text-xs font-bold border rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 ${
                         editMeterCondition === "STUCK"
                           ? "bg-orange-50 border-orange-300 text-orange-800"
                           : "bg-white border-slate-300 text-slate-800"
@@ -2785,7 +2785,7 @@ function PelangganContent() {
             <p className="text-xs text-slate-600 mb-4">
               Pilih tindakan operasional untuk sambungan milik warga: <br />
               <strong className="text-slate-900 text-sm">{customerToAction.name}</strong>
-              <span className="font-mono text-xs text-brand-maroon-800 ml-1.5 font-bold">
+              <span className="font-mono text-xs text-slate-700 ml-1.5 font-bold">
                 ({customerToAction.connectionNo})
               </span>
             </p>
@@ -2889,7 +2889,7 @@ function PelangganContent() {
             {/* Header Modal & Tombol Aksi (print:hidden) */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-6 gap-3 print:hidden">
               <div className="flex items-center space-x-2.5">
-                <div className="p-2 rounded-xl bg-brand-maroon-100 text-brand-maroon-800">
+                <div className="p-2 rounded-xl bg-sky-100 text-sky-800">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
@@ -2914,7 +2914,7 @@ function PelangganContent() {
                 <button
                   type="button"
                   onClick={handlePrintReport}
-                  className="px-4 py-2 rounded-xl bg-brand-maroon-800 hover:bg-brand-maroon-900 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Cetak / Simpan PDF</span>
@@ -2939,7 +2939,7 @@ function PelangganContent() {
                 <div className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-tight">
                   Pemerintah Desa Kuajang
                 </div>
-                <div className="text-xs sm:text-sm font-extrabold text-brand-maroon-900 tracking-wide uppercase">
+                <div className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">
                   Pengurus KPSPAMS PAMSIMAS Desa Kuajang
                 </div>
                 <div className="text-[10px] text-slate-500">
@@ -3092,7 +3092,7 @@ function PelangganContent() {
                     type="text"
                     value={signKades}
                     onChange={(e) => setSignKades(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-600"
                   />
                 </div>
                 <div>
@@ -3101,7 +3101,7 @@ function PelangganContent() {
                     type="text"
                     value={signKetua}
                     onChange={(e) => setSignKetua(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-600"
                   />
                 </div>
                 <div>
@@ -3110,7 +3110,7 @@ function PelangganContent() {
                     type="text"
                     value={signAdmin}
                     onChange={(e) => setSignAdmin(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl bg-white font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-sky-600"
                   />
                 </div>
               </div>

@@ -33,7 +33,7 @@ const MasterDesaGisMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-[600px] w-full rounded-3xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center text-slate-400 space-y-3">
-        <div className="w-10 h-10 rounded-full border-3 border-brand-gold-500 border-t-transparent animate-spin" />
+        <div className="w-10 h-10 rounded-full border-3 border-sky-500 border-t-transparent animate-spin" />
         <span className="animate-pulse text-sm font-semibold">
           Memuat Peta Satelit Master GIS Sebaran Sambungan Rumah Warga Desa Kuajang...
         </span>
@@ -191,10 +191,10 @@ export default function PetaGisPage() {
     <DashboardLayout>
       <div className="space-y-6 max-w-7xl mx-auto pb-24">
         {/* Header Hero Section */}
-        <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-brand-maroon-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-lg border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white flex items-center space-x-2.5">
-              <Map className="w-5 h-5 sm:w-6 sm:h-6 text-brand-gold-400 flex-shrink-0" />
+              <Map className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400 flex-shrink-0" />
               <span>Peta GIS Sambungan Rumah &amp; Kondisi Meteran</span>
             </h1>
             <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
@@ -211,7 +211,7 @@ export default function PetaGisPage() {
               className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs backdrop-blur-sm transition border border-white/10 active:scale-95"
               title="Sinkronkan data GIS realtime dari database"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-brand-gold-400" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-sky-400" : ""}`} />
               <span>Segarkan Peta</span>
             </button>
 

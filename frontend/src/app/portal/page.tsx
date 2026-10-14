@@ -336,12 +336,12 @@ function CitizenPortalContent() {
     : 10;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-sky-600 selection:text-white">
       {/* Citizen Header Bar */}
       <header className="bg-slate-950/95 backdrop-blur-md text-white shadow-md border-b border-slate-800 sticky top-0 z-30 print:hidden">
         <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/portal" className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-sky-500/50 shadow bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
               <Image
                 src="/logo.jpg"
                 alt="Logo SI-KPSPAMS Kuajang"
@@ -356,7 +356,7 @@ function CitizenPortalContent() {
                 <span className="text-xs sm:text-sm font-black tracking-tight whitespace-nowrap">
                   PORTAL WARGA
                 </span>
-                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
+                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-sky-300 font-extrabold px-1.5 py-0.5 rounded bg-slate-900 border border-sky-400/40 whitespace-nowrap">
                   KUAJANG
                 </span>
               </div>
@@ -377,7 +377,7 @@ function CitizenPortalContent() {
             </Link>
             <Link
               href="/login"
-              className="text-[11px] sm:text-xs text-brand-gold-300 hover:text-brand-gold-200 px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-brand-gold-950/40 hover:bg-brand-gold-950/70 border border-brand-gold-500/30 transition font-bold whitespace-nowrap"
+              className="text-[11px] sm:text-xs text-sky-300 hover:text-sky-200 px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-slate-900 hover:bg-slate-800 border border-sky-400/30 transition font-bold whitespace-nowrap"
             >
               Login Petugas
             </Link>
@@ -394,11 +394,11 @@ function CitizenPortalContent() {
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             {/* Hero Card */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-9 border border-slate-200/90 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-              <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-800 via-brand-maroon-600 to-brand-gold-500 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
+              <div className="w-full h-1.5 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-600 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
 
               <div className="max-w-xl mx-auto text-center pt-1">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-brand-maroon-50 text-brand-maroon-800 border border-brand-maroon-200/80 mx-auto flex items-center justify-center mb-3 shadow-xs">
-                  <Droplet className="w-6 h-6 sm:w-7 sm:h-7 text-brand-maroon-800" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-50 text-sky-800 border border-sky-200 mx-auto flex items-center justify-center mb-3 shadow-xs">
+                  <Droplet className="w-6 h-6 sm:w-7 sm:h-7 text-sky-600" />
                 </div>
 
                 <h1 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
@@ -413,7 +413,7 @@ function CitizenPortalContent() {
                   <div className="space-y-3">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 sm:pl-4 flex items-center pointer-events-none text-slate-400">
-                        <Search className="w-4 h-4 sm:w-5 sm:h-5 text-brand-maroon-800" />
+                        <Search className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                       </div>
                       <input
                         type="text"
@@ -425,7 +425,7 @@ function CitizenPortalContent() {
                           if (errorMessage) setErrorMessage(null);
                         }}
                         placeholder="Masukkan No. SR (cth: 00009), NIK KTP, atau Nama Warga..."
-                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-xs sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 text-slate-900 transition font-mono tracking-wide shadow-inner disabled:opacity-50"
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-xs sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 text-slate-900 transition font-mono tracking-wide shadow-inner disabled:opacity-50"
                       />
                     </div>
 
@@ -474,16 +474,16 @@ function CitizenPortalContent() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-extrabold text-white bg-brand-maroon-800 hover:bg-brand-maroon-900 active:scale-[0.99] transition shadow-lg shadow-brand-maroon-950/20 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                      className="w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-extrabold text-white bg-slate-900 hover:bg-slate-800 active:scale-[0.99] transition shadow-lg shadow-slate-900/20 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin text-brand-gold-400" />
+                          <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
                           <span>Mencari Data di Server...</span>
                         </>
                       ) : (
                         <>
-                          <Search className="w-4 h-4 text-brand-gold-400" />
+                          <Search className="w-4 h-4 text-sky-400" />
                           <span>Periksa Rekening Air Saya</span>
                         </>
                       )}
@@ -495,9 +495,9 @@ function CitizenPortalContent() {
 
             {/* List Hasil Jika Ditemukan Lebih dari 1 Sambungan (Multiple Matches) */}
             {multipleMatches && multipleMatches.length > 0 && (
-              <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border-2 border-brand-maroon-800/30 shadow-lg space-y-3 animate-in fade-in duration-150">
+              <div className="bg-white rounded-2xl sm:rounded-3xl p-5 border-2 border-sky-600/30 shadow-lg space-y-3 animate-in fade-in duration-150">
                 <div className="flex items-center space-x-2 border-b border-slate-100 pb-2.5">
-                  <Sparkles className="w-4 h-4 text-brand-gold-600" />
+                  <Sparkles className="w-4 h-4 text-sky-600" />
                   <h3 className="text-xs sm:text-sm font-black text-slate-900">
                     Ditemukan {multipleMatches.length} Sambungan Sesuai Pencarian Anda:
                   </h3>
@@ -515,7 +515,7 @@ function CitizenPortalContent() {
                     >
                       <div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-xs font-black text-slate-900 group-hover:text-brand-maroon-900 transition">
+                          <span className="text-xs font-black text-slate-900 group-hover:text-sky-700 transition">
                             {m.full_name}
                           </span>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
@@ -523,14 +523,14 @@ function CitizenPortalContent() {
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-500 mt-0.5 space-x-2 font-mono">
-                          <span>No. SR: <strong className="text-brand-maroon-800">{m.connection_no}</strong></span>
+                          <span>No. SR: <strong className="text-sky-800">{m.connection_no}</strong></span>
                           <span>•</span>
                           <span>NIK: {m.nik_masked}</span>
                           <span>•</span>
                           <span>Dusun {m.dusun}</span>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-1 text-xs font-bold text-brand-maroon-800 group-hover:translate-x-1 transition">
+                      <div className="flex items-center space-x-1 text-xs font-bold text-sky-700 group-hover:translate-x-1 transition">
                         <span>Pilih</span>
                         <ChevronRight className="w-4 h-4" />
                       </div>
@@ -583,9 +583,9 @@ function CitizenPortalContent() {
               <button
                 type="button"
                 onClick={handleResetSearch}
-                className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-brand-maroon-900 transition px-3 py-1.5 rounded-xl hover:bg-slate-100"
+                className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-sky-700 transition px-3 py-1.5 rounded-xl hover:bg-slate-100"
               >
-                <ArrowLeft className="w-4 h-4 text-brand-maroon-800" />
+                <ArrowLeft className="w-4 h-4 text-sky-600" />
                 <span>Cari Nomor SR Lain</span>
               </button>
 
@@ -593,7 +593,7 @@ function CitizenPortalContent() {
                 <span className="text-[11px] text-slate-400 font-medium block">
                   Nomor Sambungan Rumah:
                 </span>
-                <span className="font-mono text-xs font-bold text-brand-maroon-900">
+                <span className="font-mono text-xs font-bold text-slate-900">
                   {data.connection.connection_no}
                 </span>
               </div>
@@ -618,7 +618,7 @@ function CitizenPortalContent() {
                 </h2>
                 <div className="text-xs text-slate-500 mt-1.5 flex flex-wrap items-center gap-2">
                   <span>
-                    No. SR: <strong className="font-mono text-brand-maroon-900 font-bold">{data.connection.connection_no}</strong>
+                    No. SR: <strong className="font-mono text-slate-900 font-bold">{data.connection.connection_no}</strong>
                   </span>
                   <span>•</span>
                   <span>
@@ -645,7 +645,7 @@ function CitizenPortalContent() {
                 className={`text-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl relative overflow-hidden border ${
                   data.current_bill.is_paid
                     ? "bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 border-emerald-500/40"
-                    : "bg-gradient-to-br from-brand-maroon-950 via-brand-maroon-900 to-slate-950 border-brand-maroon-700"
+                    : "bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 border-slate-800"
                 }`}
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -803,13 +803,13 @@ function CitizenPortalContent() {
                           style={{ height: `${heightPercent}%` }}
                           className={`w-7 sm:w-16 rounded-t-lg sm:rounded-t-xl transition-all ${
                             isLatest
-                              ? "bg-gradient-to-t from-brand-maroon-900 to-brand-maroon-700 shadow-md shadow-brand-maroon-900/30"
+                              ? "bg-gradient-to-t from-sky-600 to-sky-400 shadow-md shadow-sky-900/20"
                               : "bg-slate-200 hover:bg-slate-300"
                           }`}
                         />
                         <span
                           className={`text-[10px] sm:text-xs mt-1.5 sm:mt-2 font-bold ${
-                            isLatest ? "text-brand-maroon-900 font-extrabold" : "text-slate-500"
+                            isLatest ? "text-sky-700 font-extrabold" : "text-slate-500"
                           }`}
                         >
                           {item.month}
@@ -840,7 +840,7 @@ function CitizenPortalContent() {
               <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Wrench className="w-4 h-4 text-brand-maroon-800" />
+                    <Wrench className="w-4 h-4 text-sky-600" />
                     <h3 className="text-xs sm:text-sm font-black text-slate-900">
                       Status Pengaduan Gangguan Air Sambungan Ini
                     </h3>
@@ -853,7 +853,7 @@ function CitizenPortalContent() {
                     <div key={comp.id} className="py-2.5 flex items-center justify-between text-xs">
                       <div>
                         <div className="flex items-center space-x-2">
-                          <span className="font-mono font-bold text-brand-maroon-900 text-[11px]">
+                          <span className="font-mono font-bold text-sky-800 text-[11px]">
                             {comp.ticket_number}
                           </span>
                           <span className="text-slate-600 font-semibold">• {comp.category}</span>
@@ -938,7 +938,7 @@ function CitizenPortalContent() {
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h4 className="text-lg font-black text-slate-900">Laporan Pengaduan Terkirim ke Server!</h4>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 inline-block font-mono font-bold text-brand-maroon-900 text-sm">
+                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 inline-block font-mono font-bold text-sky-800 text-sm">
                   Nomor Tiket: {ticketGenerated}
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
@@ -977,7 +977,7 @@ function CitizenPortalContent() {
                   <select
                     value={complaintCategory}
                     onChange={(e) => setComplaintCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-sky-600"
                   >
                     <option value="AIR_MATI">Air Tidak Mengalir Sama Sekali</option>
                     <option value="TEKANAN_RENDAH">Tekanan Air Sangat Lemah</option>
@@ -998,7 +998,7 @@ function CitizenPortalContent() {
                     value={complaintDesc}
                     onChange={(e) => setComplaintDesc(e.target.value)}
                     placeholder="Jelaskan kondisi gangguan dan patokan rumah Anda..."
-                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                   />
                 </div>
 
@@ -1069,7 +1069,7 @@ function CitizenPortalContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">No. Sambungan (SR):</span>
-                  <span className="font-bold text-brand-maroon-900">{data.connection.connection_no}</span>
+                  <span className="font-bold text-slate-900">{data.connection.connection_no}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Nama Pelanggan:</span>
@@ -1221,7 +1221,7 @@ function CitizenPortalContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">No. Sambungan (SR):</span>
-                  <span className="font-bold text-brand-maroon-900">{data.connection.connection_no}</span>
+                  <span className="font-bold text-slate-900">{data.connection.connection_no}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Nama Pelanggan:</span>
@@ -1326,7 +1326,7 @@ export default function CitizenPortalPage() {
       fallback={
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
           <div className="text-center space-y-3">
-            <div className="w-10 h-10 border-4 border-brand-maroon-800 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-10 h-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-xs font-bold text-slate-600">Memuat Portal Mandiri Warga...</p>
           </div>
         </div>

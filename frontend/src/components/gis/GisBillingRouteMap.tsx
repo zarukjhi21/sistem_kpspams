@@ -663,7 +663,7 @@ export function GisBillingRouteMap({
               <span className="font-extrabold text-white text-sm truncate">
                 {selectedCust.name}
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-brand-gold-400 border border-slate-700 font-bold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-800 text-sky-400 border border-slate-700 font-bold">
                 {selectedCust.connectionNo}
               </span>
               <span

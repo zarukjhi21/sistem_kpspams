@@ -5,11 +5,11 @@ import { ArrowLeft, Home, HelpCircle } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-surface-bg flex flex-col justify-center items-center px-4 sm:px-6 py-12 text-slate-800 selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen bg-surface-bg flex flex-col justify-center items-center px-4 sm:px-6 py-12 text-slate-800 selection:bg-sky-600 selection:text-white">
       <div className="max-w-md w-full text-center space-y-6">
         {/* Brand Icon */}
         <div className="inline-flex justify-center">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-gold-500/50 shadow-xl shadow-brand-maroon-950/20 bg-slate-950 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-sky-500/50 shadow-lg bg-slate-950 flex items-center justify-center">
             <Image
               src="/logo.jpg"
               alt="Logo SI-KPSPAMS Kuajang"
@@ -22,7 +22,7 @@ export default function NotFound() {
 
         {/* Status Code & Headings */}
         <div>
-          <div className="inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-brand-maroon-50 text-brand-maroon-800 border border-brand-maroon-200 mb-2">
+          <div className="inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-sky-50 text-sky-800 border border-sky-200 mb-2">
             Error 404 • Halaman Tidak Ditemukan
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -37,7 +37,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/dashboard"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-md shadow-brand-maroon-950/20 transition active:scale-95 flex items-center justify-center space-x-2"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center space-x-2"
           >
             <Home className="w-4 h-4" />
             <span>Kembali ke Beranda</span>

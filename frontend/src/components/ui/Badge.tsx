@@ -16,7 +16,7 @@ export function Badge({ children, variant = "neutral", size = "md", className = 
     danger: "bg-rose-50 text-rose-800 border border-rose-200/90 font-bold",
     info: "bg-sky-50 text-sky-800 border border-sky-200/90 font-bold",
     neutral: "bg-slate-100 text-slate-700 border border-slate-200/90 font-semibold",
-    brand: "bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200/90 font-bold",
+    brand: "bg-sky-50 text-sky-800 border border-sky-200/90 font-bold",
   }[variant];
 
   return (

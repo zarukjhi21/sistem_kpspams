@@ -338,15 +338,15 @@ export function GisLocationPicker({
       <div
         className={
           isExpanded
-            ? "fixed inset-2 sm:inset-4 md:inset-6 z-[99999] bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-2xl border-2 border-brand-gold-500/80 flex flex-col justify-between"
+            ? "fixed inset-2 sm:inset-4 md:inset-6 z-[99999] bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-2xl border-2 border-sky-500/80 flex flex-col justify-between"
             : "space-y-3"
         }
       >
         {/* Header Bar with Action Buttons */}
         <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-brand-gold-500/10 text-brand-gold-600">
-              <MapPin className="w-4 h-4 text-brand-gold-600" />
+            <div className="p-1.5 rounded-lg bg-sky-50 text-sky-600 border border-sky-200/80">
+              <MapPin className="w-4 h-4 text-sky-600" />
             </div>
             <div>
               <span className="text-xs sm:text-sm font-extrabold text-slate-800 uppercase tracking-wider block">
@@ -513,7 +513,7 @@ export function GisLocationPicker({
                 step="0.000001"
                 value={latitude !== 0 ? latitude : currentLat}
                 onChange={(e) => onChange(parseFloat(e.target.value) || 0, longitude)}
-                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-600"
               />
             </div>
             <div>
@@ -525,7 +525,7 @@ export function GisLocationPicker({
                 step="0.000001"
                 value={longitude !== 0 ? longitude : currentLng}
                 onChange={(e) => onChange(latitude, parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-maroon-700"
+                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-sky-600"
               />
             </div>
           </div>

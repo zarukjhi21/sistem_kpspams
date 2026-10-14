@@ -68,17 +68,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-amber-50/20 flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-hidden selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-slate-100 flex flex-col justify-between py-6 px-4 sm:px-6 relative overflow-hidden selection:bg-sky-600 selection:text-white">
       {/* Subtle Background Glows & Water Theme Elements */}
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-brand-maroon-200/20 via-brand-gold-100/15 to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-brand-gold-200/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-maroon-200/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-sky-200/30 via-blue-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-sky-200/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-blue-200/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header Navigation */}
       <header className="max-w-md w-full mx-auto flex items-center justify-between z-10 pb-3 sm:pb-4">
         <Link
           href="/"
-          className="inline-flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-slate-600 hover:text-brand-maroon-900 transition px-2.5 sm:px-3 py-1.5 rounded-xl hover:bg-white/80 border border-transparent hover:border-slate-200"
+          className="inline-flex items-center space-x-1.5 text-[11px] sm:text-xs font-semibold text-slate-600 hover:text-slate-900 transition px-2.5 sm:px-3 py-1.5 rounded-xl hover:bg-white/80 border border-transparent hover:border-slate-200"
         >
           <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
           <span>Beranda</span>
@@ -86,9 +86,9 @@ export default function LoginPage() {
 
         <Link
           href="/portal"
-          className="inline-flex items-center space-x-1.5 sm:space-x-2 text-[11px] sm:text-xs font-semibold text-brand-maroon-900 hover:text-brand-maroon-950 transition px-3 sm:px-3.5 py-1.5 rounded-xl bg-white/90 backdrop-blur border border-slate-200/90 shadow-xs hover:shadow hover:border-brand-gold-400"
+          className="inline-flex items-center space-x-1.5 sm:space-x-2 text-[11px] sm:text-xs font-semibold text-sky-800 hover:text-sky-950 transition px-3 sm:px-3.5 py-1.5 rounded-xl bg-white/90 backdrop-blur border border-slate-200/90 shadow-xs hover:shadow hover:border-sky-300"
         >
-          <Globe className="w-3.5 h-3.5 text-brand-gold-600 animate-pulse" />
+          <Globe className="w-3.5 h-3.5 text-sky-600 animate-pulse" />
           <span>Portal Warga</span>
         </Link>
       </header>
@@ -97,12 +97,12 @@ export default function LoginPage() {
       <main className="max-w-md w-full mx-auto my-auto z-10">
         <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 p-5 sm:p-9 relative">
           {/* Institutional Top Accent Ribbon */}
-          <div className="w-full h-1.5 bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-700 to-brand-gold-500 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
+          <div className="w-full h-1.5 bg-gradient-to-r from-slate-950 via-slate-900 to-sky-600 rounded-t-2xl sm:rounded-t-3xl absolute top-0 left-0 right-0" />
 
           {/* Header Branding */}
           <div className="flex flex-col items-center text-center pt-2 pb-4 sm:pb-6 border-b border-slate-100">
             {/* Centered Logo with Ring */}
-            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-brand-gold-500/70 shadow-lg shadow-brand-maroon-950/10 bg-slate-950 flex items-center justify-center p-0.5 mb-2.5 sm:mb-3.5 group hover:scale-105 transition-all duration-300">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-sky-500/60 shadow-lg shadow-slate-950/10 bg-slate-950 flex items-center justify-center p-0.5 mb-2.5 sm:mb-3.5 group hover:scale-105 transition-all duration-300">
               <Image
                 src="/logo.jpg"
                 alt="Logo Resmi SI-KPSPAMS Kuajang"
@@ -150,7 +150,7 @@ export default function LoginPage() {
                   autoComplete="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 font-medium text-slate-900 transition shadow-2xs placeholder:text-slate-400"
+                  className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 font-medium text-slate-900 transition shadow-2xs placeholder:text-slate-400"
                   placeholder="Masukkan username akun dinas"
                 />
               </div>
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowHelpModal(true)}
-                  className="text-[11px] font-medium text-brand-maroon-800 hover:text-brand-maroon-900 hover:underline flex items-center space-x-1"
+                  className="text-[11px] font-medium text-sky-700 hover:text-sky-800 hover:underline flex items-center space-x-1"
                 >
                   <HelpCircle className="w-3 h-3" />
                   <span>Bantuan Akun?</span>
@@ -185,7 +185,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-800 focus:border-brand-maroon-800 font-medium text-slate-900 transition shadow-2xs placeholder:text-slate-400"
+                  className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50/70 hover:bg-white focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 font-medium text-slate-900 transition shadow-2xs placeholder:text-slate-400"
                   placeholder="Masukkan kata sandi akun"
                 />
                 <button
@@ -206,7 +206,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-brand-maroon-800 border-slate-300 focus:ring-brand-maroon-700 cursor-pointer"
+                  className="w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-900 cursor-pointer"
                 />
                 <span className="text-xs text-slate-600 font-medium">Ingat saya di perangkat ini</span>
               </label>
@@ -215,17 +215,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-3 flex justify-center items-center space-x-2 py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-950 hover:to-brand-maroon-850 active:scale-[0.99] transition shadow-lg shadow-brand-maroon-950/20 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full mt-3 flex justify-center items-center space-x-2 py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 active:scale-[0.99] transition shadow-lg shadow-slate-900/20 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-brand-gold-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
                   <span>Memverifikasi Akses...</span>
                 </>
               ) : (
                 <>
                   <span>Masuk ke Sistem</span>
-                  <ArrowRight className="w-4 h-4 text-brand-gold-400" />
+                  <ArrowRight className="w-4 h-4 text-sky-400" />
                 </>
               )}
             </button>
@@ -247,8 +247,8 @@ export default function LoginPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 relative">
             <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-slate-100">
-              <div className="p-2 rounded-xl bg-brand-maroon-50 text-brand-maroon-900">
-                <HelpCircle className="w-5 h-5 text-brand-maroon-800" />
+              <div className="p-2 rounded-xl bg-sky-50 text-sky-800">
+                <HelpCircle className="w-5 h-5 text-sky-600" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900">Bantuan Akses Petugas</h3>

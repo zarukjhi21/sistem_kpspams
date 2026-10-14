@@ -215,7 +215,7 @@ export function AppSidebar() {
   const navGroups = getNavGroups();
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col h-full border-r border-slate-800 selection:bg-brand-maroon-800">
+    <aside className="w-64 bg-[#0A0F1D] text-slate-300 flex-shrink-0 flex flex-col h-full border-r border-slate-800/80 selection:bg-sky-600">
       {/* Navigation Groups */}
       <div className="p-4 flex-1 space-y-6 overflow-y-auto">
         {navGroups.map((group, idx) => (
@@ -236,11 +236,11 @@ export function AppSidebar() {
                     href={item.href}
                     className={`flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                       isActive
-                        ? "bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 text-white shadow-md shadow-brand-maroon-950/40 font-bold border-l-4 border-brand-gold-500 pl-2.5"
-                        : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                        ? "bg-sky-600 text-white shadow-md shadow-sky-950/40 font-bold"
+                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                     }`}
                   >
-                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-brand-gold-400" : "text-slate-400"}`} />
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -251,9 +251,9 @@ export function AppSidebar() {
       </div>
 
       {/* Role & Scope Footer (Pinned at Bottom of Sidebar) */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 flex-shrink-0">
+      <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 flex-shrink-0">
         <div className="flex items-center space-x-2 mb-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-brand-gold-500" />
+          <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Hak Akses Aktif
           </span>
@@ -261,8 +261,8 @@ export function AppSidebar() {
         <div className="text-xs font-bold text-white tracking-tight">
           {user?.roleLabel}
         </div>
-        <div className="text-[11px] text-amber-400/90 truncate mt-0.5 flex items-center space-x-1">
-          <Building2 className="w-3 h-3 text-amber-500 flex-shrink-0" />
+        <div className="text-[11px] text-sky-300/90 truncate mt-0.5 flex items-center space-x-1">
+          <Building2 className="w-3 h-3 text-sky-400 flex-shrink-0" />
           <span className="truncate">{user?.kpspamsName}</span>
         </div>
       </div>

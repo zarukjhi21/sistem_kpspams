@@ -17,7 +17,7 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-surface-bg flex flex-col justify-center items-center px-4 sm:px-6 py-12 text-slate-800 selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen bg-surface-bg flex flex-col justify-center items-center px-4 sm:px-6 py-12 text-slate-800 selection:bg-sky-600 selection:text-white">
       <div className="max-w-md w-full text-center space-y-6">
         {/* Error Icon */}
         <div className="inline-flex justify-center">
@@ -49,7 +49,7 @@ export default function ErrorPage({
           <button
             type="button"
             onClick={() => reset()}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-md shadow-brand-maroon-950/20 transition active:scale-95 flex items-center justify-center space-x-2"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-[0.98] flex items-center justify-center space-x-2"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Coba Muat Ulang</span>

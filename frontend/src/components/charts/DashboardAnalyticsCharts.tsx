@@ -237,7 +237,7 @@ export function DashboardAnalyticsCharts({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-brand-maroon-800" />
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-600" />
             <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
               Analisis Visual & Kinerja Keuangan KPSPAMS
             </h2>
@@ -288,7 +288,7 @@ export function DashboardAnalyticsCharts({
           <div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <div className="p-2 rounded-xl bg-brand-maroon-50 text-brand-maroon-800 border border-brand-maroon-200/80">
+                <div className="p-2 rounded-xl bg-sky-50 text-sky-700 border border-sky-200">
                   <TrendingUp className="w-4 h-4" />
                 </div>
                 <div>
@@ -306,8 +306,8 @@ export function DashboardAnalyticsCharts({
                   <span className="text-slate-600 font-semibold">Tagihan</span>
                 </div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-3 rounded-full bg-brand-maroon-800" />
-                  <span className="text-brand-maroon-900 font-extrabold">Kas Terkumpul</span>
+                  <span className="w-3 h-3 rounded-full bg-sky-600" />
+                  <span className="text-slate-900 font-extrabold">Kas Terkumpul</span>
                 </div>
               </div>
             </div>
@@ -336,8 +336,8 @@ export function DashboardAnalyticsCharts({
                       <stop offset="95%" stopColor="#94a3b8" stopOpacity={0.0} />
                     </linearGradient>
                     <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#831843" stopOpacity={0.5} />
-                      <stop offset="95%" stopColor="#831843" stopOpacity={0.05} />
+                      <stop offset="5%" stopColor="#0284c7" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#0284c7" stopOpacity={0.05} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -402,7 +402,7 @@ export function DashboardAnalyticsCharts({
                   <Area
                     type="monotone"
                     dataKey="collected"
-                    stroke="#831843"
+                    stroke="#0284c7"
                     strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#colorCollected)"

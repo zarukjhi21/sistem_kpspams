@@ -431,7 +431,7 @@ export function MasterDesaGisMap({
           {/* Legend & Filter Cepat Berdasarkan Kondisi Riil */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mr-1 flex items-center space-x-1">
-              <Compass className="w-3.5 h-3.5 text-brand-gold-400" />
+              <Compass className="w-3.5 h-3.5 text-sky-400" />
               <span>Status SR Riil:</span>
             </span>
 
@@ -503,12 +503,12 @@ export function MasterDesaGisMap({
               onClick={() => setShowMeterAnalysis(!showMeterAnalysis)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                 showMeterAnalysis
-                  ? "bg-brand-maroon-700 text-brand-gold-300 border-brand-gold-400 shadow-md"
+                  ? "bg-sky-600 text-white border-sky-400 shadow-md"
                   : "bg-slate-800 text-slate-300 hover:text-white border-slate-700 hover:bg-slate-700"
               }`}
               title="Buka panel pemantauan kondisi meteran air warga (normal vs macet)"
             >
-              <Gauge className="w-3.5 h-3.5 text-brand-gold-400" />
+              <Gauge className="w-3.5 h-3.5 text-sky-400" />
               <span>Pantau Kondisi Meteran</span>
               {spatialMetrics.meterDamagedCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-black">
@@ -524,7 +524,7 @@ export function MasterDesaGisMap({
                 onClick={() => switchMapType("google-hybrid")}
                 className={`px-2.5 py-1 rounded-lg font-bold transition ${
                   mapType === "google-hybrid"
-                    ? "bg-brand-maroon-800 text-white shadow-xs"
+                    ? "bg-sky-600 text-white shadow-xs"
                     : "text-slate-400 hover:text-white"
                 }`}
                 title="Peta Satelit Tajam Google dengan Label Jalan"
@@ -536,7 +536,7 @@ export function MasterDesaGisMap({
                 onClick={() => switchMapType("esri-topo")}
                 className={`px-2.5 py-1 rounded-lg font-bold transition ${
                   mapType === "esri-topo"
-                    ? "bg-brand-maroon-800 text-white shadow-xs"
+                    ? "bg-sky-600 text-white shadow-xs"
                     : "text-slate-400 hover:text-white"
                 }`}
                 title="Peta Kontur & Ketinggian Bukit Esri Topo"
@@ -566,7 +566,7 @@ export function MasterDesaGisMap({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama warga, nomor SR, atau nomor meter..."
-              className="w-full pl-10 pr-8 py-2 text-xs bg-slate-800/90 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-gold-400 transition"
+              className="w-full pl-10 pr-8 py-2 text-xs bg-slate-800/90 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
             />
             {searchQuery && (
               <button
@@ -587,7 +587,7 @@ export function MasterDesaGisMap({
             <select
               value={filterDusun}
               onChange={(e) => setFilterDusun(e.target.value)}
-              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-brand-gold-400"
+              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
             >
               <option value="ALL">Semua Dusun ({customers.length} SR)</option>
               {dusunList.map((d) => (
@@ -602,11 +602,11 @@ export function MasterDesaGisMap({
 
       {/* Panel Pemantauan Fisik Meteran Air Desa Kuajang */}
       {showMeterAnalysis && (
-        <div className="p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-brand-maroon-950 to-slate-900 text-white border border-brand-gold-500/40 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white border border-slate-800 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-brand-gold-400/20 text-brand-gold-300 text-[11px] font-bold border border-brand-gold-400/30">
-                <Sparkles className="w-3 h-3 text-brand-gold-400" />
+              <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-[11px] font-bold border border-sky-500/30">
+                <Sparkles className="w-3 h-3 text-sky-400" />
                 <span>Panel Pemantauan Fisik Meteran Air Desa Kuajang</span>
               </div>
               <h3 className="text-lg font-black text-white flex items-center space-x-2">

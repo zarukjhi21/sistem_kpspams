@@ -315,7 +315,7 @@ function PenggunaContent() {
         <div className="pt-2">
           <a
             href="/dashboard"
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-brand-maroon-800 text-white font-bold text-xs hover:bg-brand-maroon-900 transition shadow"
+            className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition shadow"
           >
             Kembali ke Beranda Utama
           </a>
@@ -383,7 +383,7 @@ function PenggunaContent() {
   return (
     <div className="space-y-5 sm:space-y-6 pb-28 md:pb-8">
       {/* Title & Action Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
             Akun Pengguna Sistem KPSPAMS
@@ -446,7 +446,7 @@ function PenggunaContent() {
               Keputusan Kepala Desa Kuajang Nomor 19 Tahun 2026 tanggal 30 Juni 2026 • Ditetapkan oleh: <strong>H. MUHAMMAD S.</strong> (Kepala Desa Kuajang)
             </p>
           </div>
-          <span className="px-3 py-1 rounded-xl text-xs font-bold bg-brand-maroon-50 text-brand-maroon-900 border border-brand-maroon-200 self-start md:self-auto">
+          <span className="px-3 py-1 rounded-xl text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 self-start md:self-auto">
             7 Pengurus Resmi
           </span>
         </div>
@@ -494,10 +494,10 @@ function PenggunaContent() {
             <span className="text-[10px] text-slate-600 font-semibold mt-0.5 block">Tim Operasional Lapangan</span>
           </div>
 
-          <div className="p-3 rounded-xl bg-brand-maroon-50/70 border border-brand-maroon-200/80 shadow-2xs flex flex-col justify-center">
-            <span className="text-[10px] font-bold text-brand-maroon-700 uppercase tracking-wider block">Pengukuhan</span>
-            <span className="text-xs font-black text-brand-maroon-900 block mt-0.5">H. MUHAMMAD S.</span>
-            <span className="text-[10px] text-brand-maroon-800 font-medium block">Kepala Desa Kuajang</span>
+          <div className="p-3 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-2xs flex flex-col justify-center">
+            <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Pengukuhan</span>
+            <span className="text-xs font-black text-white block mt-0.5">H. MUHAMMAD S.</span>
+            <span className="text-[10px] text-slate-300 font-medium block">Kepala Desa Kuajang</span>
           </div>
         </div>
       </Card>
@@ -512,7 +512,7 @@ function PenggunaContent() {
               placeholder="Cari nama, username, atau HP..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             />
           </div>
 
@@ -520,7 +520,7 @@ function PenggunaContent() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             >
               <option value="ALL">Semua Peran / Hak Akses</option>
               <option value="admin_desa">Admin Desa</option>
@@ -537,7 +537,7 @@ function PenggunaContent() {
             <select
               value={kpspamsFilter}
               onChange={(e) => setKpspamsFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             >
               <option value="ALL">Semua Unit Kerja</option>
               <option value="DESA">Pemerintah Desa (Agregat)</option>
@@ -552,7 +552,7 @@ function PenggunaContent() {
       {/* Loading state indicator */}
       {isLoading && (
         <div className="flex items-center justify-center py-10 space-x-2 text-slate-500 text-xs">
-          <Loader2 className="w-5 h-5 animate-spin text-brand-maroon-700" />
+          <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
           <span>Memuat data pengguna dari basis data...</span>
         </div>
       )}
@@ -570,7 +570,7 @@ function PenggunaContent() {
               className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm space-y-2.5"
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono font-extrabold text-xs text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                <span className="font-mono font-extrabold text-xs text-sky-800 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
                   @{u.username}
                 </span>
                 <Badge variant="brand" size="sm">{u.roleLabel}</Badge>
@@ -647,7 +647,7 @@ function PenggunaContent() {
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {u.name}
                       </td>
-                      <td className="py-3.5 px-4 font-mono font-semibold text-brand-maroon-900">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">
                         @{u.username}
                       </td>
                       <td className="py-3.5 px-4">
@@ -736,7 +736,7 @@ function PenggunaContent() {
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
                   placeholder="Contoh: Mansyur, S.Pd."
-                  className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                 />
               </div>
 
@@ -751,7 +751,7 @@ function PenggunaContent() {
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
                     placeholder="Contoh: kasir.lemobaru"
-                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                   />
                 </div>
 
@@ -764,7 +764,7 @@ function PenggunaContent() {
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="08xxxxxxxxxx"
-                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                   />
                 </div>
               </div>
@@ -777,7 +777,7 @@ function PenggunaContent() {
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as DemoUser["role"])}
-                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="petugas_lapangan">Petugas Lapangan (Catat Meter)</option>
                     <option value="bendahara_kpspams">Bendahara / Kasir KPSPAMS</option>
@@ -799,7 +799,7 @@ function PenggunaContent() {
                       const v = e.target.value;
                       setNewKpspamsId(v === "DESA" ? null : Number(v));
                     }}
-                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="1">KPSPAMS Lemo Baru (Pilot Project)</option>
                     <option value="2">KPSPAMS Lemo Tua (Persiapan Tahap 2)</option>
@@ -818,7 +818,7 @@ function PenggunaContent() {
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Pengguna dapat mengubah kata sandi setelah masuk ke aplikasi.
@@ -858,7 +858,7 @@ function PenggunaContent() {
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
-                  <Pencil className="w-4 h-4 text-brand-maroon-800" />
+                  <Pencil className="w-4 h-4 text-sky-600" />
                   <span>Edit Akun Pengguna</span>
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -889,7 +889,7 @@ function PenggunaContent() {
                   required
                   value={editFullName}
                   onChange={(e) => setEditFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                 />
               </div>
 
@@ -914,7 +914,7 @@ function PenggunaContent() {
                     type="text"
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono font-medium border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                   />
                 </div>
               </div>
@@ -927,7 +927,7 @@ function PenggunaContent() {
                   <select
                     value={editRole}
                     onChange={(e) => setEditRole(e.target.value as DemoUser["role"])}
-                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="petugas_lapangan">Petugas Lapangan (Catat Meter)</option>
                     <option value="bendahara_kpspams">Bendahara / Kasir KPSPAMS</option>
@@ -949,7 +949,7 @@ function PenggunaContent() {
                       const v = e.target.value;
                       setEditKpspamsId(v === "DESA" ? null : Number(v));
                     }}
-                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+                    className="w-full px-3.5 py-2.5 text-xs font-semibold border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
                   >
                     <option value="1">KPSPAMS Lemo Baru (Pilot Project)</option>
                     <option value="2">KPSPAMS Lemo Tua (Persiapan Tahap 2)</option>
@@ -1000,7 +1000,7 @@ function PenggunaContent() {
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                   Apakah Anda yakin ingin menghapus akun{" "}
                   <strong className="text-slate-900">{userToDelete.name}</strong> (
-                  <span className="font-mono text-brand-maroon-800">@{userToDelete.username}</span>)?
+                  <span className="font-mono text-sky-700 font-bold">@{userToDelete.username}</span>)?
                   Akun ini akan dihapus secara permanen dari basis data sistem SI-KPSPAMS.
                 </p>
               </div>

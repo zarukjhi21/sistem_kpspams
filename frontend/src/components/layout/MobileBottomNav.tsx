@@ -55,13 +55,13 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           href={navItems[0].href}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition min-w-[56px] min-h-[48px] ${
             navItems[0].isActive
-              ? "text-brand-maroon-800 font-bold"
+              ? "text-sky-600 font-bold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
           <div
             className={`p-1 rounded-lg transition ${
-              navItems[0].isActive ? "bg-brand-maroon-50 text-brand-maroon-800" : ""
+              navItems[0].isActive ? "bg-sky-50 text-sky-600" : ""
             }`}
           >
             <LayoutDashboard className="w-5 h-5" />
@@ -74,13 +74,13 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           href={navItems[1].href}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition min-w-[56px] min-h-[48px] ${
             navItems[1].isActive
-              ? "text-brand-maroon-800 font-bold"
+              ? "text-sky-600 font-bold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
           <div
             className={`p-1 rounded-lg transition ${
-              navItems[1].isActive ? "bg-brand-maroon-50 text-brand-maroon-800" : ""
+              navItems[1].isActive ? "bg-sky-50 text-sky-600" : ""
             }`}
           >
             <Users className="w-5 h-5" />
@@ -96,15 +96,15 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           <div
             className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
               navItems[2].isActive
-                ? "bg-brand-maroon-800 text-brand-gold-400 ring-4 ring-brand-maroon-100 shadow-brand-maroon-900/30"
-                : "bg-brand-maroon-800 text-white shadow-brand-maroon-900/20 group-hover:scale-105"
+                ? "bg-slate-900 text-sky-400 ring-4 ring-sky-100 shadow-slate-900/30"
+                : "bg-slate-900 text-white shadow-slate-900/20 group-hover:scale-105"
             }`}
           >
             <Smartphone className="w-6 h-6 stroke-[2.2]" />
           </div>
           <span
             className={`text-[10px] mt-1 font-semibold ${
-              navItems[2].isActive ? "text-brand-maroon-800 font-bold" : "text-slate-600"
+              navItems[2].isActive ? "text-sky-600 font-bold" : "text-slate-600"
             }`}
           >
             {navItems[2].label}
@@ -116,13 +116,13 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           href={navItems[3].href}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition min-w-[56px] min-h-[48px] ${
             navItems[3].isActive
-              ? "text-brand-maroon-800 font-bold"
+              ? "text-sky-600 font-bold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
           <div
             className={`p-1 rounded-lg transition ${
-              navItems[3].isActive ? "bg-brand-maroon-50 text-brand-maroon-800" : ""
+              navItems[3].isActive ? "bg-sky-50 text-sky-600" : ""
             }`}
           >
             <Wallet className="w-5 h-5" />
@@ -136,13 +136,13 @@ export function MobileBottomNav({ onOpenMenu, isMenuOpen }: MobileBottomNavProps
           onClick={onOpenMenu}
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition min-w-[56px] min-h-[48px] ${
             isMenuOpen
-              ? "text-brand-maroon-800 font-bold"
+              ? "text-sky-600 font-bold"
               : "text-slate-500 hover:text-slate-800"
           }`}
         >
           <div
             className={`p-1 rounded-lg transition ${
-              isMenuOpen ? "bg-brand-maroon-50 text-brand-maroon-800" : ""
+              isMenuOpen ? "bg-sky-50 text-sky-600" : ""
             }`}
           >
             <Menu className="w-5 h-5" />

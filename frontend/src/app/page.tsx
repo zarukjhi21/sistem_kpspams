@@ -41,7 +41,7 @@ const PublicTransparencyCharts = dynamic(
     loading: () => (
       <div className="h-80 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
         <div className="flex flex-col items-center gap-2 text-slate-400">
-          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs">Memuat visualisasi keuangan transparansi...</span>
         </div>
       </div>
@@ -56,7 +56,7 @@ const PublicGisMapSection = dynamic(
     loading: () => (
       <div className="h-96 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
         <div className="flex flex-col items-center gap-2 text-slate-400">
-          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs">Memuat peta satelit GIS sambungan air...</span>
         </div>
       </div>
@@ -153,12 +153,12 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-brand-maroon-800 selection:text-white">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-sky-600 selection:text-white">
       {/* Header Bar */}
       <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-lg bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-sky-500/50 shadow-lg bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
               <Image
                 src="/logo.jpg"
                 alt="Logo SI-KPSPAMS Kuajang"
@@ -173,7 +173,7 @@ export default function HomePage() {
                 <span className="text-sm sm:text-base font-extrabold tracking-tight text-white whitespace-nowrap">
                   SI-KPSPAMS
                 </span>
-                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-brand-gold-400 font-extrabold px-1.5 py-0.5 rounded bg-brand-gold-950/80 border border-brand-gold-500/40 whitespace-nowrap">
+                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-sky-400 font-extrabold px-1.5 py-0.5 rounded bg-sky-950/80 border border-sky-500/40 whitespace-nowrap">
                   KUAJANG
                 </span>
               </div>
@@ -184,14 +184,14 @@ export default function HomePage() {
           <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             <Link
               href="/portal"
-              className="inline-flex px-2 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-amber-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
+              className="inline-flex px-2 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-sky-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
             >
               <span className="hidden sm:inline">Portal Warga</span>
               <span className="sm:hidden">Portal</span>
             </Link>
             <Link
               href="/login"
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
+              className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
             >
               <span className="hidden sm:inline">Masuk Petugas</span>
               <span className="sm:hidden">Masuk</span>
@@ -268,9 +268,9 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand-maroon-950/40 border border-brand-maroon-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-lg border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
                 >
-                  <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
+                  <ShieldCheck className="w-4 h-4 text-sky-400" />
                   <span>Akses Pengelola KPSPAMS</span>
                 </Link>
 
@@ -728,7 +728,7 @@ export default function HomePage() {
               onClick={() => setIsStructureModalOpen(true)}
               className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition active:scale-95 self-start sm:self-auto cursor-pointer"
             >
-              <Maximize2 className="w-3.5 h-3.5 text-brand-gold-400" />
+              <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
               <span>Perbesar Bagan</span>
             </button>
           </div>
@@ -748,7 +748,7 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/20 transition flex items-center justify-center pointer-events-none">
                 <span className="opacity-0 group-hover:opacity-100 transition duration-200 px-4 py-2 rounded-xl bg-slate-900/90 text-white text-xs font-bold border border-slate-700 shadow-xl flex items-center space-x-2">
-                  <Maximize2 className="w-4 h-4 text-brand-gold-400" />
+                  <Maximize2 className="w-4 h-4 text-sky-400" />
                   <span>Klik untuk Memperbesar</span>
                 </span>
               </div>
@@ -801,7 +801,7 @@ export default function HomePage() {
           </div>
           <div className="pt-3 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
             <p>
-              Dirancang &amp; Dikembangkan oleh <span className="text-brand-gold-400 font-bold">Pua Kaso</span> untuk Kemandirian Layanan Air Bersih Desa Kuajang.
+              Dirancang &amp; Dikembangkan oleh <span className="text-sky-400 font-bold">Pua Kaso</span> untuk Kemandirian Layanan Air Bersih Desa Kuajang.
             </p>
             <span className="text-slate-400 text-[10px]">Kecamatan Binuang, Polewali Mandar</span>
           </div>
@@ -820,7 +820,7 @@ export default function HomePage() {
           >
             <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800 px-1">
               <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-brand-gold-400" />
+                <ShieldCheck className="w-4 h-4 text-sky-400" />
                 <span className="text-xs sm:text-sm font-bold text-white">Struktur Organisasi KPSPAMS Lemo Baru</span>
               </div>
               <button

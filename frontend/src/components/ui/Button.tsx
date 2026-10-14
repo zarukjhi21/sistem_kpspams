@@ -28,11 +28,11 @@ export function Button({
 
   const variantClasses = {
     primary:
-      "bg-gradient-to-r from-brand-maroon-800 to-brand-maroon-900 hover:from-brand-maroon-900 hover:to-black text-white font-semibold shadow-md shadow-brand-maroon-950/20 active:scale-[0.98]",
+      "bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-sm active:scale-[0.98]",
     secondary:
-      "bg-white hover:bg-slate-50 text-slate-700 border border-slate-300/90 font-semibold shadow-sm active:scale-[0.98]",
+      "bg-white hover:bg-slate-50 text-slate-700 border border-slate-300/90 font-semibold shadow-xs active:scale-[0.98]",
     gold:
-      "bg-gradient-to-r from-brand-gold-500 to-amber-500 hover:from-brand-gold-600 hover:to-amber-600 text-brand-maroon-950 font-bold shadow-md shadow-amber-500/20 active:scale-[0.98]",
+      "bg-sky-600 hover:bg-sky-500 text-white font-semibold shadow-md shadow-sky-600/20 active:scale-[0.98]",
     danger:
       "bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-md shadow-rose-900/20 active:scale-[0.98]",
     ghost:
@@ -44,7 +44,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center space-x-2 rounded-xl transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-maroon-800",
+        "inline-flex items-center justify-center space-x-2 rounded-xl transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900",
         sizeClasses,
         variantClasses,
         className

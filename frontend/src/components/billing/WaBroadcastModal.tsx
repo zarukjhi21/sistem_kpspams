@@ -355,7 +355,7 @@ export function WaBroadcastModal({
                         >
                           {isPaid ? "Lunas" : "Belum Bayar"}
                         </Badge>
-                        <span className="text-[10px] font-mono font-bold text-brand-maroon-900">
+                        <span className="text-[10px] font-mono font-bold text-slate-900">
                           {cust.connectionNo}
                         </span>
                       </div>

@@ -271,7 +271,7 @@ function PengaduanContent() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 to-slate-900 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-brand-maroon-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 md:p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight">
             Pengaduan Layanan &amp; SPK Teknisi
@@ -353,7 +353,7 @@ function PengaduanContent() {
               placeholder="Cari tiket, pelanggan, deskripsi..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full text-xs pl-8 pr-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white"
+              className="w-full text-xs pl-8 pr-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white"
             />
           </div>
 
@@ -362,7 +362,7 @@ function PengaduanContent() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white w-full sm:w-auto font-medium"
+              className="text-xs px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white w-full sm:w-auto font-medium"
             >
               <option value="ALL">Semua Status Tiket</option>
               <option value="OPEN_SUBMITTED">Menunggu Verifikasi</option>
@@ -377,7 +377,7 @@ function PengaduanContent() {
       {/* Loading state indicator */}
       {isLoading && (
         <div className="flex items-center justify-center py-10 space-x-2 text-slate-500 text-xs">
-          <Loader2 className="w-5 h-5 animate-spin text-brand-maroon-700" />
+          <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
           <span>Memuat data pengaduan dari server database...</span>
         </div>
       )}
@@ -391,7 +391,7 @@ function PengaduanContent() {
               className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-3"
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-extrabold text-brand-maroon-900 bg-brand-maroon-50 px-2 py-0.5 rounded-md border border-brand-maroon-200">
+                <span className="font-mono text-xs font-extrabold text-sky-800 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
                   {item.ticketNumber}
                 </span>
                 <span
@@ -617,7 +617,7 @@ function PengaduanContent() {
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 border border-slate-100 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-brand-maroon-700" />
+                <Wrench className="w-4 h-4 text-sky-600" />
                 Terbitkan SPK Teknisi Resmi
               </h3>
               <button onClick={() => setShowSpkModal(false)} className="text-slate-400 p-1">
@@ -637,7 +637,7 @@ function PengaduanContent() {
                 <select
                   value={selectedTechnicianId}
                   onChange={(e) => setSelectedTechnicianId(parseInt(e.target.value))}
-                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700 bg-white font-medium"
+                  className="w-full text-xs px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
                 >
                   {technicians.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -656,7 +656,7 @@ function PengaduanContent() {
                   onChange={(e) => setSpkNotes(e.target.value)}
                   rows={3}
                   required
-                  className="w-full text-xs p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-maroon-700"
+                  className="w-full text-xs p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600"
                 />
               </div>
 

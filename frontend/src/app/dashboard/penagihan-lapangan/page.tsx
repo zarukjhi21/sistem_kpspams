@@ -107,7 +107,7 @@ const GisBillingRouteMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="h-[460px] rounded-3xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center text-slate-400 text-xs space-y-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-gold-500 border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-sky-500 border-t-transparent animate-spin" />
         <span className="animate-pulse font-medium">Memuat Peta Satelit Rute Penagihan GIS Desa Kuajang...</span>
       </div>
     ),
@@ -610,7 +610,7 @@ function PenagihanLapanganContent() {
   return (
     <div className="space-y-3.5 sm:space-y-5 max-w-3xl mx-auto pb-32 md:pb-12">
       {/* Top Banner Mode Lapangan */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-brand-maroon-800">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white p-4 sm:p-5 rounded-2xl shadow-lg border border-slate-800">
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-lg sm:text-xl font-black tracking-tight">
             Catat Meter &amp; Penagihan di Tempat
@@ -628,7 +628,7 @@ function PenagihanLapanganContent() {
           <div
             className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 1
-                ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
+                ? "bg-sky-600/90 border-sky-400 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
@@ -638,7 +638,7 @@ function PenagihanLapanganContent() {
           <div
             className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 2
-                ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
+                ? "bg-sky-600/90 border-sky-400 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
@@ -648,7 +648,7 @@ function PenagihanLapanganContent() {
           <div
             className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 3
-                ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
+                ? "bg-sky-600/90 border-sky-400 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
@@ -658,7 +658,7 @@ function PenagihanLapanganContent() {
           <div
             className={`py-1 px-1.5 rounded-lg sm:rounded-xl border transition ${
               currentStep >= 4
-                ? "bg-brand-maroon-800/80 border-brand-gold-500/80 text-white font-bold"
+                ? "bg-sky-600/90 border-sky-400 text-white font-bold"
                 : "bg-slate-800/40 border-slate-700 text-slate-500"
             }`}
           >
@@ -706,7 +706,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setViewMode("map")}
                   className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                     viewMode === "map"
-                      ? "bg-brand-maroon-800 text-white shadow-sm"
+                      ? "bg-sky-600 text-white shadow-sm"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -715,7 +715,7 @@ function PenagihanLapanganContent() {
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                       viewMode === "map"
-                        ? "bg-brand-gold-400 text-brand-maroon-950"
+                        ? "bg-sky-100 text-sky-900"
                         : "bg-slate-200 text-slate-700"
                     }`}
                   >
@@ -727,7 +727,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setViewMode("list")}
                   className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                     viewMode === "list"
-                      ? "bg-brand-maroon-800 text-white shadow-sm"
+                      ? "bg-sky-600 text-white shadow-sm"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
@@ -736,7 +736,7 @@ function PenagihanLapanganContent() {
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                       viewMode === "list"
-                        ? "bg-brand-gold-400 text-brand-maroon-950"
+                        ? "bg-sky-100 text-sky-900"
                         : "bg-slate-200 text-slate-700"
                     }`}
                   >
@@ -801,7 +801,7 @@ function PenagihanLapanganContent() {
                     placeholder="Cari nama warga, dusun, atau No. SR..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-maroon-700 focus:outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-600 focus:outline-none"
                   />
                 </div>
 
@@ -824,7 +824,7 @@ function PenagihanLapanganContent() {
                           onClick={() => handleSelectCustomer(cust)}
                           className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
                             isSelected
-                              ? "bg-brand-maroon-50/80 border-brand-maroon-700 ring-2 ring-brand-maroon-600/30"
+                              ? "bg-sky-50/80 border-sky-600 ring-2 ring-sky-500/30"
                               : "bg-white hover:bg-slate-50 border-slate-200"
                           }`}
                         >
@@ -832,7 +832,7 @@ function PenagihanLapanganContent() {
                             <div
                               className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
                                 isSelected
-                                  ? "bg-brand-maroon-800 text-white"
+                                  ? "bg-sky-600 text-white"
                                   : "bg-slate-100 text-slate-700"
                               }`}
                             >
@@ -894,7 +894,7 @@ function PenagihanLapanganContent() {
             <div className="p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-gold-400">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-400">
                     Rumah Pelanggan Terpilih
                   </span>
                   <Badge
@@ -961,14 +961,14 @@ function PenagihanLapanganContent() {
                 {selectedCustomer.latitude && selectedCustomer.longitude && (
                   <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400 flex items-center space-x-1">
-                      <MapPin className="w-3 h-3 text-brand-gold-400" />
+                      <MapPin className="w-3 h-3 text-sky-400" />
                       <span>Koordinat GPS:</span>
                     </span>
                     <a
                       href={`https://www.google.com/maps?q=${selectedCustomer.latitude},${selectedCustomer.longitude}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-brand-gold-400 hover:underline font-mono text-[10px]"
+                      className="text-sky-400 hover:underline font-mono text-[10px]"
                     >
                       {selectedCustomer.latitude.toFixed(5)}, {selectedCustomer.longitude.toFixed(5)} (Google Maps ↗)
                     </a>
@@ -1032,7 +1032,7 @@ function PenagihanLapanganContent() {
                     onFocus={(e) => e.target.select()}
                     onChange={(e) => setCurrentReading(e.target.value)}
                     placeholder={previousReading > 0 ? previousReading.toFixed(2) : "0.00"}
-                    className="w-full px-3.5 py-2.5 text-xl font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-maroon-700"
+                    className="w-full px-3.5 py-2.5 text-xl font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-600"
                   />
                   <span className="absolute right-3.5 top-3 text-xs font-bold text-slate-400">m³</span>
                 </div>
@@ -1050,7 +1050,7 @@ function PenagihanLapanganContent() {
                   type="checkbox"
                   checked={isInitialSetup}
                   onChange={(e) => setIsInitialSetup(e.target.checked)}
-                  className="mt-1 w-4 h-4 rounded text-brand-maroon-700 border-slate-300 focus:ring-brand-maroon-700"
+                  className="mt-1 w-4 h-4 rounded text-slate-900 border-slate-300 focus:ring-slate-900"
                 />
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-2">
@@ -1096,7 +1096,7 @@ function PenagihanLapanganContent() {
             {/* Kotak Kalkulasi Tagihan Sesuai Sistem Air (Gravitasi vs Sumur Bor) */}
             <div className={`p-5 rounded-2xl border-2 space-y-2.5 ${
               selectedCustomer.kpspamsId === 1
-                ? "bg-gradient-to-br from-brand-maroon-50 via-white to-emerald-50/60 border-brand-maroon-300"
+                ? "bg-gradient-to-br from-sky-50/60 via-white to-emerald-50/60 border-sky-200"
                 : "bg-gradient-to-br from-blue-50 via-white to-amber-50/60 border-blue-300"
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
@@ -1168,7 +1168,7 @@ function PenagihanLapanganContent() {
 
                 <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline">
                   <span className="font-extrabold text-slate-900 text-xs">TOTAL YANG HARUS DIBAYAR:</span>
-                  <span className="font-black text-brand-maroon-900 text-xl font-tabular">
+                  <span className="font-black text-slate-900 text-xl font-tabular">
                     Rp {totalDue.toLocaleString("id-ID")}
                   </span>
                 </div>
@@ -1266,8 +1266,8 @@ function PenagihanLapanganContent() {
             )}
 
             {/* Total Due Big Card */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-brand-maroon-900 via-slate-900 to-black text-white text-center space-y-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-300">
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white text-center space-y-1 border border-slate-800 shadow-md">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-300">
                 Total Tagihan Harus Dibayar Warga:
               </span>
               <div className="text-3xl sm:text-4xl font-black text-white font-tabular">
@@ -1290,7 +1290,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setTenderAmount(totalDue)}
                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                     tenderAmount === totalDue
-                      ? "bg-brand-maroon-800 text-white border-brand-maroon-800 shadow-sm"
+                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -1301,7 +1301,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setTenderAmount(20000)}
                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                     tenderAmount === 20000
-                      ? "bg-brand-maroon-800 text-white border-brand-maroon-800 shadow-sm"
+                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -1312,7 +1312,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setTenderAmount(50000)}
                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                     tenderAmount === 50000
-                      ? "bg-brand-maroon-800 text-white border-brand-maroon-800 shadow-sm"
+                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -1323,7 +1323,7 @@ function PenagihanLapanganContent() {
                   onClick={() => setTenderAmount(100000)}
                   className={`py-2 rounded-xl text-xs font-bold transition border ${
                     tenderAmount === 100000
-                      ? "bg-brand-maroon-800 text-white border-brand-maroon-800 shadow-sm"
+                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
@@ -1336,7 +1336,7 @@ function PenagihanLapanganContent() {
                 value={tenderAmount || ""}
                 onChange={(e) => setTenderAmount(Number(e.target.value))}
                 placeholder="Masukkan nominal uang tunai..."
-                className="w-full px-3.5 py-3 text-lg font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-maroon-700"
+                className="w-full px-3.5 py-3 text-lg font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-600"
               />
             </div>
 
@@ -1413,7 +1413,7 @@ function PenagihanLapanganContent() {
           {/* Struk Kwitansi Digital (Pratinjau Layar) */}
           <Card className="max-w-md mx-auto p-5 sm:p-6 border border-slate-300 shadow-xl font-mono text-xs">
             <div className="text-center pb-3 border-b-2 border-dashed border-slate-300 space-y-1">
-              <div className="w-12 h-12 mx-auto rounded-xl overflow-hidden border border-brand-gold-500/50 shadow-sm bg-slate-950 flex items-center justify-center mb-1">
+              <div className="w-12 h-12 mx-auto rounded-xl overflow-hidden border border-sky-500/50 shadow-sm bg-slate-950 flex items-center justify-center mb-1">
                 <Image
                   src="/logo.jpg"
                   alt="Logo SI-KPSPAMS Kuajang"
@@ -1422,7 +1422,7 @@ function PenagihanLapanganContent() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="font-extrabold text-sm text-brand-maroon-900">SI-KPSPAMS KUAJANG</div>
+              <div className="font-extrabold text-sm text-slate-900">SI-KPSPAMS KUAJANG</div>
               <div className="text-[10px] text-slate-500">Unit: {selectedCustomer.kpspamsName}</div>
               <div className="text-[10px] text-slate-400">Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar</div>
               <div className="mt-2 inline-block px-2.5 py-1 rounded bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200">

@@ -33,7 +33,7 @@ export default function DashboardRootLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center space-y-3">
-          <div className="w-9 h-9 border-3 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-9 h-9 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs text-slate-400 font-medium">Memverifikasi sesi pengguna...</span>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function DashboardRootLayout({
   }
 
   return (
-    <div className="h-screen flex flex-col bg-surface-bg antialiased selection:bg-brand-maroon-800 selection:text-white overflow-hidden print:h-auto print:min-h-0 print:bg-white print:overflow-visible">
+    <div className="h-screen flex flex-col bg-surface-bg antialiased selection:bg-sky-600 selection:text-white overflow-hidden print:h-auto print:min-h-0 print:bg-white print:overflow-visible">
       {/* Sticky Fixed Header */}
       <div className="flex-shrink-0 z-30 print:hidden">
         <AppHeader onOpenMobileDrawer={() => setMobileDrawerOpen(true)} />

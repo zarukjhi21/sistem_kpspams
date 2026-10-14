@@ -39,7 +39,7 @@ const DashboardAnalyticsCharts = dynamic(
     loading: () => (
       <div className="h-96 w-full animate-pulse bg-slate-900/40 rounded-2xl flex items-center justify-center border border-slate-800">
         <div className="flex flex-col items-center gap-2 text-slate-400">
-          <div className="w-6 h-6 border-2 border-brand-gold-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs">Memuat grafik analitik performa KPSPAMS...</span>
         </div>
       </div>
@@ -210,9 +210,9 @@ function DashboardContent() {
   return (
     <div className="space-y-3.5 sm:space-y-5">
       {/* Scope Status Banner */}
-      <div className="bg-gradient-to-r from-brand-maroon-900 via-brand-maroon-800 to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-brand-maroon-700/60 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 rounded-2xl p-4 sm:p-5 text-white shadow-lg border border-slate-800 relative overflow-hidden">
         {/* Glow Decor */}
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-brand-gold-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
@@ -247,7 +247,7 @@ function DashboardContent() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/billing">
-                  <Button variant="secondary" size="sm" icon={<Receipt className="w-3.5 h-3.5 text-brand-gold-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Receipt className="w-3.5 h-3.5 text-sky-400" />}>
                     Status Tagihan
                   </Button>
                 </Link>
@@ -262,7 +262,7 @@ function DashboardContent() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/peta-gis">
-                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-sky-400" />}>
                     Peta Sambungan
                   </Button>
                 </Link>
@@ -272,7 +272,7 @@ function DashboardContent() {
             {user?.role === "admin_kpspams" && (
               <>
                 <Link href="/dashboard/pelanggan">
-                  <Button variant="secondary" size="sm" icon={<Users className="w-3.5 h-3.5 text-cyan-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Users className="w-3.5 h-3.5 text-sky-400" />}>
                     Pelanggan &amp; SR
                   </Button>
                 </Link>
@@ -282,7 +282,7 @@ function DashboardContent() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/peta-gis">
-                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-sky-400" />}>
                     Peta GIS
                   </Button>
                 </Link>
@@ -297,7 +297,7 @@ function DashboardContent() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/peta-gis">
-                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-sky-400" />}>
                     Peta Master GIS
                   </Button>
                 </Link>
@@ -307,7 +307,7 @@ function DashboardContent() {
             {(user?.role === "super_admin" || user?.role === "admin_desa" || !user?.role) && (
               <>
                 <Link href="/dashboard/peta-gis">
-                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-cyan-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Map className="w-3.5 h-3.5 text-sky-400" />}>
                     Peta Master GIS
                   </Button>
                 </Link>
@@ -317,7 +317,7 @@ function DashboardContent() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/keuangan">
-                  <Button variant="secondary" size="sm" icon={<Wallet className="w-3.5 h-3.5 text-emerald-400" />}>
+                  <Button variant="secondary" size="sm" icon={<Wallet className="w-3.5 h-3.5 text-sky-400" />}>
                     Buku Kas
                   </Button>
                 </Link>
@@ -329,15 +329,15 @@ function DashboardContent() {
 
       {/* Quick Access Strip: Sesuai Peran Pengguna */}
       {user?.role === "bendahara_kpspams" ? (
-        <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-emerald-900/50 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-500/40 text-sky-400 flex items-center justify-center flex-shrink-0">
               <Wallet className="w-4 h-4 animate-pulse" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center space-x-2">
                 <span className="text-xs font-black text-white truncate">Otoritas Kas &amp; Keuangan KPSPAMS</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/60 hidden sm:inline-block">Kasir &amp; LPJ</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/60 hidden sm:inline-block">Kasir &amp; LPJ</span>
               </div>
               <p className="text-[11px] text-slate-300 truncate">
                 Pencatatan kas masuk/keluar, penerimaan setoran iuran kantor, dan penerbitan laporan LPJ unit.
@@ -347,7 +347,7 @@ function DashboardContent() {
 
           <Link
             href="/dashboard/keuangan"
-            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs transition active:scale-95 border border-emerald-400/30 shadow-sm"
+            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition active:scale-95 border border-sky-400/30 shadow-sm"
           >
             <Wallet className="w-3.5 h-3.5" />
             <span>Buka Buku Kas &amp; Saldo &rarr;</span>
@@ -356,13 +356,13 @@ function DashboardContent() {
       ) : (
         <div className="p-3 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-slate-900 border border-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-500/40 text-sky-400 flex items-center justify-center flex-shrink-0">
               <Compass className="w-4 h-4 animate-pulse" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center space-x-2">
                 <span className="text-xs font-black text-white truncate">Peta Master GIS Jaringan Air Desa</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hidden sm:inline-block">37+ Titik SR</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800/60 hidden sm:inline-block">37+ Titik SR</span>
               </div>
               <p className="text-[11px] text-slate-300 truncate">
                 Pantau titik SR warga, indikator Lunas/Tunggakan, dan bak reservoir desa.
@@ -372,7 +372,7 @@ function DashboardContent() {
 
           <Link
             href="/dashboard/peta-gis"
-            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition active:scale-95 border border-cyan-400/30 shadow-sm"
+            className="flex-shrink-0 self-end sm:self-auto flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition active:scale-95 border border-sky-400/30 shadow-sm"
           >
             <Map className="w-3.5 h-3.5" />
             <span>Buka Peta Satelit &rarr;</span>
@@ -388,7 +388,7 @@ function DashboardContent() {
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Pelanggan Aktif
             </span>
-            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-50 text-blue-700">
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
               <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -417,7 +417,7 @@ function DashboardContent() {
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Pakai Bulan Ini
             </span>
-            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-cyan-50 text-cyan-700">
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-50 text-sky-700">
               <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -441,12 +441,12 @@ function DashboardContent() {
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Stand Fisik Meteran
             </span>
-            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-indigo-50 text-indigo-700">
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
               <Gauge className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
-            <span className="text-lg sm:text-2xl font-black text-indigo-950 font-tabular truncate">
+            <span className="text-lg sm:text-2xl font-black text-slate-900 font-tabular truncate">
               {Number(totalPhysicalMeter).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
               <span className="text-[10px] sm:text-xs font-normal text-slate-500 ml-0.5">m³</span>
             </span>
@@ -515,7 +515,7 @@ function DashboardContent() {
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Saldo Kas Unit
             </span>
-            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-50 text-amber-700">
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
               <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
@@ -535,7 +535,7 @@ function DashboardContent() {
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl col-span-2 lg:col-span-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-50 text-purple-700">
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
                 <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <div>
