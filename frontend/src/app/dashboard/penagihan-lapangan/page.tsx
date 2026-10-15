@@ -565,7 +565,7 @@ function PenagihanLapanganContent() {
         `Periode       : Oktober 2026 (Pencatatan Perdana)\n` +
         `Stand Meter Fisik: ${currentNum.toFixed(2)} m³ (Titik Dasar Baru)\n` +
         `Status Catat  : *STAND AWAL TRANSISI*\n` +
-        `Paket Dasar   : Rp ${totalDue.toLocaleString("id-ID")},- (Masa Transisi s.d 15 m³)\n` +
+        `Paket Dasar   : Rp ${totalDue.toLocaleString("id-ID")},- (Masa Transisi s.d 35 m³)\n` +
         `Total Bayar   : Rp ${totalDue.toLocaleString("id-ID")},-\n` +
         `Uang Diterima : Rp ${tenderAmount.toLocaleString("id-ID")},-\n` +
         `Kembalian     : Rp ${changeDue.toLocaleString("id-ID")},-\n` +
@@ -1138,7 +1138,7 @@ function PenagihanLapanganContent() {
                 {selectedCustomer.kpspamsId === 1 ? (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Paket Beban Dasar (s.d 15 m³):</span>
+                      <span className="text-slate-600">Paket Beban Dasar (s.d 35 m³):</span>
                       <span className="font-tabular font-bold">Rp 10.000</span>
                     </div>
                     {billCalc.excessM3 > 0 ? (
@@ -1148,7 +1148,7 @@ function PenagihanLapanganContent() {
                       </div>
                     ) : (
                       <div className="flex justify-between text-emerald-700 text-[11px]">
-                        <span>Kelebihan di atas 15 m³:</span>
+                        <span>Kelebihan di atas 35 m³:</span>
                         <span>Rp 0 (Termasuk paket dasar)</span>
                       </div>
                     )}

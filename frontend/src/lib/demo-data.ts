@@ -266,7 +266,7 @@ export const DEMO_INVOICES: DemoInvoice[] = [
     kpspamsId: 1,
     period: 'Oktober 2026',
     usageM3: 14.50,
-    totalAmount: 10000, // Aturan Lemo Baru: Rp10.000 s/d 15 m³
+    totalAmount: 10000, // Aturan Lemo Baru: Rp10.000 s/d 35 m³
     status: 'UNPAID',
     dueDate: '2026-10-20',
   },
@@ -274,12 +274,12 @@ export const DEMO_INVOICES: DemoInvoice[] = [
 
 /**
  * Kalkulator Tarif Air Resmi KPSPAMS Desa Kuajang
- * Khusus Lemo Baru: Beban dasar Rp10.000 sampai 15 m³. Lebih dari 15 m³ dihitung Rp1.000/m³.
+ * Khusus Lemo Baru: Beban dasar Rp10.000 sampai 35 m³. Lebih dari 35 m³ dihitung Rp1.000/m³.
  */
 export function calculateWaterBill(kpspamsId: number, usageM3: number) {
   if (kpspamsId === 1) {
     const baseFee = 10000;
-    const baseThreshold = 15;
+    const baseThreshold = 35;
     const excessM3 = Math.max(0, usageM3 - baseThreshold);
     const ratePerExcess = 1000;
     const excessFee = excessM3 * ratePerExcess;
@@ -287,8 +287,8 @@ export function calculateWaterBill(kpspamsId: number, usageM3: number) {
 
     const formulaDescription =
       excessM3 > 0
-        ? `Paket Dasar (0-15 m³): Rp 10.000 + Kelebihan (${excessM3.toFixed(2)} m³ × Rp 1.000): Rp ${excessFee.toLocaleString('id-ID')}`
-        : `Paket Dasar Bulanan (0-15 m³): Rp 10.000 (Pemakaian: ${usageM3.toFixed(2)} m³)`;
+        ? `Paket Dasar (0-35 m³): Rp 10.000 + Kelebihan (${excessM3.toFixed(2)} m³ × Rp 1.000): Rp ${excessFee.toLocaleString('id-ID')}`
+        : `Paket Dasar Bulanan (0-35 m³): Rp 10.000 (Pemakaian: ${usageM3.toFixed(2)} m³)`;
 
     return {
       kpspamsName: 'KPSPAMS Lemo Baru',

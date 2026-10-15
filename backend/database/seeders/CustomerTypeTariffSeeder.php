@@ -50,15 +50,15 @@ class CustomerTypeTariffSeeder extends Seeder
 
         // 2. Skema Tarif Masing-Masing KPSPAMS (TIDAK DIASUMSIKAN SAMA)
         // 2.1 Tarif KPSPAMS Lemo Baru (Rumah Tangga)
-        // Kebijakan Resmi: Rp10.000/bulan sampai 15 kubik. Lebih dari 15 kubik dikenakan Rp1.000/kubik.
+        // Kebijakan Resmi: Rp10.000/bulan sampai 35 kubik. Lebih dari 35 kubik dikenakan Rp1.000/kubik.
         $tLmbId = DB::table('tariffs')->insertGetId([
             'kpspams_id' => $kpspLemoBaru->id,
             'customer_type_id' => $typeIds['RUMAH_TANGGA'],
-            'name' => 'Tarif Air Rumah Tangga Lemo Baru (Beban Min. 15 m³)',
+            'name' => 'Tarif Air Rumah Tangga Lemo Baru (Beban Min. 35 m³)',
             'effective_from' => '2026-01-01',
             'effective_until' => null,
             'status' => 'ACTIVE',
-            'fixed_admin_fee' => 10000.00, // Biaya beban paket dasar bulanan sampai 15 m³
+            'fixed_admin_fee' => 10000.00, // Biaya beban paket dasar bulanan sampai 35 m³
             'maintenance_fee' => 0.00,
             'late_penalty_fee' => 0.00, // MVP: Default Rp0
             'created_at' => now(),
@@ -66,8 +66,8 @@ class CustomerTypeTariffSeeder extends Seeder
         ]);
 
         DB::table('tariff_components')->insert([
-            ['tariff_id' => $tLmbId, 'tier_order' => 1, 'tier_min_m3' => 0, 'tier_max_m3' => 15, 'rate_per_m3' => 0.00, 'created_at' => now()],
-            ['tariff_id' => $tLmbId, 'tier_order' => 2, 'tier_min_m3' => 16, 'tier_max_m3' => null, 'rate_per_m3' => 1000.00, 'created_at' => now()],
+            ['tariff_id' => $tLmbId, 'tier_order' => 1, 'tier_min_m3' => 0, 'tier_max_m3' => 35, 'rate_per_m3' => 0.00, 'created_at' => now()],
+            ['tariff_id' => $tLmbId, 'tier_order' => 2, 'tier_min_m3' => 36, 'tier_max_m3' => null, 'rate_per_m3' => 1000.00, 'created_at' => now()],
         ]);
 
         // 2.2 Tarif KPSPAMS Lemo Tua (Rumah Tangga - Otonom Lebih Tinggi Karena Pompa Dalam)

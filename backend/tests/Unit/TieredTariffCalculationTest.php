@@ -77,38 +77,36 @@ class TieredTariffCalculationTest extends TestCase
     public function test_it_correctly_calculates_lemo_baru_tariff_policy(): void
     {
         // Kebijakan Resmi Lemo Baru:
-        // - Beban flat bulanan Rp10.000 untuk pemakaian s/d 15 m³
-        // - Kelebihan di atas 15 m³ dihitung Rp1.000 / m³
+        // - Beban flat bulanan Rp10.000 untuk pemakaian s/d 35 m³
+        // - Kelebihan di atas 35 m³ dihitung Rp1.000 / m³
         $baseFee = 10000.0;
         $ratePerExcessM3 = 1000.0;
 
         $calcLemoBaru = function (float $usage) use ($baseFee, $ratePerExcessM3): float {
-            $excess = max(0.0, $usage - 15.0);
+            $excess = max(0.0, $usage - 35.0);
             return $baseFee + ($excess * $ratePerExcessM3);
         };
 
         // Kasus 1: Pemakaian 0 m³ (Beban minimum per bulan)
         $this->assertEquals(10000.0, $calcLemoBaru(0.0));
 
-        // Kasus 2: Pemakaian 10 m³ (Di bawah 15 m³)
-        $this->assertEquals(10000.0, $calcLemoBaru(10.0));
+        // Kasus 2: Pemakaian 20 m³ (Di bawah 35 m³)
+        $this->assertEquals(10000.0, $calcLemoBaru(20.0));
 
-        // Kasus 3: Pemakaian 14.5 m³ (M. Yusuf - di bawah 15 m³)
-        $this->assertEquals(10000.0, $calcLemoBaru(14.5));
+        // Kasus 3: Pemakaian 35 m³ (Tepat pada batas 35 m³)
+        $this->assertEquals(10000.0, $calcLemoBaru(35.0));
 
-        // Kasus 4: Tepat 15 m³
-        $this->assertEquals(10000.0, $calcLemoBaru(15.0));
-
-        // Kasus 5: Pemakaian 16 m³ (Kelebihan 1 m³ sesuai contoh user)
+        // Kasus 4: Pemakaian 36 m³ (Kelebihan 1 m³ sesuai contoh user)
         // Rp10.000 + 1 x Rp1.000 = Rp11.000
-        $this->assertEquals(11000.0, $calcLemoBaru(16.0));
+        $this->assertEquals(11000.0, $calcLemoBaru(36.0));
 
-        // Kasus 6: Pemakaian 18 m³ (Baharuddin - kelebihan 3 m³)
-        // Rp10.000 + 3 x Rp1.000 = Rp13.000
-        $this->assertEquals(13000.0, $calcLemoBaru(18.0));
-
-        // Kasus 7: Pemakaian 20 m³ (Kelebihan 5 m³)
+        // Kasus 5: Pemakaian 40 m³ (Kelebihan 5 m³)
         // Rp10.000 + 5 x Rp1.000 = Rp15.000
+        $this->assertEquals(15000.0, $calcLemoBaru(40.0));
+
+        // Kasus 6: Pemakaian 50 m³ (Kelebihan 15 m³)
+        // Rp10.000 + 15 x Rp1.000 = Rp25.000
+        $this->assertEquals(25000.0, $calcLemoBaru(50.0));
     }
 
     public function test_billing_engine_service_generates_accurate_invoice_with_items(): void
