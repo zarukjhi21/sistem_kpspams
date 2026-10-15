@@ -811,7 +811,12 @@ function KeuanganContent() {
             - Rp {totalExpense.toLocaleString("id-ID")}
           </div>
           <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] text-rose-600 font-semibold truncate">
-            Operasional & pipa
+            {totalExpense === 0
+              ? "Belum ada pengeluaran"
+              : filteredTx.some((t) => t.type === "EXPENSE" && t.category === "KOREKSI_SALAH_KLIK") &&
+                !filteredTx.some((t) => t.type === "EXPENSE" && t.category !== "KOREKSI_SALAH_KLIK")
+              ? "Koreksi salah klik (anulir pelunasan)"
+              : "Beban operasional & pipa"}
           </div>
         </Card>
       </div>
