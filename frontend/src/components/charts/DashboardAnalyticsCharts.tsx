@@ -183,13 +183,16 @@ export function DashboardAnalyticsCharts({
 
   // Data Distribusi Konsumsi Air per Dusun (Diambil langsung dari basis data per dusun)
   const lemoBaruDusun = overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("lemo baru"));
+  const lemoTuaDusun = overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("lemo tua"));
+  const sarampuDusun = overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("sarampu 1"));
+  const pakkandoangDusun = overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("pakkandoang"));
   const lemoBaruUsage = Number(lemoBaruDusun?.total_usage_m3 || realTotalUsage);
 
   const dusunWaterUsage = [
     {
       dusun: "Dusun Lemo Baru",
       usage: lemoBaruUsage,
-      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("lemo baru")).length || 37,
+      sr: lemoBaruDusun?.total_connections ?? (customers.filter((c) => Number(c.kpspamsId) === 1 || c.dusun?.toLowerCase().includes("lemo baru")).length || 37),
       system: "Mata Air Gravitasi (0% Listrik)",
       status: "Unit Beroperasi",
       fill: "#0284c7",
@@ -197,8 +200,8 @@ export function DashboardAnalyticsCharts({
     },
     {
       dusun: "Dusun Lemo Tua",
-      usage: Number(overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("lemo tua"))?.total_usage_m3 || 0),
-      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("lemo tua")).length,
+      usage: Number(lemoTuaDusun?.total_usage_m3 || 0),
+      sr: lemoTuaDusun?.total_connections ?? customers.filter((c) => Number(c.kpspamsId) === 2 || c.dusun?.toLowerCase().includes("lemo tua")).length,
       system: "Sumur Bor Pompa PLN",
       status: "Persiapan Operasional",
       fill: "#0ea5e9",
@@ -206,8 +209,8 @@ export function DashboardAnalyticsCharts({
     },
     {
       dusun: "Dusun Sarampu 1",
-      usage: Number(overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("sarampu 1"))?.total_usage_m3 || 0),
-      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("sarampu 1")).length,
+      usage: Number(sarampuDusun?.total_usage_m3 || 0),
+      sr: sarampuDusun?.total_connections ?? customers.filter((c) => c.dusun?.toLowerCase().includes("sarampu 1")).length,
       system: "Sumur Bor Pompa PLN",
       status: "Persiapan Operasional",
       fill: "#6366f1",
@@ -215,8 +218,8 @@ export function DashboardAnalyticsCharts({
     },
     {
       dusun: "Dusun Pakkandoang",
-      usage: Number(overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("pakkandoang"))?.total_usage_m3 || 0),
-      sr: customers.filter((c) => c.dusun?.toLowerCase().includes("pakkandoang")).length,
+      usage: Number(pakkandoangDusun?.total_usage_m3 || 0),
+      sr: pakkandoangDusun?.total_connections ?? customers.filter((c) => c.dusun?.toLowerCase().includes("pakkandoang")).length,
       system: "Sumur Bor Pompa PLN",
       status: "Persiapan Operasional",
       fill: "#8b5cf6",
