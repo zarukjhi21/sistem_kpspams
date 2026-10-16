@@ -425,66 +425,33 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Overlapping Element) */}
-        <section id="cek-tagihan" className="max-w-4xl mx-auto px-4 sm:px-6 -mt-16 sm:-mt-20 lg:-mt-24 relative z-30">
-          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-700 p-5 sm:p-7 lg:p-8 shadow-2xl shadow-sky-950/20 text-white">
-            <div className="text-center space-y-1 sm:space-y-1.5 mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white flex items-center justify-center space-x-2">
-                <Droplets className="w-5 h-5 sm:w-6 sm:h-6 text-teal-200 fill-teal-200" />
-                <span>Cek Tagihan Meteran Air Anda</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-teal-100 font-medium">
-                Ketikkan Nomor Sambungan Rumah (SR) atau Nama Lengkap Anda
-              </p>
-            </div>
+        {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Sleek Minimalist Figma Match) */}
+        <section id="cek-tagihan" className="max-w-2xl mx-auto px-4 -mt-10 sm:-mt-14 lg:-mt-16 relative z-30">
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-5 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
+            <h2 className="text-base sm:text-xl font-bold tracking-tight text-white text-center mb-3 sm:mb-4">
+              Cek Tagihan Meteran Air Anda
+            </h2>
 
-            {/* Search Input Bar */}
-            <form onSubmit={handleQuickSearch} className="bg-white rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={quickSearch}
-                  onChange={(e) => setQuickSearch(e.target.value)}
-                  placeholder="Masukkan Nomor ID Pelanggan (Contoh: PL-001 / LMB-001)"
-                  className="w-full pl-10 sm:pl-11 pr-3 py-2.5 sm:py-3 text-slate-900 placeholder-slate-400 text-xs sm:text-sm font-semibold focus:outline-none bg-transparent"
-                />
-              </div>
+            {/* Clean Unified Search Bar with Zero Clutter & No Harsh Borders */}
+            <form
+              onSubmit={handleQuickSearch}
+              className="bg-white rounded-xl sm:rounded-2xl p-1.5 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2"
+            >
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={quickSearch}
+                onChange={(e) => setQuickSearch(e.target.value)}
+                placeholder="Masukkan Nomor ID Pelanggan (Contoh: PL-001)"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border-0 focus:ring-0 focus:outline-none bg-transparent"
+              />
               <button
                 type="submit"
-                className="px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap cursor-pointer"
+                className="px-5 sm:px-6 py-2.5 rounded-lg sm:rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold text-xs sm:text-sm transition active:scale-95 whitespace-nowrap shadow-xs cursor-pointer"
               >
-                <span>Periksa Tagihan</span>
-                <ArrowRight className="w-4 h-4 text-sky-400" />
+                Periksa Tagihan
               </button>
             </form>
-
-            {/* Quick Helper Chips */}
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-teal-100">
-              <span className="font-semibold text-white">Contoh Sambungan Cepat:</span>
-              <button
-                type="button"
-                onClick={() => { setQuickSearch("LMB-001"); router.push("/portal?no=LMB-001"); }}
-                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
-              >
-                LMB-001
-              </button>
-              <button
-                type="button"
-                onClick={() => { setQuickSearch("LMB-015"); router.push("/portal?no=LMB-015"); }}
-                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
-              >
-                LMB-015
-              </button>
-              <button
-                type="button"
-                onClick={() => { setQuickSearch("LMB-083"); router.push("/portal?no=LMB-083"); }}
-                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
-              >
-                LMB-083
-              </button>
-            </div>
           </div>
         </section>
 
