@@ -371,18 +371,22 @@ export function PublicGisMap() {
           : "space-y-4"
       }
     >
-      {/* Header */}
-      <div className={`flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4 ${isFullscreen ? "flex-shrink-0" : ""}`}>
-        <div>
-          <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Peta Sebaran Sambungan Rumah (SR) Warga
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Visualisasi spasial sebaran titik sambungan meteran air warga Dusun Lemo Baru Desa Kuajang.
-          </p>
+      {/* Action Controls / Recenter / Fullscreen */}
+      <div className={`flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 ${isFullscreen ? "flex-shrink-0" : ""}`}>
+        <div className="flex items-center space-x-2">
+          {isFullscreen ? (
+            <span className="text-xs sm:text-sm font-bold text-white flex items-center space-x-2">
+              <MapPin className="w-4 h-4 text-emerald-400" />
+              <span>Peta Satelit GIS Kuajang</span>
+            </span>
+          ) : (
+            <span className="text-xs font-bold text-slate-400 flex items-center space-x-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>37 Sambungan Rumah (SR) Lemo Baru</span>
+            </span>
+          )}
         </div>
 
-        {/* Action Controls / Recenter / Fullscreen */}
         <div className="flex items-center flex-wrap gap-2">
           {isFullscreen && (
             <button

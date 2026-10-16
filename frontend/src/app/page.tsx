@@ -817,9 +817,6 @@ export default function HomePage() {
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 Peta Satelit GIS Sambungan Air Warga
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Pemetaan spasial jaringan transmisi pipa dan titik meteran sambungan rumah (SR) Dusun Lemo Baru.
-              </p>
             </div>
             <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 hidden sm:inline-block">
               Satelit Resolusi Tinggi
@@ -838,9 +835,6 @@ export default function HomePage() {
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 Transparansi Kas &amp; Iuran Warga Real-Time
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Keterbukaan penerimaan iuran, mutasi kas, dan neraca keuangan yang dapat dipantau oleh seluruh masyarakat Desa Kuajang.
-              </p>
             </div>
             <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 hidden sm:inline-block">
               Audit Akuntabel
@@ -855,29 +849,13 @@ export default function HomePage() {
         {/* 9. Section: Kontak & Pusat Layanan Siaga */}
         <section id="kontak" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
           <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-6 sm:p-8 lg:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <span className="text-sky-400 font-extrabold text-xs tracking-wider uppercase">
-                Pusat Kontak &amp; Siaga Pipa
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-white">
+            <div className="text-center md:text-left">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
                 Butuh Bantuan atau Ada Gangguan Aliran Air?
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
-                Tim teknis dan pengurus KPSPAMS Desa Kuajang siap melayani perbaikan kebocoran pipa, keluhan meteran, atau pendaftaran sambungan rumah baru.
-              </p>
-              <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-300 font-medium">
-                <span className="flex items-center space-x-1.5">
-                  <MapPin className="w-4 h-4 text-sky-400" />
-                  <span>Posko: Dusun Lemo Baru, Desa Kuajang</span>
-                </span>
-                <span className="flex items-center space-x-1.5">
-                  <Clock className="w-4 h-4 text-teal-400" />
-                  <span>Siaga: 08.00 - 17.00 WITA</span>
-                </span>
-              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
               <button
                 onClick={() => setActiveModal("complaint")}
                 className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap"

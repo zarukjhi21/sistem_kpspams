@@ -452,22 +452,15 @@ export function PublicTransparencyCharts() {
 
   return (
     <section className="space-y-6">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/80 pb-4">
-        <div>
-          <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Transparansi Penyaluran Air & Akuntabilitas Dana Desa
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-            Laporan terbuka konsumsi debit air harian serta rincian penggunaan uang iuran warga Desa Kuajang secara jujur dan dapat diaudit bersama.
-          </p>
+      {/* Top Status Bar */}
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div className="flex items-center space-x-2 text-xs font-bold text-slate-400">
+          <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+          <span>Monitoring Penyaluran &amp; Keuangan Warga</span>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <div className="px-3 py-1.5 rounded-xl bg-slate-800/70 border border-slate-700/80 text-xs text-slate-300 flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Penyaluran Normal 99.4%</span>
-          </div>
+        <div className="px-3 py-1.5 rounded-xl bg-slate-800/70 border border-slate-700/80 text-xs text-slate-300 flex items-center space-x-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Penyaluran Normal 99.4%</span>
         </div>
       </div>
 
