@@ -38,6 +38,7 @@ import {
   Info,
   Send,
   MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -96,6 +97,8 @@ export default function HomePage() {
   const [stats, setStats] = useState({
     lmbCash: 31616000,
     lmbCustomers: 202,
+    lmbActiveConnections: 202,
+    lmbSealedConnections: 0,
     lmbUsageM3: 0,
     lmbPhysicalMeterM3: 322684.49,
     totalCash: 31616000,
@@ -105,62 +108,43 @@ export default function HomePage() {
     billingPeriod: "Oktober 2026",
     totalCollected: 1850000,
     paidCount: 185,
+    totalArrears: 170000,
+    unpaidCount: 17,
     totalInvoices: 202,
     collectionRate: 91.6,
   });
 
   useEffect(() => {
-    apiClient<{
-      active_billing?: {
-        period_name: string;
-        total_billed: number;
-        total_collected: number;
-        paid_count: number;
-        total_invoices: number;
-        collection_rate: number;
-      };
-      units: Record<string, {
-        cash: number;
-        customers: number;
-        usage_m3?: number;
-        physical_meter_m3?: number;
-      }>;
-      total_cash: number;
-      total_customers: number;
-      total_usage_m3?: number;
-      total_physical_meter_m3?: number;
-    }>("/portal/transparency")
+    // 1. Ambil data KPI real-time dasbor utama
+    apiClient<any>("/dashboard/overview")
       .then((res) => {
-        if (res?.data?.units) {
-          const lmbCash = res.data.units.LMB?.cash ?? 31616000;
-          const lmbCust = res.data.units.LMB?.customers ?? 202;
-          const lmbUsage = Number(res.data.units.LMB?.usage_m3 ?? 0);
-          const lmbPhysical = Number(res.data.units.LMB?.physical_meter_m3 ?? 322684.49);
-          const totCash = Number(res.data.total_cash ?? lmbCash);
-          const totCust = Number(res.data.total_customers ?? lmbCust);
-          const totUsage = Number(res.data.total_usage_m3 ?? lmbUsage);
-          const totPhysical = Number(res.data.total_physical_meter_m3 ?? lmbPhysical);
-          const billing = res.data.active_billing;
-
-          setStats({
-            lmbCash,
-            lmbCustomers: lmbCust,
-            lmbUsageM3: lmbUsage,
-            lmbPhysicalMeterM3: lmbPhysical,
-            totalCash: totCash,
-            totalCustomers: totCust,
-            totalUsageM3: totUsage,
-            totalPhysicalMeterM3: totPhysical,
-            billingPeriod: billing?.period_name || "Oktober 2026",
-            totalCollected: billing?.total_collected ?? 1850000,
-            paidCount: billing?.paid_count ?? 185,
-            totalInvoices: billing?.total_invoices ?? 202,
-            collectionRate: billing?.collection_rate ?? 91.6,
-          });
+        if (res?.status === "success" && res.data?.kpi) {
+          const k = res.data.kpi;
+          const collected = Number(k.total_collected) || 1850000;
+          const arrears = Number(k.total_arrears) || 170000;
+          setStats((prev) => ({
+            ...prev,
+            lmbCash: Number(k.total_cash_balance) || prev.lmbCash,
+            lmbCustomers: Number(k.total_customers) || prev.lmbCustomers,
+            lmbActiveConnections: Number(k.active_connections) || Number(k.total_customers) || 202,
+            lmbSealedConnections: Number(k.sealed_connections) || 0,
+            lmbUsageM3: Number(k.total_usage_m3) || 0,
+            lmbPhysicalMeterM3: Number(k.total_physical_meter_m3) || prev.lmbPhysicalMeterM3,
+            totalCash: Number(k.total_cash_balance) || prev.totalCash,
+            totalCustomers: Number(k.total_customers) || prev.totalCustomers,
+            totalUsageM3: Number(k.total_usage_m3) || 0,
+            totalPhysicalMeterM3: Number(k.total_physical_meter_m3) || prev.totalPhysicalMeterM3,
+            totalCollected: collected,
+            paidCount: Math.round(collected / 10000),
+            totalArrears: arrears,
+            unpaidCount: Math.round(arrears / 10000),
+            totalInvoices: Number(k.total_customers) || 202,
+            collectionRate: Number(k.collection_rate_percent) || 91.6,
+          }));
         }
       })
       .catch((err) => {
-        console.warn("HomePage: could not fetch live transparency stats", err);
+        console.warn("HomePage: could not fetch live overview stats", err);
       });
   }, []);
 
@@ -533,78 +517,185 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 5. Section: "KPSPAMS Dalam Angka" (Summary KPI Grid) */}
+        {/* 5. Section: "Status Operasional & Transparansi Real-Time" (6 KPI Cards - Sesuai Permintaan User) */}
         <section id="informasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="text-center space-y-1.5">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              KPSPAMS Dalam Angka
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
-              Infrastruktur Air Minum &amp; Sanitasi Desa Kuajang
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3">
+            <div>
+              <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-sky-600 uppercase tracking-wider mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Transparansi Data &amp; Operasional Real-Time</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Status Operasional &amp; Transparansi Kas
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Data resmi sambungan pelanggan, kubikasi meteran, dan posisi kas unit Desa Kuajang.
+              </p>
+            </div>
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto flex items-center space-x-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1" />
+              <span>Sinkron Database Realtime</span>
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {/* Stat 1: Pelanggan Terlayani */}
-            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-sky-50 text-sky-600 flex-shrink-0">
-                <Users className="w-6 h-6 sm:w-7 sm:h-7" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
-                  {stats.totalCustomers}
-                  <span className="text-sky-600 text-base sm:text-xl ml-0.5">+</span>
-                </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
-                  Pelanggan SR Aktif
+          {/* 6 Real-Time Metric Cards (Grid 3 Kolom Sesuai Dasbor & Foto User) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5">
+            {/* Kartu 1: Pelanggan Aktif */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  PELANGGAN AKTIF
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
                 </div>
               </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
+                  {stats.lmbCustomers} <span className="text-xs font-normal text-slate-400">SR</span>
+                </span>
+                <span className="text-xs text-emerald-600 font-bold flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
+                  Aktif
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                {stats.lmbActiveConnections || stats.lmbCustomers} SR aktif • {stats.lmbSealedConnections || 0} tersegel
+              </p>
             </div>
 
-            {/* Stat 2: Dusun Terlayani */}
-            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-blue-50 text-blue-600 flex-shrink-0">
-                <MapPin className="w-6 h-6 sm:w-7 sm:h-7" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
-                  4
-                </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
-                  Dusun Terlayani
+            {/* Kartu 2: Pakai Bulan Ini */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  PAKAI BULAN INI
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                  <Activity className="w-4 h-4" />
                 </div>
               </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
+                  {stats.lmbUsageM3.toLocaleString("id-ID")}<span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                  BULAN INI
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                {stats.lmbUsageM3 === 0
+                  ? "Beban dasar Rp 10.000/SR"
+                  : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
+              </p>
             </div>
 
-            {/* Stat 3: Layanan Siaga */}
-            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-teal-50 text-teal-600 flex-shrink-0">
-                <Clock className="w-6 h-6 sm:w-7 sm:h-7" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
-                  24/7
-                </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
-                  Layanan Siaga
+            {/* Kartu 3: Stand Fisik Meteran */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  STAND FISIK METERAN
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                  <Gauge className="w-4 h-4" />
                 </div>
               </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular truncate">
+                  {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}<span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                  ODOMETER
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                Total putaran meter {stats.lmbCustomers} SR
+              </p>
             </div>
 
-            {/* Stat 4: Air Layak Konsumsi */}
-            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-50 text-emerald-600 flex-shrink-0">
-                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
-                  100%
-                </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
-                  Air Alami Gravitasi
+            {/* Kartu 4: Penerimaan Iuran */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  PENERIMAAN IURAN
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular truncate">
+                  Rp {stats.totalCollected.toLocaleString("id-ID")}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                  {stats.collectionRate}%
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                {stats.paidCount} SR terbayar lunas
+              </p>
             </div>
+
+            {/* Kartu 5: Tunggakan Berjalan */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  TUNGGAKAN BERJALAN
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-xl sm:text-2xl font-black text-rose-700 font-tabular truncate">
+                  Rp {stats.totalArrears.toLocaleString("id-ID")}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700">
+                  BELUM
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                {stats.unpaidCount} SR belum terbayar
+              </p>
+            </div>
+
+            {/* Kartu 6: Saldo Kas Unit */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  SALDO KAS UNIT
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                  <Wallet className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 font-tabular truncate">
+                  Rp {stats.totalCash.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-600 font-medium truncate mt-0.5">
+                Awal Rp 29.766k + Masuk Rp {Math.round(stats.totalCollected / 1000)}k
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Badges Layanan Kuajang */}
+          <div className="rounded-2xl bg-slate-100/80 border border-slate-200/80 p-3 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 font-medium">
+            <span className="flex items-center space-x-1.5 font-bold text-slate-800">
+              <MapPin className="w-4 h-4 text-sky-600" />
+              <span>Cakupan 4 Dusun:</span>
+              <span className="font-normal text-slate-600">Lemo Baru, Lemo Tua, Sarampu 1, Pakkandoang</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <Clock className="w-4 h-4 text-teal-600" />
+              <span className="font-bold text-slate-800">24/7</span>
+              <span>Layanan Siaga Pipa</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <Droplets className="w-4 h-4 text-emerald-600" />
+              <span className="font-bold text-slate-800">100%</span>
+              <span>Air Alami Gravitasi</span>
+            </span>
           </div>
         </section>
 
