@@ -1096,21 +1096,12 @@ export async function onRequest(context: any) {
         `, [reason, payRows[0].id]);
       }
 
-      // 5. Catat mutasi koreksi pengeluaran kas (EXPENSE) dan kurangi saldo akun kas
-      const txNum = `TX/KOR/${new Date().toISOString().slice(0, 10).replace(/-/g, "")}/${Math.floor(1000 + Math.random() * 9000)}`;
+      // 5. Batalkan/hapus transaksi mutasi pemasukan kas (karena uang sebenarnya belum pernah diterima) dan kurangi saldo akun kas
       await Promise.all([
         sql.query(`
-          INSERT INTO financial_transactions (
-            kpspams_id, cash_account_id, transaction_number, transaction_date,
-            transaction_type, category, amount, reference_type, reference_id, description, created_at, updated_at
-          ) VALUES (
-            $1, $2, $3, NOW(), 'EXPENSE', 'KOREKSI_SALAH_KLIK', $4, 'INVOICE', $5,
-            $6, NOW(), NOW()
-          )
-        `, [
-          kId, cashAccountId, txNum, totalAmount.toString(), invoiceId.toString(),
-          `Anulir/Koreksi salah klik pelunasan tagihan No. ${inv.invoice_number} (${reason})`
-        ]),
+          DELETE FROM financial_transactions
+          WHERE reference_type = 'INVOICE' AND reference_id = $1
+        `, [invoiceId.toString()]),
         sql.query(`
           UPDATE cash_accounts SET
             current_balance = (COALESCE(current_balance::numeric, 0) - $1)::text,
@@ -1585,11 +1576,18 @@ export async function onRequest(context: any) {
       txQuery += ` ORDER BY ft.id DESC LIMIT $${paramIdx++}`;
       txParams.push(txPerPage);
 
-      // Server-side Aggregates untuk Total Mutasi Kas Resmi
+      // Server-side Aggregates untuk Total Mutasi Kas Resmi (Otomatis Netto)
       let sumQuery = `
         SELECT 
-          COALESCE(SUM(CASE WHEN transaction_type = 'INCOME' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as total_income,
-          COALESCE(SUM(CASE WHEN transaction_type = 'EXPENSE' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as total_expense,
+          COALESCE(SUM(CASE 
+            WHEN transaction_type = 'INCOME' THEN CAST(amount AS numeric) 
+            WHEN transaction_type = 'EXPENSE' AND category = 'KOREKSI_SALAH_KLIK' THEN -CAST(amount AS numeric)
+            ELSE 0 
+          END), 0)::numeric as total_income,
+          COALESCE(SUM(CASE 
+            WHEN transaction_type = 'EXPENSE' AND category != 'KOREKSI_SALAH_KLIK' THEN CAST(amount AS numeric) 
+            ELSE 0 
+          END), 0)::numeric as total_expense,
           count(*)::int as total_count
         FROM financial_transactions ft
         WHERE 1=1

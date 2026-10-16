@@ -349,13 +349,16 @@ function KeuanganContent() {
       ? serverSummary.total_income
       : filteredTx
           .filter((t) => t.type === "INCOME")
+          .reduce((sum, t) => sum + t.amount, 0) -
+        filteredTx
+          .filter((t) => t.type === "EXPENSE" && t.category === "KOREKSI_SALAH_KLIK")
           .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense =
     effectiveKpspamsId === null && typeFilter === "ALL" && categoryFilter === "ALL" && !debouncedQuery && serverSummary?.total_expense !== undefined
       ? serverSummary.total_expense
       : filteredTx
-          .filter((t) => t.type === "EXPENSE")
+          .filter((t) => t.type === "EXPENSE" && t.category !== "KOREKSI_SALAH_KLIK")
           .reduce((sum, t) => sum + t.amount, 0);
 
   // Handler Atur Saldo Awal
