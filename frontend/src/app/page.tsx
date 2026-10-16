@@ -39,6 +39,7 @@ import {
   Send,
   MessageSquare,
   AlertTriangle,
+  Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -380,22 +381,71 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right Column: High Quality 3D Isometric Illustration (Seamless Floating, No White Box) */}
-              <div className="lg:col-span-6 flex justify-center items-center relative">
+              {/* Right Column: High Quality 3D Isometric Illustration (Smart Floating Island + Live Badges) */}
+              <div className="lg:col-span-6 flex justify-center items-center relative py-4 sm:py-6 lg:py-0">
                 <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-none flex items-center justify-center">
-                  {/* Atmospheric Depth Glow */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/25 via-teal-300/20 to-sky-200/10 rounded-full blur-3xl transform scale-90 pointer-events-none" />
+                  {/* Atmospheric Depth Glow & Pulsing Shadow Under Island */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/25 via-teal-300/20 to-sky-200/10 rounded-full blur-3xl transform pointer-events-none animate-island-shadow" />
                   
-                  {/* Floating Illustration with Seamless Blend */}
-                  <div className="relative transition-transform duration-500 hover:scale-[1.02] flex items-center justify-center">
+                  {/* Floating 3D Island */}
+                  <div className="relative flex items-center justify-center animate-float-island">
                     <Image
                       src="/hero-water-illustration.png"
                       alt="Ilustrasi Infrastruktur Air Bersih KPSPAMS Desa Kuajang"
                       width={1024}
                       height={764}
                       priority
-                      className="w-full h-auto max-h-[280px] sm:max-h-[420px] lg:max-h-none object-contain mx-auto drop-shadow-2xl"
+                      className="w-full h-auto max-h-[280px] sm:max-h-[420px] lg:max-h-none object-contain mx-auto drop-shadow-2xl transition-transform duration-500 hover:scale-[1.03]"
                     />
+                  </div>
+
+                  {/* Floating Live Badge 1: Flow Rate (Near Phone / IoT) */}
+                  <div className="absolute -top-2 left-0 sm:-top-3 sm:-left-3 lg:-top-3 lg:-left-6 z-20 animate-badge-1 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 flex items-center space-x-2 sm:space-x-2.5 transition hover:scale-105 select-none">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center flex-shrink-0">
+                        <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600 animate-pulse" />
+                      </div>
+                      <div className="text-left">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">Debit Air IoT</span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs font-black text-slate-800 tracking-tight">
+                          3.2 L/dtk <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-0.5">Lancar</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Floating Live Badge 2: Reservoir Status (Top Right / Near Tanks) */}
+                  <div className="absolute top-1 right-0 sm:top-3 sm:-right-3 lg:top-2 lg:-right-6 z-20 animate-badge-2 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 flex items-center space-x-2 sm:space-x-2.5 transition hover:scale-105 select-none">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0">
+                        <Gauge className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Reservoir Kuajang</span>
+                        <div className="flex items-center space-x-1">
+                          <span className="text-[11px] sm:text-xs font-black text-slate-800">92% Terisi</span>
+                          <span className="text-[9px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded-full">Optimal</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Floating Live Badge 3: Solar & Green Eco (Bottom Left / Near Solar Panel) */}
+                  <div className="hidden sm:flex absolute -bottom-3 left-4 sm:-bottom-2 sm:left-2 lg:-bottom-2 lg:left-0 z-20 animate-badge-3 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 items-center space-x-2.5 transition hover:scale-105 select-none">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">
+                        <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Solar Eco Power</span>
+                        <p className="text-[11px] sm:text-xs font-black text-slate-800">
+                          100% Mandiri Energi
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

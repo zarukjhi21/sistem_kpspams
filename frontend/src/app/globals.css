@@ -93,6 +93,89 @@ body {
   z-index: 20 !important;
 }
 
+/* Smart Floating Island 3D & Live Badges Animations */
+@keyframes float-island {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(0.35deg);
+  }
+}
+
+@keyframes island-shadow {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.45;
+  }
+}
+
+@keyframes float-badge-1 {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-9px) translateX(2px);
+  }
+}
+
+@keyframes float-badge-2 {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(8px) translateX(-2px);
+  }
+}
+
+@keyframes float-badge-3 {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-7px) translateX(2px);
+  }
+}
+
+.animate-float-island {
+  animation: float-island 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-island-shadow {
+  animation: island-shadow 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-badge-1 {
+  animation: float-badge-1 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-badge-2 {
+  animation: float-badge-2 5.5s ease-in-out infinite 0.7s;
+  will-change: transform;
+}
+
+.animate-badge-3 {
+  animation: float-badge-3 4.8s ease-in-out infinite 1.4s;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-island,
+  .animate-island-shadow,
+  .animate-badge-1,
+  .animate-badge-2,
+  .animate-badge-3 {
+    animation: none !important;
+  }
+}
+
 /* Print optimization for official A4 reports (Customer & Financial Reports) & Receipts */
 @media print {
   .print\:hidden {
