@@ -448,65 +448,53 @@ export default function HomePage() {
             {/* Card 1: Cek & Bayar Tagihan */}
             <div
               onClick={() => router.push("/portal")}
-              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Receipt className="w-5 h-5 sm:w-7 sm:h-7" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Receipt className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-sky-600 transition">
                 Cek &amp; Bayar Tagihan
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
-                Rincian pemakaian meteran &amp; bukti kwitansi resmi digital
-              </p>
             </div>
 
             {/* Card 2: Pengaduan & Aspirasi */}
             <div
               onClick={() => setActiveModal("complaint")}
-              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Wrench className="w-5 h-5 sm:w-7 sm:h-7" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Wrench className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-teal-600 transition">
                 Pengaduan &amp; Aspirasi
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
-                Lapor pipa bocor, meter macet, atau kendala aliran air
-              </p>
             </div>
 
             {/* Card 3: Pengajuan Pasang Baru */}
             <div
               onClick={() => setActiveModal("registration")}
-              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Droplets className="w-5 h-5 sm:w-7 sm:h-7" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition">
                 Pengajuan Pasang Baru
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
-                Permohonan sambungan rumah (SR) baru untuk warga desa
-              </p>
             </div>
 
             {/* Card 4: Informasi & Edukasi */}
             <div
               onClick={() => setActiveModal("education")}
-              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
-                <BookOpen className="w-5 h-5 sm:w-7 sm:h-7" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-indigo-600 transition">
                 Informasi &amp; Edukasi
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
-                Ketentuan tarif kubikasi air &amp; jadwal pemeliharaan jaringan
-              </p>
             </div>
           </div>
         </section>
