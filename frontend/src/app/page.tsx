@@ -42,6 +42,7 @@ import {
   Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { AnimatedCount, ScrollReveal } from "@/components/ui/ScrollAnimations";
 
 const PublicTransparencyCharts = dynamic(
   () => import("@/components/charts/PublicTransparencyCharts").then((m) => m.PublicTransparencyCharts),
@@ -455,505 +456,552 @@ export default function HomePage() {
 
         {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Sleek Minimalist Figma Match) */}
         <section id="cek-tagihan" className="max-w-2xl mx-auto px-4 -mt-10 sm:-mt-14 lg:-mt-16 relative z-30">
-          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-4 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
-            <h2 className="text-sm sm:text-xl font-bold tracking-tight text-white text-center mb-2.5 sm:mb-4">
-              Cek Tagihan Meteran Air Anda
-            </h2>
+          <ScrollReveal direction="up" distance={20}>
+            <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-4 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
+              <h2 className="text-sm sm:text-xl font-bold tracking-tight text-white text-center mb-2.5 sm:mb-4">
+                Cek Tagihan Meteran Air Anda
+              </h2>
 
-            {/* Clean Unified Search Bar with Zero Clutter & No Harsh Borders */}
-            <form
-              onSubmit={handleQuickSearch}
-              className="bg-white rounded-xl sm:rounded-2xl p-1.5 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2"
-            >
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={quickSearch}
-                onChange={(e) => setQuickSearch(e.target.value)}
-                placeholder="Masukkan Nomor ID Pelanggan (Contoh: PL-001)"
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border-0 focus:ring-0 focus:outline-none bg-transparent"
-              />
-              <button
-                type="submit"
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 rounded-lg sm:rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold text-xs sm:text-sm transition active:scale-95 whitespace-nowrap shadow-xs cursor-pointer text-center"
+              {/* Clean Unified Search Bar with Zero Clutter & No Harsh Borders */}
+              <form
+                onSubmit={handleQuickSearch}
+                className="bg-white rounded-xl sm:rounded-2xl p-1.5 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2"
               >
-                Periksa Tagihan
-              </button>
-            </form>
-          </div>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  placeholder="Masukkan Nomor ID Pelanggan (Contoh: PL-001)"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border-0 focus:ring-0 focus:outline-none bg-transparent"
+                />
+                <button
+                  type="submit"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-2.5 rounded-lg sm:rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold text-xs sm:text-sm transition active:scale-95 whitespace-nowrap shadow-xs cursor-pointer text-center"
+                >
+                  Periksa Tagihan
+                </button>
+              </form>
+            </div>
+          </ScrollReveal>
         </section>
 
         {/* 4. Section: "Layanan Utama" (4 Cards Grid) */}
         <section id="layanan" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Layanan Utama
-            </h2>
-          </div>
+          <ScrollReveal direction="up">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Layanan Utama
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {/* Card 1: Cek & Bayar Tagihan */}
-            <div
-              onClick={() => router.push("/portal")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
-            >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Receipt className="w-6 h-6 sm:w-7 sm:h-7" />
+            <ScrollReveal direction="up" delay={0}>
+              <div
+                onClick={() => router.push("/portal")}
+                className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group h-full"
+              >
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
+                  <Receipt className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+                <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-sky-600 transition">
+                  Cek &amp; Bayar Tagihan
+                </h3>
               </div>
-              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-sky-600 transition">
-                Cek &amp; Bayar Tagihan
-              </h3>
-            </div>
+            </ScrollReveal>
 
             {/* Card 2: Pengaduan & Aspirasi */}
-            <div
-              onClick={() => setActiveModal("complaint")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
-            >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Wrench className="w-6 h-6 sm:w-7 sm:h-7" />
+            <ScrollReveal direction="up" delay={80}>
+              <div
+                onClick={() => setActiveModal("complaint")}
+                className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group h-full"
+              >
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
+                  <Wrench className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+                <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-teal-600 transition">
+                  Pengaduan &amp; Aspirasi
+                </h3>
               </div>
-              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-teal-600 transition">
-                Pengaduan &amp; Aspirasi
-              </h3>
-            </div>
+            </ScrollReveal>
 
             {/* Card 3: Pengajuan Pasang Baru */}
-            <div
-              onClick={() => setActiveModal("registration")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
-            >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
+            <ScrollReveal direction="up" delay={160}>
+              <div
+                onClick={() => setActiveModal("registration")}
+                className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group h-full"
+              >
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
+                  <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+                <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition">
+                  Pengajuan Pasang Baru
+                </h3>
               </div>
-              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition">
-                Pengajuan Pasang Baru
-              </h3>
-            </div>
+            </ScrollReveal>
 
             {/* Card 4: Informasi & Edukasi */}
-            <div
-              onClick={() => setActiveModal("education")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
-            >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
-                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
+            <ScrollReveal direction="up" delay={240}>
+              <div
+                onClick={() => setActiveModal("education")}
+                className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group h-full"
+              >
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
+                  <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
+                </div>
+                <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-indigo-600 transition">
+                  Informasi &amp; Edukasi
+                </h3>
               </div>
-              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-indigo-600 transition">
-                Informasi &amp; Edukasi
-              </h3>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* 5. Section: "Status Operasional & Transparansi Real-Time" (6 KPI Cards - Sesuai Permintaan User) */}
         <section id="informasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Status Operasional &amp; Transparansi Kas
-              </h2>
+          <ScrollReveal direction="up">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Status Operasional &amp; Transparansi Kas
+                </h2>
+              </div>
+              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto flex items-center space-x-1.5 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1" />
+                <span>Sinkron Database Realtime</span>
+              </span>
             </div>
-            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto flex items-center space-x-1.5 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1" />
-              <span>Sinkron Database Realtime</span>
-            </span>
-          </div>
+          </ScrollReveal>
 
           {/* 6 Real-Time Metric Cards (Grid 3 Kolom Sesuai Dasbor & Foto User) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5">
             {/* Kartu 1: Pelanggan Aktif */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  PELANGGAN AKTIF
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                  <Users className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={0}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    PELANGGAN AKTIF
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
+                    <AnimatedCount value={stats.lmbCustomers} duration={1400} /> <span className="text-xs font-normal text-slate-400">SR</span>
+                  </span>
+                  <span className="text-xs text-emerald-600 font-bold flex items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
+                    Aktif
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  {stats.lmbActiveConnections || stats.lmbCustomers} SR aktif • {stats.lmbSealedConnections || 0} tersegel
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
-                  {stats.lmbCustomers} <span className="text-xs font-normal text-slate-400">SR</span>
-                </span>
-                <span className="text-xs text-emerald-600 font-bold flex items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
-                  Aktif
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                {stats.lmbActiveConnections || stats.lmbCustomers} SR aktif • {stats.lmbSealedConnections || 0} tersegel
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Kartu 2: Pakai Bulan Ini */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  PAKAI BULAN INI
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                  <Activity className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={70}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    PAKAI BULAN INI
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
+                    <Activity className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
+                    <AnimatedCount value={stats.lmbUsageM3} duration={1400} /><span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                    BULAN INI
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  {stats.lmbUsageM3 === 0
+                    ? "Beban dasar Rp 10.000/SR"
+                    : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular">
-                  {stats.lmbUsageM3.toLocaleString("id-ID")}<span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
-                  BULAN INI
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                {stats.lmbUsageM3 === 0
-                  ? "Beban dasar Rp 10.000/SR"
-                  : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Kartu 3: Stand Fisik Meteran */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  STAND FISIK METERAN
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                  <Gauge className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={140}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    STAND FISIK METERAN
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                    <Gauge className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular truncate">
+                    <AnimatedCount value={stats.lmbPhysicalMeterM3} decimals={2} duration={1800} /><span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                    ODOMETER
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  Total putaran meter {stats.lmbCustomers} SR
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 font-tabular truncate">
-                  {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}<span className="text-xs font-normal text-slate-400 ml-0.5">m³</span>
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                  ODOMETER
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                Total putaran meter {stats.lmbCustomers} SR
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Kartu 4: Penerimaan Iuran */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  PENERIMAAN IURAN
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={210}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    PENERIMAAN IURAN
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular truncate">
+                    <AnimatedCount value={stats.totalCollected} prefix="Rp " duration={1600} />
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                    <AnimatedCount value={stats.collectionRate} decimals={1} suffix="%" duration={1600} />
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  {stats.paidCount} SR terbayar lunas
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular truncate">
-                  Rp {stats.totalCollected.toLocaleString("id-ID")}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
-                  {stats.collectionRate}%
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                {stats.paidCount} SR terbayar lunas
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Kartu 5: Tunggakan Berjalan */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  TUNGGAKAN BERJALAN
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <AlertTriangle className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={280}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    TUNGGAKAN BERJALAN
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-rose-700 font-tabular truncate">
+                    <AnimatedCount value={stats.totalArrears} prefix="Rp " duration={1600} />
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700">
+                    BELUM
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  {stats.unpaidCount} SR belum terbayar
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-xl sm:text-2xl font-black text-rose-700 font-tabular truncate">
-                  Rp {stats.totalArrears.toLocaleString("id-ID")}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700">
-                  BELUM
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                {stats.unpaidCount} SR belum terbayar
-              </p>
-            </div>
+            </ScrollReveal>
 
             {/* Kartu 6: Saldo Kas Unit */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  SALDO KAS UNIT
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                  <Wallet className="w-4 h-4" />
+            <ScrollReveal direction="up" delay={350}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    SALDO KAS UNIT
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                    <Wallet className="w-4 h-4" />
+                  </div>
                 </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 font-tabular truncate">
+                    <AnimatedCount value={stats.totalCash} prefix="Rp " duration={1800} />
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-600 font-medium truncate mt-0.5">
+                  Awal Rp 29.766k + Masuk Rp {Math.round(stats.totalCollected / 1000)}k
+                </p>
               </div>
-              <div className="flex items-baseline justify-between mt-1">
-                <span className="text-xl sm:text-2xl font-black text-slate-900 font-tabular truncate">
-                  Rp {stats.totalCash.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <p className="text-[11px] text-emerald-600 font-medium truncate mt-0.5">
-                Awal Rp 29.766k + Masuk Rp {Math.round(stats.totalCollected / 1000)}k
-              </p>
-            </div>
+            </ScrollReveal>
           </div>
-
         </section>
 
         {/* 6. Section: "Tentang Kami & 3 Unit Pengelola KPSPAMS Desa Kuajang" */}
         <section id="tentang-kami" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="border-b border-slate-200 pb-4">
-            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              3 Unit Pengelola KPSPAMS Desa Kuajang
-            </h2>
-          </div>
+          <ScrollReveal direction="up">
+            <div className="border-b border-slate-200 pb-4">
+              <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                3 Unit Pengelola KPSPAMS Desa Kuajang
+              </h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Unit 1: KPSPAMS Lemo Baru */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border-2 border-emerald-500 shadow-md flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                    Unit 1 (LMB)
-                  </span>
-                  <span className="text-xs text-emerald-700 font-extrabold flex items-center space-x-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Aktif Beroperasi</span>
-                  </span>
+            <ScrollReveal direction="up" delay={0}>
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border-2 border-emerald-500 shadow-md flex flex-col justify-between space-y-4 h-full">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+                      Unit 1 (LMB)
+                    </span>
+                    <span className="text-xs text-emerald-700 font-extrabold flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Aktif Beroperasi</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">
+                      KPSPAMS Lemo Baru
+                    </h3>
+                    <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                      Wilayah: Dusun Lemo Baru
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Sistem Mata Air Pegunungan (100% Gravitasi Alami tanpa pompa listrik).
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
+                    <div className="flex justify-between items-center text-slate-600">
+                      <span>Pelanggan Terlayani:</span>
+                      <strong className="text-slate-900 font-extrabold">{stats.lmbCustomers} Sambungan (SR)</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600">
+                      <span>Kas Operasional Riil:</span>
+                      <strong className="text-emerald-700 font-extrabold">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600">
+                      <span>Total Stand Fisik:</span>
+                      <strong className="text-slate-900 font-extrabold">
+                        {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³
+                      </strong>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-black text-slate-900">
-                    KPSPAMS Lemo Baru
-                  </h3>
-                  <p className="text-xs text-emerald-700 font-semibold mt-0.5">
-                    Wilayah: Dusun Lemo Baru
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Sistem Mata Air Pegunungan (100% Gravitasi Alami tanpa pompa listrik).
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Pelanggan Terlayani:</span>
-                    <strong className="text-slate-900 font-extrabold">{stats.lmbCustomers} Sambungan (SR)</strong>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Kas Operasional Riil:</span>
-                    <strong className="text-emerald-700 font-extrabold">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Total Stand Fisik:</span>
-                    <strong className="text-slate-900 font-extrabold">
-                      {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³
-                    </strong>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("peta-gis")}
+                  className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <span>Lihat Sebaran Pipa di Peta GIS</span>
+                  <ArrowDown className="w-3.5 h-3.5" />
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={() => scrollToSection("peta-gis")}
-                className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
-              >
-                <span>Lihat Sebaran Pipa di Peta GIS</span>
-                <ArrowDown className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            </ScrollReveal>
 
             {/* Unit 2: KPSPAMS Lemo Tua */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                    Unit 2 (LMT)
-                  </span>
-                  <span className="text-xs text-amber-600 font-bold flex items-center space-x-1">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span>Tahap Persiapan</span>
-                  </span>
+            <ScrollReveal direction="up" delay={120}>
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4 h-full">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                      Unit 2 (LMT)
+                    </span>
+                    <span className="text-xs text-amber-600 font-bold flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span>Tahap Persiapan</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-black text-slate-800">
+                      KPSPAMS Lemo Tua
+                    </h3>
+                    <p className="text-xs text-slate-600 font-semibold mt-0.5">
+                      Wilayah: Dusun Lemo Tua
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Sumur Bor &amp; Sumber Air Baku Siaga.
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
+                    <div className="flex justify-between items-center text-slate-500">
+                      <span>Pelanggan Terdaftar:</span>
+                      <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-500">
+                      <span>Status Jaringan:</span>
+                      <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-black text-slate-800">
-                    KPSPAMS Lemo Tua
-                  </h3>
-                  <p className="text-xs text-slate-600 font-semibold mt-0.5">
-                    Wilayah: Dusun Lemo Tua
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Sumur Bor &amp; Sumber Air Baku Siaga.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
-                  <div className="flex justify-between items-center text-slate-500">
-                    <span>Pelanggan Terdaftar:</span>
-                    <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-500">
-                    <span>Status Jaringan:</span>
-                    <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
-                  </div>
+                <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
+                  Penyusunan Jaringan Air Bersih
                 </div>
               </div>
-
-              <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
-                Penyusunan Jaringan Air Bersih
-              </div>
-            </div>
+            </ScrollReveal>
 
             {/* Unit 3: KPSPAMS Sarampu 1 & Pakkandoang */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                    Unit 3 (SRP)
-                  </span>
-                  <span className="text-xs text-cyan-700 font-bold flex items-center space-x-1">
-                    <span className="w-2 h-2 rounded-full bg-cyan-500" />
-                    <span>Tahap Persiapan</span>
-                  </span>
+            <ScrollReveal direction="up" delay={240}>
+              <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4 h-full">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                      Unit 3 (SRP)
+                    </span>
+                    <span className="text-xs text-cyan-700 font-bold flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                      <span>Tahap Persiapan</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-black text-slate-800">
+                      KPSPAMS Sarampu 1
+                    </h3>
+                    <p className="text-xs text-slate-600 font-semibold mt-0.5">
+                      Wilayah: Dusun Sarampu 1 &amp; Pakkandoang
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Jaringan Pipa &amp; Bak Penampung Transmisi.
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
+                    <div className="flex justify-between items-center text-slate-500">
+                      <span>Pelanggan Terdaftar:</span>
+                      <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-500">
+                      <span>Status Jaringan:</span>
+                      <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-black text-slate-800">
-                    KPSPAMS Sarampu 1
-                  </h3>
-                  <p className="text-xs text-slate-600 font-semibold mt-0.5">
-                    Wilayah: Dusun Sarampu 1 &amp; Pakkandoang
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Jaringan Pipa &amp; Bak Penampung Transmisi.
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
-                  <div className="flex justify-between items-center text-slate-500">
-                    <span>Pelanggan Terdaftar:</span>
-                    <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-500">
-                    <span>Status Jaringan:</span>
-                    <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
-                  </div>
+                <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
+                  Penyusunan Jaringan Air Bersih
                 </div>
               </div>
-
-              <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
-                Penyusunan Jaringan Air Bersih
-              </div>
-            </div>
+            </ScrollReveal>
           </div>
         </section>
 
         {/* 7. Section: Peta Satelit GIS Interaktif */}
         <section id="peta-gis" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Peta Satelit GIS Sambungan Air Warga
-              </h2>
+          <ScrollReveal direction="up">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Peta Satelit GIS Sambungan Air Warga
+                </h2>
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 hidden sm:inline-block">
+                Satelit Resolusi Tinggi
+              </span>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 hidden sm:inline-block">
-              Satelit Resolusi Tinggi
-            </span>
-          </div>
+          </ScrollReveal>
 
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-2 sm:p-4 overflow-hidden">
-            <PublicGisMapSection />
-          </div>
+          <ScrollReveal direction="up" delay={100}>
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-2 sm:p-4 overflow-hidden">
+              <PublicGisMapSection />
+            </div>
+          </ScrollReveal>
         </section>
 
         {/* 8. Section: Transparansi Keuangan Realtime */}
         <section id="transparansi-kas" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Transparansi Kas &amp; Iuran Warga Real-Time
-              </h2>
+          <ScrollReveal direction="up">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Transparansi Kas &amp; Iuran Warga Real-Time
+                </h2>
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 hidden sm:inline-block">
+                Audit Akuntabel
+              </span>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 hidden sm:inline-block">
-              Audit Akuntabel
-            </span>
-          </div>
+          </ScrollReveal>
 
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden">
-            <PublicTransparencyCharts />
-          </div>
+          <ScrollReveal direction="up" delay={100}>
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden">
+              <PublicTransparencyCharts />
+            </div>
+          </ScrollReveal>
         </section>
 
         {/* 9. Section: Kontak & Pusat Layanan Siaga */}
         <section id="kontak" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-6 sm:p-8 lg:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
-                Butuh Bantuan atau Ada Gangguan Aliran Air?
-              </h2>
-            </div>
+          <ScrollReveal direction="up" delay={80}>
+            <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-6 sm:p-8 lg:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-center md:text-left">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight">
+                  Butuh Bantuan atau Ada Gangguan Aliran Air?
+                </h2>
+              </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
-              <button
-                onClick={() => setActiveModal("complaint")}
-                className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap"
-              >
-                <Wrench className="w-4 h-4" />
-                <span>Kirim Laporan Gangguan</span>
-              </button>
-              <a
-                href="https://wa.me/6282348507873?text=Halo%20Pengurus%20KPSPAMS%20Desa%20Kuajang,%20saya%20warga%20ingin%20bertanya..."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap"
-              >
-                <PhoneCall className="w-4 h-4 text-emerald-600" />
-                <span>WhatsApp Pengurus</span>
-              </a>
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
+                <button
+                  onClick={() => setActiveModal("complaint")}
+                  className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap"
+                >
+                  <Wrench className="w-4 h-4" />
+                  <span>Kirim Laporan Gangguan</span>
+                </button>
+                <a
+                  href="https://wa.me/6282348507873?text=Halo%20Pengurus%20KPSPAMS%20Desa%20Kuajang,%20saya%20warga%20ingin%20bertanya..."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap"
+                >
+                  <PhoneCall className="w-4 h-4 text-emerald-600" />
+                  <span>WhatsApp Pengurus</span>
+                </a>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </section>
 
         {/* 10. Section: Struktur Organisasi Pengurus (Tepat di Atas Footer) */}
         <section id="struktur-organisasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Struktur Pengurus KPSPAMS Desa Kuajang
-              </h2>
+          <ScrollReveal direction="up">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Struktur Pengurus KPSPAMS Desa Kuajang
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsStructureModalOpen(true)}
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs cursor-pointer"
+              >
+                <Maximize2 className="w-3.5 h-3.5 text-sky-600" />
+                <span>Perbesar</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsStructureModalOpen(true)}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs cursor-pointer"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-sky-600" />
-              <span>Perbesar</span>
-            </button>
-          </div>
+          </ScrollReveal>
 
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden flex flex-col items-center justify-center">
-            <div
-              onClick={() => setIsStructureModalOpen(true)}
-              className="relative w-full max-w-4xl mx-auto cursor-pointer group transition duration-300 hover:shadow-xl rounded-2xl overflow-hidden border border-slate-100 bg-slate-950 flex items-center justify-center"
-              title="Klik untuk memperbesar gambar struktur"
-            >
-              <Image
-                src="/struktur-organisasi-lemobaru.jpg"
-                alt="Struktur Organisasi KPSPAMS Lemo Baru Desa Kuajang"
-                width={1024}
-                height={764}
-                className="w-full h-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
-              />
-              <div className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow opacity-90 group-hover:opacity-100 transition">
-                <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
-                <span>Klik untuk Memperbesar</span>
+          <ScrollReveal direction="up" delay={100}>
+            <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden flex flex-col items-center justify-center">
+              <div
+                onClick={() => setIsStructureModalOpen(true)}
+                className="relative w-full max-w-4xl mx-auto cursor-pointer group transition duration-300 hover:shadow-xl rounded-2xl overflow-hidden border border-slate-100 bg-slate-950 flex items-center justify-center"
+                title="Klik untuk memperbesar gambar struktur"
+              >
+                <Image
+                  src="/struktur-organisasi-lemobaru.jpg"
+                  alt="Struktur Organisasi KPSPAMS Lemo Baru Desa Kuajang"
+                  width={1024}
+                  height={764}
+                  className="w-full h-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                />
+                <div className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow opacity-90 group-hover:opacity-100 transition">
+                  <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Klik untuk Memperbesar</span>
+                </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </section>
       </main>
 
