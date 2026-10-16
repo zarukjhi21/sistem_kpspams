@@ -655,19 +655,10 @@ export default function HomePage() {
 
         {/* 6. Section: "Tentang Kami & 3 Unit Pengelola KPSPAMS Desa Kuajang" */}
         <section id="tentang-kami" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-200 pb-4">
-            <div>
-              <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                3 Unit Pengelola KPSPAMS Desa Kuajang
-              </h2>
-            </div>
-            <button
-              onClick={() => setIsStructureModalOpen(true)}
-              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs w-full md:w-auto cursor-pointer"
-            >
-              <Maximize2 className="w-4 h-4 text-sky-600" />
-              <span>Lihat SK &amp; Struktur Pengurus</span>
-            </button>
+          <div className="border-b border-slate-200 pb-4">
+            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              3 Unit Pengelola KPSPAMS Desa Kuajang
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -875,9 +866,48 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* 10. Section: Struktur Organisasi Pengurus (Tepat di Atas Footer) */}
+        <section id="struktur-organisasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Struktur Pengurus KPSPAMS Desa Kuajang
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsStructureModalOpen(true)}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs cursor-pointer"
+            >
+              <Maximize2 className="w-3.5 h-3.5 text-sky-600" />
+              <span>Perbesar</span>
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden flex flex-col items-center justify-center">
+            <div
+              onClick={() => setIsStructureModalOpen(true)}
+              className="relative w-full max-w-4xl mx-auto cursor-pointer group transition duration-300 hover:shadow-xl rounded-2xl overflow-hidden border border-slate-100 bg-slate-950 flex items-center justify-center"
+              title="Klik untuk memperbesar gambar struktur"
+            >
+              <Image
+                src="/struktur-organisasi-lemobaru.jpg"
+                alt="Struktur Organisasi KPSPAMS Lemo Baru Desa Kuajang"
+                width={1024}
+                height={764}
+                className="w-full h-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+              />
+              <div className="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow opacity-90 group-hover:opacity-100 transition">
+                <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
+                <span>Klik untuk Memperbesar</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* 10. Footer Section */}
+      {/* 11. Footer Section */}
       <footer className="bg-white text-slate-600 text-xs py-8 border-t border-slate-200 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -891,7 +921,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 text-slate-600 text-[11px] font-semibold">
-              <button onClick={() => setIsStructureModalOpen(true)} className="hover:text-sky-600 transition">
+              <button onClick={() => scrollToSection("struktur-organisasi")} className="hover:text-sky-600 transition">
                 Struktur Pengurus
               </button>
               <span>•</span>
