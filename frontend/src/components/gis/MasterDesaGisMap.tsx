@@ -160,7 +160,7 @@ export function MasterDesaGisMap({
 
     const map = L.map(mapContainerRef.current, {
       center: [initialCenterLat, initialCenterLng],
-      zoom: 16,
+      zoom: 17,
       zoomControl: false,
       scrollWheelZoom: true,
     });
@@ -221,7 +221,7 @@ export function MasterDesaGisMap({
         pulseRing = `
           <div style="
             position: absolute;
-            inset: -6px;
+            inset: -4px;
             border-radius: 50%;
             background: rgba(234, 88, 12, 0.45);
             animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -235,7 +235,7 @@ export function MasterDesaGisMap({
         pulseRing = `
           <div style="
             position: absolute;
-            inset: -6px;
+            inset: -4px;
             border-radius: 50%;
             background: rgba(245, 158, 11, 0.45);
             animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -251,21 +251,21 @@ export function MasterDesaGisMap({
       const customerIcon = L.divIcon({
         className: `gis-pin-${pinType.toLowerCase()}`,
         html: `
-          <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
             ${pulseRing}
             ${
               isSelected
-                ? `<div style="position: absolute; inset: -5px; border-radius: 50%; border: 3px solid #fef08a; animation: ping 1.2s infinite;"></div>`
+                ? `<div style="position: absolute; inset: -4px; border-radius: 50%; border: 2.5px solid #fef08a; animation: ping 1.2s infinite;"></div>`
                 : ""
             }
             <div style="
-              width: 32px;
-              height: 32px;
+              width: 24px;
+              height: 24px;
               background: ${pinColor};
-              border: 2.5px solid ${isSelected ? "#fef08a" : "#ffffff"};
+              border: 2px solid ${isSelected ? "#fef08a" : "#ffffff"};
               border-radius: 50% 50% 50% 0;
               transform: rotate(-45deg);
-              box-shadow: 0 4px 12px rgba(0,0,0,0.55);
+              box-shadow: 0 3px 8px rgba(0,0,0,0.4);
               display: flex;
               align-items: center;
               justify-content: center;
@@ -274,19 +274,20 @@ export function MasterDesaGisMap({
               <div style="
                 transform: rotate(45deg);
                 color: #ffffff;
-                font-size: ${pinType === "METER_DAMAGED" ? "13px" : pinType === "COMPLAINT" ? "12px" : "11px"};
+                font-size: ${pinType === "METER_DAMAGED" ? "10px" : pinType === "COMPLAINT" ? "9px" : "9px"};
                 font-weight: 900;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                line-height: 1;
               ">
                 ${pinSymbol}
               </div>
             </div>
           </div>
         `,
-        iconSize: [34, 34],
-        iconAnchor: [17, 32],
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
       });
 
       const zIndex =
@@ -426,12 +427,12 @@ export function MasterDesaGisMap({
       }
     >
       {/* Top Controls Toolbar */}
-      <div className="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-3xl text-white shadow-xl space-y-3">
+      <div className="bg-white border border-slate-200 p-3 sm:p-4 rounded-3xl shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Legend & Filter Cepat Berdasarkan Kondisi Riil */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mr-1 flex items-center space-x-1">
-              <Compass className="w-3.5 h-3.5 text-sky-400" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mr-1 flex items-center space-x-1">
+              <Compass className="w-3.5 h-3.5 text-sky-600" />
               <span>Status SR Riil:</span>
             </span>
 
@@ -441,12 +442,12 @@ export function MasterDesaGisMap({
               onClick={() => setFilterLayer(filterLayer === "PAID" ? "ALL" : "PAID")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                 filterLayer === "PAID"
-                  ? "bg-emerald-600 border-emerald-400 text-white shadow-md shadow-emerald-900/40"
-                  : "bg-slate-800/90 border-slate-700/80 text-emerald-300 hover:bg-slate-800"
+                  ? "bg-emerald-600 border-emerald-600 text-white shadow-xs"
+                  : "bg-emerald-50 border-emerald-200/80 text-emerald-800 hover:bg-emerald-100/70"
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-              <span>🟢 Lunas ({spatialMetrics.paidCount})</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span>Lunas ({spatialMetrics.paidCount})</span>
             </button>
 
             {/* 🔴 Pin Merah: Belum Lunas */}
@@ -455,12 +456,12 @@ export function MasterDesaGisMap({
               onClick={() => setFilterLayer(filterLayer === "UNPAID" ? "ALL" : "UNPAID")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                 filterLayer === "UNPAID"
-                  ? "bg-rose-600 border-rose-400 text-white shadow-md shadow-rose-900/40"
-                  : "bg-slate-800/90 border-slate-700/80 text-rose-300 hover:bg-slate-800"
+                  ? "bg-rose-600 border-rose-600 text-white shadow-xs"
+                  : "bg-rose-50 border-rose-200/80 text-rose-800 hover:bg-rose-100/70"
               }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
-              <span>🔴 Tunggakan ({spatialMetrics.unpaidCount})</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+              <span>Tunggakan ({spatialMetrics.unpaidCount})</span>
             </button>
 
             {/* 🟠 Pin Oranye: Meteran Rusak / Jarum Macet */}
@@ -469,13 +470,13 @@ export function MasterDesaGisMap({
               onClick={() => setFilterLayer(filterLayer === "STUCK" ? "ALL" : "STUCK")}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                 filterLayer === "STUCK"
-                  ? "bg-orange-600 border-orange-400 text-white shadow-md shadow-orange-900/40"
-                  : "bg-slate-800/90 border-slate-700/80 text-orange-300 hover:bg-slate-800"
+                  ? "bg-amber-600 border-amber-600 text-white shadow-xs"
+                  : "bg-amber-50 border-amber-200/80 text-amber-800 hover:bg-amber-100/70"
               }`}
               title="Filter rumah warga yang jarum meterannya macet tetapi air tetap mengalir"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse"></span>
-              <span>⚠️ Meteran Rusak / Jarum Macet ({spatialMetrics.meterDamagedCount})</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>Meteran Rusak / Jarum Macet ({spatialMetrics.meterDamagedCount})</span>
             </button>
 
             {/* 🟡 Pin Kuning: Pengaduan Gangguan Air */}
@@ -485,12 +486,12 @@ export function MasterDesaGisMap({
                 onClick={() => setFilterLayer(filterLayer === "COMPLAINT" ? "ALL" : "COMPLAINT")}
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                   filterLayer === "COMPLAINT"
-                    ? "bg-amber-600 border-amber-400 text-white shadow-md shadow-amber-900/40"
-                    : "bg-slate-800/90 border-slate-700/80 text-amber-300 hover:bg-slate-800"
+                    ? "bg-yellow-600 border-yellow-600 text-white shadow-xs"
+                    : "bg-yellow-50 border-yellow-200/80 text-yellow-800 hover:bg-yellow-100/70"
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-                <span>🟡 Gangguan Air ({spatialMetrics.complaintCount})</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                <span>Gangguan Air ({spatialMetrics.complaintCount})</span>
               </button>
             )}
           </div>
@@ -503,29 +504,29 @@ export function MasterDesaGisMap({
               onClick={() => setShowMeterAnalysis(!showMeterAnalysis)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
                 showMeterAnalysis
-                  ? "bg-sky-600 text-white border-sky-400 shadow-md"
-                  : "bg-slate-800 text-slate-300 hover:text-white border-slate-700 hover:bg-slate-700"
+                  ? "bg-sky-600 text-white border-sky-600 shadow-xs"
+                  : "bg-white text-slate-700 hover:bg-slate-50 border-slate-200 shadow-2xs"
               }`}
               title="Buka panel pemantauan kondisi meteran air warga (normal vs macet)"
             >
-              <Gauge className="w-3.5 h-3.5 text-sky-400" />
+              <Gauge className="w-3.5 h-3.5 text-sky-600" />
               <span>Pantau Kondisi Meteran</span>
               {spatialMetrics.meterDamagedCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-black">
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black">
                   {spatialMetrics.meterDamagedCount}
                 </span>
               )}
             </button>
 
             {/* Base Map Switcher */}
-            <div className="inline-flex rounded-xl bg-slate-800 p-0.5 border border-slate-700 text-xs">
+            <div className="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200 text-xs">
               <button
                 type="button"
                 onClick={() => switchMapType("google-hybrid")}
                 className={`px-2.5 py-1 rounded-lg font-bold transition ${
                   mapType === "google-hybrid"
-                    ? "bg-sky-600 text-white shadow-xs"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
                 title="Peta Satelit Tajam Google dengan Label Jalan"
               >
@@ -536,8 +537,8 @@ export function MasterDesaGisMap({
                 onClick={() => switchMapType("esri-topo")}
                 className={`px-2.5 py-1 rounded-lg font-bold transition ${
                   mapType === "esri-topo"
-                    ? "bg-sky-600 text-white shadow-xs"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
                 title="Peta Kontur & Ketinggian Bukit Esri Topo"
               >
@@ -549,7 +550,7 @@ export function MasterDesaGisMap({
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition"
+              className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition"
               title={isFullscreen ? "Keluar dari Layar Penuh (Esc)" : "Mode Presentasi Layar Penuh"}
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -558,7 +559,7 @@ export function MasterDesaGisMap({
         </div>
 
         {/* Filter Bar: Dusun Selector & Search Box */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1 border-t border-slate-800/80">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-slate-100">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -566,13 +567,13 @@ export function MasterDesaGisMap({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama warga, nomor SR, atau nomor meter..."
-              className="w-full pl-10 pr-8 py-2 text-xs bg-slate-800/90 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+              className="w-full pl-10 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition font-medium"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -580,14 +581,14 @@ export function MasterDesaGisMap({
           </div>
 
           <div className="flex items-center space-x-2 w-full sm:w-auto justify-end text-xs">
-            <span className="text-slate-400 font-bold flex items-center space-x-1">
-              <Filter className="w-3 h-3" />
+            <span className="text-slate-500 font-bold flex items-center space-x-1">
+              <Filter className="w-3 h-3 text-slate-400" />
               <span>Wilayah Dusun:</span>
             </span>
             <select
               value={filterDusun}
               onChange={(e) => setFilterDusun(e.target.value)}
-              className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
             >
               <option value="ALL">Semua Dusun ({customers.length} SR)</option>
               {dusunList.map((d) => (
@@ -602,22 +603,22 @@ export function MasterDesaGisMap({
 
       {/* Panel Pemantauan Fisik Meteran Air Desa Kuajang */}
       {showMeterAnalysis && (
-        <div className="p-5 rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white border border-slate-800 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="p-5 rounded-3xl bg-slate-50 text-slate-900 border border-slate-200 shadow-xs space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-[11px] font-bold border border-sky-500/30">
-                <Sparkles className="w-3 h-3 text-sky-400" />
+              <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-sky-50 text-sky-800 text-[11px] font-bold border border-sky-200">
+                <Sparkles className="w-3 h-3 text-sky-600" />
                 <span>Panel Pemantauan Fisik Meteran Air Desa Kuajang</span>
               </div>
-              <h3 className="text-lg font-black text-white flex items-center space-x-2">
-                <Gauge className="w-5 h-5 text-orange-400" />
+              <h3 className="text-lg font-black text-slate-900 flex items-center space-x-2">
+                <Gauge className="w-5 h-5 text-amber-600" />
                 <span>Monitoring Kelancaran Jarum Meter &amp; Deteksi Kerusakan Fisik</span>
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setShowMeterAnalysis(false)}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -625,20 +626,20 @@ export function MasterDesaGisMap({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             {/* Card 1: Distribusi Kondisi Meteran */}
-            <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2">
-              <div className="font-extrabold text-emerald-300 flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="font-extrabold text-emerald-700 flex items-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Status Kelancaran Meteran</span>
               </div>
-              <p className="text-slate-300 text-[11px] leading-relaxed">
+              <p className="text-slate-600 text-[11px] leading-relaxed">
                 Dari total <strong>{spatialMetrics.totalCustomers} Sambungan Rumah</strong>:
               </p>
               <div className="space-y-1.5 pt-1">
-                <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-950/60 border border-emerald-800/50 text-[11px] text-emerald-200">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-800">
                   <span>✓ Berfungsi Normal (Jarum Berputar):</span>
                   <strong className="font-mono">{spatialMetrics.meterGoodCount} Unit</strong>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-xl bg-orange-950/60 border border-orange-800/50 text-[11px] text-orange-200">
+                <div className="flex items-center justify-between p-2 rounded-xl bg-amber-50 border border-amber-100 text-[11px] text-amber-800">
                   <span>⚠️ Jarum Macet (Air Mengalir):</span>
                   <strong className="font-mono">{spatialMetrics.meterDamagedCount} Unit</strong>
                 </div>
@@ -646,33 +647,33 @@ export function MasterDesaGisMap({
             </div>
 
             {/* Card 2: Prosedur Penandaan Petugas di Lapangan */}
-            <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2">
-              <div className="font-extrabold text-amber-300 flex items-center space-x-1.5">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="font-extrabold text-amber-700 flex items-center space-x-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
                 <span>Panduan Petugas Lapangan</span>
               </div>
-              <p className="text-slate-300 text-[11px] leading-relaxed">
+              <p className="text-slate-600 text-[11px] leading-relaxed">
                 Saat berkeliling menagih, jika petugas mendapati <strong>air mengalir ke kran warga tetapi jarum meteran tidak bergerak</strong>:
               </p>
-              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-[10px] text-slate-300 space-y-1">
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-700 space-y-1">
                 <div className="flex items-start space-x-1.5">
-                  <span className="text-orange-400 font-bold">1.</span>
+                  <span className="text-amber-600 font-bold">1.</span>
                   <span>Di menu <strong>Catat &amp; Tagih Lapangan</strong>, aktifkan centang <em>&quot;Tandai: Jarum Meteran Macet&quot;</em>.</span>
                 </div>
                 <div className="flex items-start space-x-1.5">
-                  <span className="text-orange-400 font-bold">2.</span>
+                  <span className="text-amber-600 font-bold">2.</span>
                   <span>Sistem secara otomatis akan memberi pin oranye ⚙️ pada peta GIS ini.</span>
                 </div>
               </div>
             </div>
 
             {/* Card 3: Rekomendasi Tindak Lanjut Pengurus KPSPAMS */}
-            <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2">
-              <div className="font-extrabold text-cyan-300 flex items-center space-x-1.5">
-                <Wrench className="w-4 h-4 text-cyan-400" />
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className="font-extrabold text-sky-700 flex items-center space-x-1.5">
+                <Wrench className="w-4 h-4 text-sky-600" />
                 <span>Rekomendasi Tindak Lanjut</span>
               </div>
-              <ul className="text-slate-300 text-[11px] space-y-1.5 list-disc list-inside">
+              <ul className="text-slate-600 text-[11px] space-y-1.5 list-disc list-inside">
                 <li>Jarum meteran yang macet menyebabkan pemakaian warga tidak terukur secara akurat.</li>
                 <li>Pengurus dapat merekap data SR ber-pin oranye untuk jadwal pergantian unit meteran Onda/SNI baru.</li>
                 <li>Tetap terapkan iuran beban dasar bulanan Rp 10.000,- hingga unit meteran selesai diganti.</li>
@@ -683,7 +684,7 @@ export function MasterDesaGisMap({
       )}
 
       {/* Main Map Box & Side Detail Card */}
-      <div className="relative w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 flex-1">
+      <div className="relative w-full rounded-3xl overflow-hidden border border-slate-200 shadow-md bg-slate-950 flex-1">
         {/* Leaflet Map Canvas */}
         <div
           ref={mapContainerRef}
@@ -694,14 +695,14 @@ export function MasterDesaGisMap({
 
         {/* Floating Quick Stats Pills (Kiri Atas Peta) */}
         <div className="absolute top-4 left-4 z-20 hidden sm:flex flex-wrap items-center gap-2 pointer-events-none">
-          <div className="pointer-events-auto px-3.5 py-1.5 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-slate-700 text-white text-xs font-bold shadow-lg flex items-center space-x-2">
+          <div className="pointer-events-auto px-3.5 py-1.5 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200 text-slate-800 text-xs font-bold shadow-lg flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
             <span>{filteredCustomers.length} Titik Sambungan Rumah Warga</span>
           </div>
 
           {spatialMetrics.meterDamagedCount > 0 && (
-            <div className="pointer-events-auto px-3.5 py-1.5 rounded-2xl bg-orange-950/90 backdrop-blur-md border border-orange-700/80 text-orange-200 text-xs font-bold shadow-lg flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse"></span>
+            <div className="pointer-events-auto px-3.5 py-1.5 rounded-2xl bg-amber-50/95 backdrop-blur-md border border-amber-200 text-amber-800 text-xs font-bold shadow-lg flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
               <span>{spatialMetrics.meterDamagedCount} Meteran Jarum Macet</span>
             </div>
           )}
@@ -709,7 +710,7 @@ export function MasterDesaGisMap({
 
         {/* Detail Drawer Card (Kanan Bawah Peta saat Titik Sambungan Diklik) */}
         {activeCustomer && (
-          <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 left-3 sm:left-auto sm:w-96 z-30 bg-slate-900/95 backdrop-blur-md border border-slate-700 text-white p-3.5 sm:p-4 rounded-3xl shadow-2xl space-y-3 max-h-[80vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 left-3 sm:left-auto sm:w-96 z-30 bg-white/95 backdrop-blur-md border border-slate-200 text-slate-900 p-3.5 sm:p-4 rounded-3xl shadow-2xl space-y-3 max-h-[80vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-3 duration-200">
             {/* Header Drawer */}
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-2.5">
@@ -725,8 +726,8 @@ export function MasterDesaGisMap({
                     : "🟢"}
                 </span>
                 <div>
-                  <h4 className="text-sm font-black text-white">{activeCustomer.name}</h4>
-                  <div className="text-[10px] text-slate-400 font-mono">
+                  <h4 className="text-sm font-black text-slate-900">{activeCustomer.name}</h4>
+                  <div className="text-[10px] text-slate-500 font-mono">
                     {activeCustomer.connectionNo} • Dusun {activeCustomer.dusun}
                   </div>
                 </div>
@@ -735,7 +736,7 @@ export function MasterDesaGisMap({
               <button
                 type="button"
                 onClick={() => setActiveCustomer(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -758,11 +759,11 @@ export function MasterDesaGisMap({
                 {activeCustomer.meterCondition === "STUCK" ||
                 activeCustomer.meterCondition === "DAMAGED" ||
                 activeCustomer.isMeterDamaged ? (
-                  <Badge variant="warning" size="sm" className="font-bold text-[10px] bg-orange-600/90 text-white border-orange-400 animate-pulse">
+                  <Badge variant="warning" size="sm" className="font-bold text-[10px] bg-amber-600 text-white border-amber-400 animate-pulse">
                     ⚠️ Jarum Meteran Macet
                   </Badge>
                 ) : (
-                  <Badge variant="success" size="sm" className="font-bold text-[10px] bg-emerald-950 text-emerald-300 border-emerald-700/60">
+                  <Badge variant="success" size="sm" className="font-bold text-[10px] bg-emerald-50 text-emerald-800 border-emerald-200">
                     ✓ Jarum Berputar Normal
                   </Badge>
                 )}
@@ -778,12 +779,12 @@ export function MasterDesaGisMap({
               {(activeCustomer.meterCondition === "STUCK" ||
                 activeCustomer.meterCondition === "DAMAGED" ||
                 activeCustomer.isMeterDamaged) && (
-                <div className="p-3 rounded-2xl bg-orange-950/80 border border-orange-500/60 text-orange-200 space-y-1">
-                  <div className="flex items-center space-x-1.5 font-bold text-[11px] text-orange-300">
-                    <AlertTriangle className="w-4 h-4 text-orange-400" />
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 space-y-1">
+                  <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-800">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     <span>Perhatian: Jarum Meter Air Macet!</span>
                   </div>
-                  <p className="text-[11px] text-orange-100/90 leading-relaxed">
+                  <p className="text-[11px] text-amber-700 leading-relaxed">
                     Air bersih tetap mengalir lancar ke rumah warga, namun jarum meteran tidak bergerak.
                     Disarankan untuk segera menjadwalkan penggantian unit meteran baru.
                   </p>
@@ -792,45 +793,45 @@ export function MasterDesaGisMap({
 
               {/* Complaint Alert if any */}
               {activeCustomer.activeComplaint && (
-                <div className="p-3 rounded-2xl bg-amber-950/80 border border-amber-600/50 text-amber-200 space-y-1">
+                <div className="p-3 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-900 space-y-1">
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="flex items-center space-x-1">
-                      <Wrench className="w-3.5 h-3.5 text-amber-400" />
+                      <Wrench className="w-3.5 h-3.5 text-yellow-600" />
                       <span>{activeCustomer.activeComplaint.category.replace(/_/g, " ")}</span>
                     </span>
-                    <span className="font-mono text-[10px] text-amber-300">
+                    <span className="font-mono text-[10px] text-yellow-700">
                       {activeCustomer.activeComplaint.ticketNumber}
                     </span>
                   </div>
-                  <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                  <p className="text-[11px] text-yellow-700 leading-relaxed">
                     &quot;{activeCustomer.activeComplaint.description}&quot;
                   </p>
                 </div>
               )}
 
               {/* Customer Metrics */}
-              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-[11px]">
+              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px]">
                 <div>
                   <span className="text-slate-400 text-[10px]">No. Seri Meter:</span>
-                  <p className="font-mono font-bold text-amber-300">
+                  <p className="font-mono font-bold text-amber-700">
                     {activeCustomer.meterSerial}
                   </p>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">Stand Meter Terakhir:</span>
-                  <p className="font-mono font-bold text-emerald-400">
+                  <p className="font-mono font-bold text-emerald-700">
                     {activeCustomer.lastReading.toFixed(2)} m³
                   </p>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">No. WhatsApp:</span>
-                  <p className="font-mono text-slate-200">
+                  <p className="font-mono text-slate-700">
                     {activeCustomer.phone || "(Belum terdaftar)"}
                   </p>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">Tagihan Periode Ini:</span>
-                  <p className="font-black text-slate-100">Rp 10.000,-</p>
+                  <p className="font-black text-slate-900">Rp 10.000,-</p>
                 </div>
               </div>
 
@@ -840,7 +841,7 @@ export function MasterDesaGisMap({
                   <button
                     type="button"
                     onClick={() => handleContactCustomerIssue(activeCustomer)}
-                    className="flex-1 py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-1.5"
+                    className="flex-1 py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center space-x-1.5"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>Kabari Warga via WA</span>
@@ -849,7 +850,7 @@ export function MasterDesaGisMap({
                   <button
                     type="button"
                     onClick={() => handleSendCustomerWa(activeCustomer)}
-                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-1.5"
+                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center space-x-1.5"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>Kirim WA Tagihan</span>
@@ -860,7 +861,7 @@ export function MasterDesaGisMap({
                   href={`https://www.google.com/maps?q=${activeCustomer.latitude},${activeCustomer.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition"
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition"
                   title="Buka rute navigasi di Google Maps"
                 >
                   <ExternalLink className="w-4 h-4" />

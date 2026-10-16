@@ -32,7 +32,7 @@ const MasterDesaGisMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[600px] w-full rounded-3xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center text-slate-400 space-y-3">
+      <div className="h-[600px] w-full rounded-3xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-slate-500 space-y-3">
         <div className="w-10 h-10 rounded-full border-3 border-sky-500 border-t-transparent animate-spin" />
         <span className="animate-pulse text-sm font-semibold">
           Memuat Peta Satelit Master GIS Sebaran Sambungan Rumah Warga Desa Kuajang...
