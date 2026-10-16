@@ -178,7 +178,7 @@ export function PublicGisMap() {
 
     const map = L.map(mapContainerRef.current, {
       center: [defaultCenterLat, defaultCenterLng],
-      zoom: 16,
+      zoom: 17,
       zoomControl: false,
       scrollWheelZoom: false, // Aman saat scroll halaman web di HP
     });
@@ -231,20 +231,20 @@ export function PublicGisMap() {
       const pinIcon = L.divIcon({
         className: "customer-gis-pin",
         html: `
-          <div style="position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+          <div style="position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
             ${
               isSelected
-                ? `<div style="position: absolute; inset: -5px; border-radius: 50%; border: 3px solid #f59e0b; animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
+                ? `<div style="position: absolute; inset: -4px; border-radius: 50%; border: 2.5px solid #f59e0b; animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
                 : ""
             }
             <div style="
-              width: 28px;
-              height: 28px;
-              background: #10b981;
-              border: 2.5px solid ${isSelected ? "#fef08a" : "#ffffff"};
+              width: 22px;
+              height: 22px;
+              background: ${isSelected ? "#059669" : "#10b981"};
+              border: 2px solid ${isSelected ? "#fef08a" : "#ffffff"};
               border-radius: 50% 50% 50% 0;
               transform: rotate(-45deg);
-              box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+              box-shadow: 0 3px 8px rgba(0,0,0,0.35);
               display: flex;
               align-items: center;
               justify-content: center;
@@ -253,16 +253,17 @@ export function PublicGisMap() {
               <div style="
                 transform: rotate(45deg);
                 color: #ffffff;
-                font-size: 11px;
+                font-size: 9px;
                 font-weight: 900;
+                line-height: 1;
               ">
                 💧
               </div>
             </div>
           </div>
         `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 28],
+        iconSize: [22, 22],
+        iconAnchor: [11, 22],
       });
 
       const marker = L.marker([lat, lng], { icon: pinIcon });
@@ -372,7 +373,7 @@ export function PublicGisMap() {
       }
     >
       {/* Action Controls / Recenter / Fullscreen */}
-      <div className={`flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3 ${isFullscreen ? "flex-shrink-0" : ""}`}>
+      <div className={`flex flex-wrap items-center justify-between gap-2 border-b ${isFullscreen ? "border-slate-800" : "border-slate-200"} pb-3 ${isFullscreen ? "flex-shrink-0" : ""}`}>
         <div className="flex items-center space-x-2">
           {isFullscreen ? (
             <span className="text-xs sm:text-sm font-bold text-white flex items-center space-x-2">
@@ -380,9 +381,9 @@ export function PublicGisMap() {
               <span>Peta Satelit GIS Kuajang</span>
             </span>
           ) : (
-            <span className="text-xs font-bold text-slate-400 flex items-center space-x-1.5">
+            <span className="text-xs font-bold text-slate-600 flex items-center space-x-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>37 Sambungan Rumah (SR) Lemo Baru</span>
+              <span>{connections.length} Titik Sambungan Rumah (SR) Terpetakan</span>
             </span>
           )}
         </div>
@@ -392,7 +393,7 @@ export function PublicGisMap() {
             <button
               onClick={() => setIsFullscreen(false)}
               type="button"
-              className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow flex items-center space-x-1.5 transition active:scale-95"
+              className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs flex items-center space-x-1.5 transition active:scale-95"
               title="Keluar Layar Penuh (Esc)"
             >
               <Minimize2 className="w-3.5 h-3.5" />
@@ -403,22 +404,32 @@ export function PublicGisMap() {
           <button
             onClick={handleRecenter}
             type="button"
-            className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-white text-xs font-bold border border-slate-700 flex items-center space-x-1.5 transition active:scale-95 shadow-md"
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border flex items-center space-x-1.5 transition active:scale-95 shadow-xs ${
+              isFullscreen
+                ? "bg-slate-800 hover:bg-slate-700 text-white border-slate-700"
+                : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+            }`}
             title="Pusatkan Kembali Tampilan Peta"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-emerald-400" />
+            <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
             <span className="hidden sm:inline">Pusatkan Peta</span>
           </button>
 
           {/* Toggle Satelit vs Streets */}
-          <div className="flex rounded-xl bg-slate-900 border border-slate-800 p-1">
+          <div className={`flex rounded-xl p-1 border ${
+            isFullscreen
+              ? "bg-slate-900 border-slate-800"
+              : "bg-slate-100 border-slate-200"
+          }`}>
             <button
               onClick={() => toggleMapLayer("google-hybrid")}
               type="button"
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
                 mapType === "google-hybrid"
-                  ? "bg-emerald-600 text-white shadow"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : isFullscreen
+                  ? "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <Satellite className="w-3 h-3" />
@@ -429,8 +440,10 @@ export function PublicGisMap() {
               type="button"
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 ${
                 mapType === "google-streets"
-                  ? "bg-emerald-600 text-white shadow"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : isFullscreen
+                  ? "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <Layers className="w-3 h-3" />
@@ -442,10 +455,10 @@ export function PublicGisMap() {
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
             type="button"
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shadow-md active:scale-95 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 shadow-xs active:scale-95 ${
               isFullscreen
                 ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-500"
-                : "bg-slate-800/90 hover:bg-slate-700 text-white border-slate-700"
+                : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
             }`}
             title={isFullscreen ? "Keluar Layar Penuh (Esc)" : "Tampilkan Layar Penuh"}
           >
@@ -456,7 +469,7 @@ export function PublicGisMap() {
               </>
             ) : (
               <>
-                <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+                <Maximize2 className="w-3.5 h-3.5 text-sky-600" />
                 <span>Full Layar</span>
               </>
             )}
@@ -466,50 +479,50 @@ export function PublicGisMap() {
 
       {/* Summary Stat Badges - Hidden in fullscreen to maximize map canvas */}
       {!isFullscreen && (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 font-black flex-shrink-0">
-            <Droplets className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm sm:text-base font-black text-white">{connections.length} SR</div>
-            <div className="text-[10px] sm:text-[11px] text-slate-400">Sambungan Aktif</div>
-          </div>
-        </div>
-
-        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-cyan-950 border border-cyan-800/60 flex items-center justify-center text-cyan-400 font-black flex-shrink-0">
-            <MapPin className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm sm:text-base font-black text-white">Dusun Lemo Baru</div>
-            <div className="text-[10px] sm:text-[11px] text-slate-400">Wilayah Sebaran SR</div>
-          </div>
-        </div>
-
-        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-amber-950 border border-amber-800/60 flex items-center justify-center text-amber-400 font-black flex-shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm sm:text-base font-black text-white">100% Gravitasi</div>
-            <div className="text-[10px] sm:text-[11px] text-slate-400">Bebas Listrik PLN</div>
-          </div>
-        </div>
-
-        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/80 flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-blue-950 border border-blue-800/60 flex items-center justify-center text-blue-400 font-black flex-shrink-0">
-            <Activity className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-sm sm:text-base font-black text-emerald-400 flex items-center space-x-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>99.4% Normal</span>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+          <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 flex items-center space-x-2.5 shadow-2xs">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 font-black flex items-center justify-center flex-shrink-0">
+              <Droplets className="w-4 h-4 stroke-[2.2]" />
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-400">Kelancaran Debit</div>
+            <div className="min-w-0">
+              <div className="text-sm sm:text-base font-black text-slate-900 truncate">{connections.length} SR</div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Sambungan Aktif</div>
+            </div>
+          </div>
+
+          <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 flex items-center space-x-2.5 shadow-2xs">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 font-black flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm sm:text-base font-black text-slate-900 truncate">Dusun Lemo Baru</div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Wilayah Sebaran SR</div>
+            </div>
+          </div>
+
+          <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 flex items-center space-x-2.5 shadow-2xs">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 font-black flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm sm:text-base font-black text-slate-900 truncate">100% Gravitasi</div>
+              <div className="text-[10px] sm:text-[11px] text-emerald-600 font-semibold truncate">Bebas Listrik PLN</div>
+            </div>
+          </div>
+
+          <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 flex items-center space-x-2.5 shadow-2xs">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 font-black flex items-center justify-center flex-shrink-0">
+              <Activity className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm sm:text-base font-black text-slate-900 flex items-center space-x-1 truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                <span className="truncate">99.4% Normal</span>
+              </div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">Kelancaran Debit</div>
+            </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Main Map Box */}
@@ -517,13 +530,13 @@ export function PublicGisMap() {
         className={
           isFullscreen
             ? "relative flex-1 w-full min-h-0 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950 mt-1"
-            : "relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950 h-[380px] sm:h-[480px] lg:h-[520px]"
+            : "relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-md bg-slate-950 h-[380px] sm:h-[480px] lg:h-[520px]"
         }
       >
         {/* Floating Search Bar */}
         <div className="absolute top-3 left-3 right-16 sm:right-auto sm:w-80 z-[1000]">
           <div className="relative">
-            <div className="flex items-center bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl px-3 py-2 shadow-xl">
+            <div className="flex items-center bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl px-3 py-2 shadow-lg">
               <Search className="w-4 h-4 text-slate-400 mr-2 flex-shrink-0" />
               <input
                 type="text"
@@ -534,13 +547,13 @@ export function PublicGisMap() {
                 }}
                 onFocus={() => setShowSearchDropdown(true)}
                 placeholder="Cari warga / No. SR (cth: Sabir)..."
-                className="bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none w-full"
+                className="bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none w-full font-medium"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="text-slate-400 hover:text-white ml-1"
+                  className="text-slate-400 hover:text-slate-700 ml-1"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -549,21 +562,21 @@ export function PublicGisMap() {
 
             {/* Dropdown Hasil Pencarian */}
             {showSearchDropdown && filteredConnections.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-1 z-50 max-h-60 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1 z-50 max-h-60 overflow-y-auto">
                 {filteredConnections.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => handleSelectCustomer(item)}
-                    className="w-full text-left px-3.5 py-2 hover:bg-emerald-950/40 hover:border-l-4 hover:border-emerald-500 transition flex items-center justify-between text-xs group"
+                    className="w-full text-left px-3.5 py-2 hover:bg-emerald-50/80 hover:border-l-4 hover:border-emerald-500 transition flex items-center justify-between text-xs group"
                   >
                     <div>
-                      <div className="font-bold text-white group-hover:text-emerald-300">
+                      <div className="font-bold text-slate-900 group-hover:text-emerald-700">
                         {formatPublicCustomerName(item.name)}
                       </div>
-                      <div className="text-[11px] text-slate-400">{item.connection_no} • {item.dusun}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{item.connection_no} • {item.dusun}</div>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                       Lihat Titik
                     </span>
                   </button>
@@ -579,67 +592,43 @@ export function PublicGisMap() {
           className="w-full h-full z-0 focus:outline-none"
         />
 
-        {/* Floating Quick Fullscreen Toggle Button on Top-Right */}
-        <button
-          type="button"
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          className={`absolute top-3 right-3 z-[1000] px-2.5 py-1.5 rounded-xl shadow-lg border text-xs font-bold flex items-center space-x-1.5 transition active:scale-95 backdrop-blur-xs ${
-            isFullscreen
-              ? "bg-slate-900/90 hover:bg-slate-900 text-rose-400 border-slate-700 hover:text-rose-300"
-              : "bg-slate-900/90 hover:bg-slate-900 text-white border-slate-700"
-          }`}
-          title={isFullscreen ? "Keluar Full Layar (Esc)" : "Maksimalkan Peta Layar Penuh"}
-        >
-          {isFullscreen ? (
-            <>
-              <Minimize2 className="w-3.5 h-3.5 text-rose-400" />
-              <span>Perkecil (Esc)</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Full Layar</span>
-            </>
-          )}
-        </button>
-
         {/* Legend Overlay (Kiri Bawah) */}
-        <div className="absolute bottom-3 left-3 z-[990] bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-2xl p-2.5 shadow-xl text-xs space-y-1.5 pointer-events-auto max-w-[200px] sm:max-w-none">
-          <div className="text-[11px] font-bold text-slate-300 border-b border-slate-800/80 pb-1">
+        <div className="absolute bottom-3 left-3 z-[990] bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2.5 shadow-lg text-xs space-y-1.5 pointer-events-auto max-w-[200px] sm:max-w-none">
+          <div className="text-[11px] font-bold text-slate-700 border-b border-slate-100 pb-1">
             Legenda Peta
           </div>
-          <div className="flex items-center space-x-2 text-[11px] text-slate-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+          <div className="flex items-center space-x-2 text-[11px] text-slate-600 font-medium">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
             <span>Sambungan Rumah Warga (Aktif)</span>
           </div>
         </div>
 
         {/* Detail Panel / Drawer Saat Titik Dipilih */}
         {selectedItem && (
-          <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:w-96 z-[1000] bg-slate-900/95 backdrop-blur-md border border-slate-700/90 rounded-2xl p-4 shadow-2xl animate-in fade-in slide-in-from-bottom-2">
-            <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-3">
+          <div className="absolute bottom-3 right-3 left-3 sm:left-auto sm:w-96 z-[1000] bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-2xl animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
                 {selectedItem.type === "SOURCE" ? (
                   <div className="space-y-1">
-                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800 text-[10px] font-bold">
+                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[10px] font-bold">
                       <span>Hulu Sumber Air Alami</span>
                     </span>
-                    <h4 className="text-sm font-black text-white">{selectedItem.data.name}</h4>
-                    <p className="text-xs text-slate-400">Broncaptering &amp; Bak Penenang Pegunungan</p>
+                    <h4 className="text-sm font-black text-slate-900">{selectedItem.data.name}</h4>
+                    <p className="text-xs text-slate-500">Broncaptering &amp; Bak Penenang Pegunungan</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1" />
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
                         <span>Sambungan Aktif (Normal)</span>
                       </span>
                     </div>
-                    <h4 className="text-sm font-black text-white">
+                    <h4 className="text-sm font-black text-slate-900">
                       {formatPublicCustomerName(selectedItem.data.name)}
                     </h4>
-                    <p className="text-xs text-slate-400">
-                      No. SR: <strong className="text-emerald-400">{selectedItem.data.connection_no}</strong> • {selectedItem.data.dusun}
+                    <p className="text-xs text-slate-500 font-medium">
+                      No. SR: <strong className="text-emerald-700 font-mono">{selectedItem.data.connection_no}</strong> • {selectedItem.data.dusun}
                     </p>
                   </div>
                 )}
@@ -647,35 +636,35 @@ export function PublicGisMap() {
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="py-2.5 text-xs text-slate-300 space-y-1.5">
+            <div className="py-2.5 text-xs text-slate-600 space-y-1.5">
               {selectedItem.type === "SOURCE" ? (
                 <>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Sistem Penyaluran:</span>
-                    <strong className="text-cyan-300">100% Gravitasi Bebas Listrik</strong>
+                    <strong className="text-cyan-700 font-semibold">100% Gravitasi Bebas Listrik</strong>
                   </div>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Koordinat Lokasi:</span>
-                    <strong className="text-amber-300 font-mono text-[11px]">3°24&apos;59.0&quot;S 119°22&apos;46.9&quot;E</strong>
+                    <strong className="text-amber-700 font-mono text-[11px]">3°24&apos;59.0&quot;S 119°22&apos;46.9&quot;E</strong>
                   </div>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Elevasi Hulu:</span>
-                    <strong className="text-white">~145 mdpl</strong>
+                    <strong className="text-slate-900 font-semibold">~145 mdpl</strong>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
+                  <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
                     {selectedItem.data.description}
                   </p>
                   <a
                     href="https://maps.google.com/?q=-3.416389,119.379694"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-xs text-cyan-400 hover:text-cyan-300 font-bold pt-1"
+                    className="inline-flex items-center space-x-1.5 text-xs text-sky-600 hover:text-sky-700 font-bold pt-1"
                   >
                     <span>Buka Titik di Google Maps</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -683,15 +672,15 @@ export function PublicGisMap() {
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Wilayah Layanan:</span>
-                    <strong className="text-slate-200">Dusun Lemo Baru, Desa Kuajang</strong>
+                    <strong className="text-slate-800 font-medium">Dusun Lemo Baru, Desa Kuajang</strong>
                   </div>
-                  <div className="flex justify-between text-slate-400">
+                  <div className="flex justify-between text-slate-500">
                     <span>Status Aliran Pipa:</span>
-                    <strong className="text-emerald-400">Mengalir Lancar</strong>
+                    <strong className="text-emerald-700 font-semibold">Mengalir Lancar</strong>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400">
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
                     Privasi Warga Terjaga: Informasi tagihan &amp; pemakaian dapat dicek mandiri secara aman di Portal Warga.
                   </div>
                 </>
@@ -699,10 +688,10 @@ export function PublicGisMap() {
             </div>
 
             {selectedItem.type === "CUSTOMER" && (
-              <div className="pt-2 border-t border-slate-800">
+              <div className="pt-2 border-t border-slate-100">
                 <Link
                   href={`/portal?no=${encodeURIComponent(selectedItem.data.connection_no)}`}
-                  className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-black flex items-center justify-center space-x-1.5 transition active:scale-95 shadow-md"
+                  className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow-xs"
                 >
                   <span>Cek Tagihan di Portal Warga</span>
                   <ArrowRight className="w-3.5 h-3.5" />
