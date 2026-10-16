@@ -402,21 +402,21 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Right Column: High Quality 3D Isometric Illustration */}
+              {/* Right Column: High Quality 3D Isometric Illustration (Seamless Floating, No White Box) */}
               <div className="lg:col-span-6 flex justify-center items-center relative">
-                <div className="relative w-full max-w-lg lg:max-w-none">
-                  {/* Decorative Glow */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/20 via-teal-300/20 to-transparent rounded-3xl blur-2xl transform scale-95" />
+                <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center">
+                  {/* Atmospheric Depth Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/25 via-teal-300/20 to-sky-200/10 rounded-full blur-3xl transform scale-90 pointer-events-none" />
                   
-                  {/* Main Illustration Image */}
-                  <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-sky-100 bg-white shadow-xl shadow-sky-950/10 transition-transform duration-500 hover:scale-[1.01]">
+                  {/* Floating Illustration with Seamless Blend */}
+                  <div className="relative transition-transform duration-500 hover:scale-[1.02] flex items-center justify-center">
                     <Image
                       src="/hero-water-illustration.png"
                       alt="Ilustrasi Infrastruktur Air Bersih KPSPAMS Desa Kuajang"
                       width={700}
                       height={500}
                       priority
-                      className="w-full h-auto object-contain mx-auto"
+                      className="w-full h-auto object-contain mx-auto mix-blend-multiply drop-shadow-xl"
                     />
                   </div>
                 </div>
