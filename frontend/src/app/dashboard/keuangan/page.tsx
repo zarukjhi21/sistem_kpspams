@@ -666,6 +666,8 @@ function KeuanganContent() {
         return "Honor Petugas & Pengurus";
       case "ATK_KONSUMSI":
         return "ATK & Konsumsi";
+      case "KOREKSI_SALAH_KLIK":
+        return "Koreksi Salah Klik Pelunasan";
       default:
         return category.replace(/_/g, " ");
     }
@@ -993,6 +995,7 @@ function KeuanganContent() {
               <option value="MAINTENANCE">Perbaikan Pipa & Kran</option>
               <option value="BAHAN_KIMIA">Kaporit & Penjernih</option>
               <option value="HONOR">Honor Petugas Lapangan</option>
+              <option value="KOREKSI_SALAH_KLIK">Koreksi Salah Klik Pelunasan</option>
               <option value="LAINNYA">Lain-lain</option>
             </select>
           </div>
