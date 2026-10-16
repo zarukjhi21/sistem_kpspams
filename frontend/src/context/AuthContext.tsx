@@ -24,11 +24,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [activeKpspamsId, setActiveKpspamsId] = useState<number | null>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Sync user state from localStorage if available
+  // Sync user state from localStorage if valid token and session exist
   useEffect(() => {
     try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       const savedUserJson = typeof window !== "undefined" ? localStorage.getItem("auth_user") : null;
-      if (savedUserJson) {
+
+      if (token && savedUserJson) {
         try {
           const parsed = JSON.parse(savedUserJson);
           const kId = parsed.kpspamsId !== null && parsed.kpspamsId !== undefined ? Number(parsed.kpspamsId) : null;
@@ -42,22 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoading(false);
           return;
         } catch {
-          // invalid json, fallback
-        }
-      }
-
-      const savedUserId = typeof window !== "undefined" ? localStorage.getItem("demo_user_id") : null;
-      if (savedUserId) {
-        const found = DEMO_USERS.find((u) => u.id === Number(savedUserId));
-        if (found) {
-          setUser(found);
-          if (found.kpspamsId !== null) {
-            setActiveKpspamsId(Number(found.kpspamsId));
-          } else {
-            setActiveKpspamsId(1);
-          }
-          setIsLoading(false);
-          return;
+          // invalid json, bersihkan sesi korup
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("auth_user");
         }
       }
     } finally {
@@ -75,14 +64,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return found ? found.name : "KPSPAMS Terpilih";
   };
 
-  const login = async (username: string, password: string = "Kuajang2026!"): Promise<boolean> => {
+  const login = async (username: string, password?: string): Promise<boolean> => {
+    if (!username || !password) return false;
     const baseUrl = getApiBaseUrl();
-    // 1. Coba otentikasi utama melalui REST API Backend resmi
+
+    // Otentikasi resmi murni melalui REST API Backend dengan pencocokan hash kata sandi
     try {
       const res = await fetch(`${baseUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       });
 
       if (res.ok) {
@@ -109,33 +100,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setActiveKpspamsId(mappedUser.kpspamsId ?? 1);
           localStorage.setItem("auth_token", token);
           localStorage.setItem("auth_user", JSON.stringify(mappedUser));
-          localStorage.setItem("demo_user_id", String(mappedUser.id));
           if (mappedUser.kpspamsId) {
             localStorage.setItem("kpspams_context_id", String(mappedUser.kpspamsId));
           }
           return true;
         }
       }
-    } catch {
-      // Backend offline atau jaringan lokal, beralih ke fallback demo offline
-    }
 
-    // 2. Fallback offline persona demo
-    const found = DEMO_USERS.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
-    if (found) {
-      setUser(found);
-      localStorage.setItem("demo_user_id", String(found.id));
-      localStorage.setItem("auth_user", JSON.stringify(found));
-      if (found.kpspamsId !== null) {
-        setActiveKpspamsId(Number(found.kpspamsId));
-        localStorage.setItem("kpspams_context_id", String(found.kpspamsId));
-      } else {
-        setActiveKpspamsId(1);
-      }
-      return true;
+      // Kredensial tidak cocok atau akun dinonaktifkan
+      return false;
+    } catch (err) {
+      console.error("Gagal menghubungi server otentikasi:", err);
+      return false;
     }
-
-    return false;
   };
 
   const logout = () => {

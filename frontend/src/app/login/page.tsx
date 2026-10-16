@@ -256,21 +256,21 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-600 mb-5">
+            <div className="space-y-3 text-xs text-slate-600 mb-5">
               <p>
-                Akses sistem ini diperuntukkan bagi pengurus KPSPAMS dan Pemerintah Desa Kuajang yang terdaftar.
+                Akses sistem ini diperuntukkan secara khusus bagi pengurus KPSPAMS dan Pemerintah Desa Kuajang yang terdaftar resmi.
               </p>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] space-y-1.5">
-                <div className="font-semibold text-slate-800">Format Akun Petugas Lemo Baru:</div>
-                <ul className="list-disc pl-4 space-y-1 text-slate-600">
-                  <li><span className="font-mono text-slate-700">ketua.lemobaru</span> (Ketua KPSPAMS - Fadli)</li>
-                  <li><span className="font-mono text-slate-700">sekretaris.lemobaru</span> (Sekretaris - Mada Ali)</li>
-                  <li><span className="font-mono text-slate-700">bendahara.lemobaru</span> (Bendahara - M. Darmawan)</li>
-                  <li><span className="font-mono text-slate-700">sapri.lemobaru</span> / <span className="font-mono text-slate-700">suardi.lemobaru</span> (Petugas Lapangan)</li>
-                </ul>
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] space-y-2">
+                <div className="font-semibold text-slate-800 flex items-center space-x-1.5">
+                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Kebijakan Keamanan Akun Dinas:</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  Setiap pengurus memiliki kredensial resmi berdasarkan SK Pemerintah Desa. Dilarang membagikan atau memindahtangankan kata sandi dinas kepada pihak yang tidak berwenang.
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500">
-                Jika Anda lupa kata sandi atau akun mengalami kendala, hubungi Administrator Desa Kuajang.
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Jika Anda lupa kata sandi atau belum memiliki akun dinas resmi, silakan hubungi <strong>Administrator TI Desa Kuajang</strong> di Kantor Desa Kuajang untuk verifikasi identitas dan penerbitan akses baru.
               </p>
             </div>
 

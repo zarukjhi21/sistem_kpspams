@@ -37,6 +37,88 @@ export async function onRequestOptions() {
   });
 }
 
+// -------------------------------------------------------------
+// Keamanan Login & Sesi Kriptografi (SI-KPSPAMS Kuajang)
+// -------------------------------------------------------------
+const AUTH_SECRET = "SI-KPSPAMS-KUAJANG-SECRET-AUTH-2026-BINUANG-POLMAN";
+
+// Proteksi Serangan Brute-Force (Rate Limiting per IP & Username)
+interface LoginAttempt {
+  count: number;
+  lockedUntil: number;
+}
+const loginAttempts = new Map<string, LoginAttempt>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 5 * 60 * 1000; // Kunci 5 menit jika gagal 5 kali berturut-turut
+
+function checkRateLimit(key: string): { allowed: boolean; waitSeconds?: number } {
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+  if (!attempt) return { allowed: true };
+
+  if (attempt.lockedUntil > now) {
+    const waitSeconds = Math.ceil((attempt.lockedUntil - now) / 1000);
+    return { allowed: false, waitSeconds };
+  }
+
+  if (attempt.lockedUntil <= now && attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    loginAttempts.delete(key);
+    return { allowed: true };
+  }
+
+  return { allowed: true };
+}
+
+function recordFailedLogin(key: string) {
+  const now = Date.now();
+  const attempt = loginAttempts.get(key) || { count: 0, lockedUntil: 0 };
+  attempt.count += 1;
+  if (attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    attempt.lockedUntil = now + LOCKOUT_DURATION_MS;
+  }
+  loginAttempts.set(key, attempt);
+}
+
+function recordSuccessfulLogin(key: string) {
+  loginAttempts.delete(key);
+}
+
+// Tanda Tangan Kriptografi HMAC SHA-256 untuk Bearer Token Sesi
+async function computeSignature(userId: number, timestamp: number): Promise<string> {
+  const data = `${userId}:${timestamp}:${AUTH_SECRET}`;
+  const msgUint8 = new TextEncoder().encode(data);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").substring(0, 16);
+}
+
+async function signToken(userId: number, timestamp: number): Promise<string> {
+  const sig = await computeSignature(userId, timestamp);
+  return `cf_tok_${userId}_${timestamp}_${sig}`;
+}
+
+async function verifyToken(authHeader: string): Promise<number | null> {
+  if (!authHeader || !authHeader.startsWith("Bearer cf_tok_")) return null;
+  const raw = authHeader.replace("Bearer cf_tok_", "").trim();
+  const parts = raw.split("_");
+  if (parts.length !== 3) return null;
+
+  const userId = parseInt(parts[0], 10);
+  const timestamp = parseInt(parts[1], 10);
+  const signature = parts[2];
+
+  if (isNaN(userId) || isNaN(timestamp) || !signature) return null;
+
+  // Batas masa berlaku token: 7 hari
+  const now = Date.now();
+  if (now - timestamp > 7 * 24 * 60 * 60 * 1000) return null;
+
+  const expectedSig = await computeSignature(userId, timestamp);
+  if (signature !== expectedSig) return null;
+
+  return userId;
+}
+
 export async function onRequest(context: any) {
   const { request, params } = context;
   const method = request.method.toUpperCase();
@@ -78,6 +160,26 @@ export async function onRequest(context: any) {
       const login = (body.login || body.username || body.email || "").trim();
       const password = (body.password || "").trim();
 
+      const clientIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+      const rateLimitKey = `${clientIp}:${login.toLowerCase()}`;
+
+      // 1. Pemeriksaan Proteksi Brute-Force (Rate Limiting)
+      const rateCheck = checkRateLimit(rateLimitKey);
+      if (!rateCheck.allowed) {
+        return jsonResponse({
+          status: "fail",
+          message: `Terlalu banyak percobaan login yang gagal. Akses ditahan sementara demi keamanan. Silakan coba lagi dalam ${rateCheck.waitSeconds} detik.`,
+        }, 429);
+      }
+
+      if (!login || !password) {
+        return jsonResponse({
+          status: "fail",
+          message: "Username dan kata sandi wajib diisi.",
+        }, 400);
+      }
+
+      // 2. Ambil Akun Pengguna dari Database
       const userRows = await sql.query(`
         SELECT u.id, u.name, u.username, u.email, u.password, u.phone, u.kpspams_id, u.is_active,
                r.id as role_id, r.name as role_name, r.display_name as role_display_name, r.scope_level,
@@ -86,15 +188,16 @@ export async function onRequest(context: any) {
         LEFT JOIN user_roles ur ON u.id = CAST(ur.user_id AS integer)
         LEFT JOIN roles r ON CAST(ur.role_id AS integer) = r.id
         LEFT JOIN kpspams k ON u.kpspams_id = k.id
-        WHERE (u.email = $1 OR u.username = $2)
+        WHERE (LOWER(u.email) = LOWER($1) OR LOWER(u.username) = LOWER($2) OR u.phone = $3)
           AND u.deleted_at IS NULL
         LIMIT 1
-      `, [login, login]);
+      `, [login, login, login]);
 
       if (userRows.length === 0) {
+        recordFailedLogin(rateLimitKey);
         return jsonResponse({
           status: "fail",
-          message: "Kredensial login tidak ditemukan dalam sistem Desa Kuajang.",
+          message: "Username atau kata sandi tidak cocok. Silakan periksa kembali.",
         }, 401);
       }
 
@@ -103,14 +206,13 @@ export async function onRequest(context: any) {
       if (user.is_active === false) {
         return jsonResponse({
           status: "fail",
-          message: "Akses Ditolak: Akun unit ini dinonaktifkan sementara. Operasional sistem saat ini difokuskan hanya untuk KPSPAMS Lemo Baru.",
+          message: "Akses Ditolak: Akun unit ini dinonaktifkan sementara oleh Administrator Desa Kuajang.",
         }, 403);
       }
-      let passwordValid = false;
 
-      if (password === "Kuajang2026!" || password === "password") {
-        passwordValid = true;
-      } else if (user.password) {
+      // 3. Verifikasi Kata Sandi Murni via Hash Bcrypt Resmi (Pintu belakang dihapus total)
+      let passwordValid = false;
+      if (user.password) {
         try {
           passwordValid = bcrypt.compareSync(password, user.password);
         } catch (e) {
@@ -119,13 +221,16 @@ export async function onRequest(context: any) {
       }
 
       if (!passwordValid) {
+        recordFailedLogin(rateLimitKey);
         return jsonResponse({
           status: "fail",
-          message: "Kata sandi yang Anda masukkan tidak sesuai.",
+          message: "Username atau kata sandi tidak cocok. Silakan periksa kembali.",
         }, 401);
       }
 
-      const token = `cf_tok_${user.id}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      // 4. Terbitkan Bearer Token Resmi dengan Tanda Tangan Kriptografi
+      recordSuccessfulLogin(rateLimitKey);
+      const token = await signToken(user.id, Date.now());
 
       return jsonResponse({
         status: "success",
@@ -154,13 +259,16 @@ export async function onRequest(context: any) {
     // 3. Auth Me
     if (path === "auth/me" && method === "GET") {
       const authHeader = request.headers.get("Authorization") || request.headers.get("authorization") || "";
-      let tokenUserId: number | null = null;
-      if (authHeader.startsWith("Bearer cf_tok_")) {
-        const parts = authHeader.replace("Bearer cf_tok_", "").split("_");
-        tokenUserId = parseInt(parts[0], 10);
+      const tokenUserId = await verifyToken(authHeader);
+
+      if (!tokenUserId || isNaN(tokenUserId)) {
+        return jsonResponse({
+          status: "fail",
+          message: "Akses tidak sah: Token sesi tidak valid atau telah kedaluwarsa. Silakan login kembali.",
+        }, 401);
       }
 
-      let userQuery = `
+      const userRows = await sql.query(`
         SELECT u.id, u.name, u.username, u.email, u.phone, u.kpspams_id,
                r.id as role_id, r.name as role_name, r.display_name as role_display_name, r.scope_level,
                k.name as kpspams_name, k.code as kpspams_code
@@ -168,18 +276,18 @@ export async function onRequest(context: any) {
         LEFT JOIN user_roles ur ON u.id = CAST(ur.user_id AS integer)
         LEFT JOIN roles r ON CAST(ur.role_id AS integer) = r.id
         LEFT JOIN kpspams k ON u.kpspams_id = k.id
-        WHERE u.deleted_at IS NULL
-      `;
-      const queryParams: any[] = [];
-      if (tokenUserId && !isNaN(tokenUserId)) {
-        userQuery += " AND u.id = $1 LIMIT 1";
-        queryParams.push(tokenUserId);
-      } else {
-        userQuery += " ORDER BY u.id ASC LIMIT 1";
+        WHERE u.id = $1 AND u.deleted_at IS NULL
+        LIMIT 1
+      `, [tokenUserId]);
+
+      if (userRows.length === 0) {
+        return jsonResponse({
+          status: "fail",
+          message: "Pengguna tidak ditemukan dalam sistem.",
+        }, 404);
       }
 
-      const userRows = await sql.query(userQuery, queryParams);
-      const user = userRows[0] || {};
+      const user = userRows[0];
       return jsonResponse({
         status: "success",
         data: {
