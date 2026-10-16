@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -31,6 +31,13 @@ import {
   Gauge,
   Maximize2,
   X,
+  Menu,
+  Wrench,
+  Clock,
+  BookOpen,
+  Info,
+  Send,
+  MessageSquare,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -39,10 +46,10 @@ const PublicTransparencyCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-80 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
-        <div className="flex flex-col items-center gap-2 text-slate-400">
-          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs">Memuat visualisasi keuangan transparansi...</span>
+      <div className="h-80 w-full animate-pulse bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200">
+        <div className="flex flex-col items-center gap-2 text-slate-500">
+          <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold">Memuat visualisasi keuangan transparansi...</span>
         </div>
       </div>
     ),
@@ -54,10 +61,10 @@ const PublicGisMapSection = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-96 w-full animate-pulse bg-slate-800/40 rounded-2xl flex items-center justify-center border border-slate-700/50">
-        <div className="flex flex-col items-center gap-2 text-slate-400">
-          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs">Memuat peta satelit GIS sambungan air...</span>
+      <div className="h-96 w-full animate-pulse bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200">
+        <div className="flex flex-col items-center gap-2 text-slate-500">
+          <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold">Memuat peta satelit GIS sambungan air...</span>
         </div>
       </div>
     ),
@@ -66,22 +73,40 @@ const PublicGisMapSection = dynamic(
 
 export default function HomePage() {
   const router = useRouter();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [quickSearch, setQuickSearch] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
+
+  // Modals for Layanan Utama
+  const [activeModal, setActiveModal] = useState<"complaint" | "registration" | "education" | null>(null);
+
+  // Registration Form State
+  const [regName, setRegName] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regDusun, setRegDusun] = useState("Lemo Baru");
+  const [regAddress, setRegAddress] = useState("");
+
+  // Complaint Form State
+  const [compName, setCompName] = useState("");
+  const [compPhone, setCompPhone] = useState("");
+  const [compDusun, setCompDusun] = useState("Lemo Baru");
+  const [compText, setCompText] = useState("");
+
   const [stats, setStats] = useState({
-    lmbCash: 30616000,
-    lmbCustomers: 86,
+    lmbCash: 31616000,
+    lmbCustomers: 202,
     lmbUsageM3: 0,
-    lmbPhysicalMeterM3: 62157.5,
-    totalCash: 30616000,
-    totalCustomers: 86,
+    lmbPhysicalMeterM3: 322684.49,
+    totalCash: 31616000,
+    totalCustomers: 202,
     totalUsageM3: 0,
-    totalPhysicalMeterM3: 62157.5,
+    totalPhysicalMeterM3: 322684.49,
     billingPeriod: "Oktober 2026",
-    totalCollected: 850000,
-    paidCount: 85,
-    totalInvoices: 86,
-    collectionRate: 98.8,
+    totalCollected: 1850000,
+    paidCount: 185,
+    totalInvoices: 202,
+    collectionRate: 91.6,
   });
 
   useEffect(() => {
@@ -107,10 +132,10 @@ export default function HomePage() {
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmbCash = res.data.units.LMB?.cash ?? 30616000;
-          const lmbCust = res.data.units.LMB?.customers ?? 86;
+          const lmbCash = res.data.units.LMB?.cash ?? 31616000;
+          const lmbCust = res.data.units.LMB?.customers ?? 202;
           const lmbUsage = Number(res.data.units.LMB?.usage_m3 ?? 0);
-          const lmbPhysical = Number(res.data.units.LMB?.physical_meter_m3 ?? 62157.5);
+          const lmbPhysical = Number(res.data.units.LMB?.physical_meter_m3 ?? 322684.49);
           const totCash = Number(res.data.total_cash ?? lmbCash);
           const totCust = Number(res.data.total_customers ?? lmbCust);
           const totUsage = Number(res.data.total_usage_m3 ?? lmbUsage);
@@ -127,10 +152,10 @@ export default function HomePage() {
             totalUsageM3: totUsage,
             totalPhysicalMeterM3: totPhysical,
             billingPeriod: billing?.period_name || "Oktober 2026",
-            totalCollected: billing?.total_collected ?? 850000,
-            paidCount: billing?.paid_count ?? 85,
-            totalInvoices: billing?.total_invoices ?? 86,
-            collectionRate: billing?.collection_rate ?? 98.8,
+            totalCollected: billing?.total_collected ?? 1850000,
+            paidCount: billing?.paid_count ?? 185,
+            totalInvoices: billing?.total_invoices ?? 202,
+            collectionRate: billing?.collection_rate ?? 91.6,
           });
         }
       })
@@ -146,407 +171,537 @@ export default function HomePage() {
   };
 
   const scrollToSection = (id: string) => {
+    setIsMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
   };
 
+  const focusSearchInput = () => {
+    const el = document.getElementById("cek-tagihan");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 500);
+    }
+  };
+
+  // WhatsApp Actions
+  const handleSendWhatsAppRegistration = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = `Halo Admin KPSPAMS Desa Kuajang,%0A%0ASaya ingin mengajukan *Pemasangan Sambungan Rumah (SR) Baru*:%0A- Nama: ${encodeURIComponent(regName)}%0A- No. HP: ${encodeURIComponent(regPhone)}%0A- Dusun: ${encodeURIComponent(regDusun)}%0A- Alamat: ${encodeURIComponent(regAddress)}%0A%0AMohon informasi syarat & jadwal survei teknis pipa. Terima kasih.`;
+    window.open(`https://wa.me/6282348507873?text=${text}`, "_blank");
+    setActiveModal(null);
+  };
+
+  const handleSendWhatsAppComplaint = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = `Halo Tim Siaga KPSPAMS Desa Kuajang,%0A%0ASaya ingin menyampaikan *Laporan Kendala / Pengaduan*:%0A- Nama: ${encodeURIComponent(compName)}%0A- No. HP: ${encodeURIComponent(compPhone)}%0A- Dusun: ${encodeURIComponent(compDusun)}%0A- Kendala: ${encodeURIComponent(compText)}%0A%0AMohon bantuan pengecekan pipa/meteran. Terima kasih.`;
+    window.open(`https://wa.me/6282348507873?text=${text}`, "_blank");
+    setActiveModal(null);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col selection:bg-sky-600 selection:text-white">
-      {/* Header Bar */}
-      <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
-          <Link href="/" className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-shrink-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-sky-500/50 shadow-lg bg-slate-950 flex-shrink-0 flex items-center justify-center p-0.5">
-              <Image
-                src="/logo.jpg"
-                alt="Logo SI-KPSPAMS Kuajang"
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-                priority
-              />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col selection:bg-sky-500 selection:text-white font-sans">
+      {/* 1. Navbar / Header Bar */}
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
+          {/* Logo & Identity */}
+          <Link href="/" className="flex items-center space-x-2.5 sm:space-x-3.5 min-w-0 flex-shrink-0 group">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl overflow-hidden bg-gradient-to-tr from-sky-600 to-cyan-500 p-0.5 shadow-md shadow-sky-500/20 flex-shrink-0 flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center p-1 overflow-hidden">
+                <Image
+                  src="/logo.jpg"
+                  alt="Logo KPSPAMS Kuajang"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover rounded-lg"
+                  priority
+                />
+              </div>
             </div>
             <div className="min-w-0">
-              <div className="flex items-center space-x-1.5">
-                <span className="text-sm sm:text-base font-extrabold tracking-tight text-white whitespace-nowrap">
-                  SI-KPSPAMS
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-base sm:text-lg font-black tracking-tight text-slate-900 group-hover:text-sky-600 transition">
+                  KPSPAMS
                 </span>
-                <span className="hidden sm:inline-block text-[9px] sm:text-[10px] text-sky-400 font-extrabold px-1.5 py-0.5 rounded bg-sky-950/80 border border-sky-500/40 whitespace-nowrap">
+                <span className="text-base sm:text-lg font-black tracking-tight text-sky-600">
                   KUAJANG
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 truncate hidden sm:block">Desa Kuajang, Kec. Binuang, Polman</p>
+              <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 truncate hidden xs:block">
+                Desa Kuajang, Kec. Binuang, Polman
+              </p>
             </div>
           </Link>
 
-          <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
-            <Link
-              href="/portal"
-              className="inline-flex px-2 sm:px-3.5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold text-sky-300 hover:text-white transition rounded-lg hover:bg-slate-800/60 whitespace-nowrap"
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs sm:text-sm font-bold text-slate-600">
+            <button
+              onClick={() => scrollToSection("beranda")}
+              className="px-3 py-2 text-sky-600 font-extrabold relative group transition"
             >
-              <span className="hidden sm:inline">Portal Warga</span>
-              <span className="sm:hidden">Portal</span>
-            </Link>
+              <span>Beranda</span>
+              <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-sky-600 rounded-full" />
+            </button>
+            <button
+              onClick={() => scrollToSection("tentang-kami")}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Tentang Kami
+            </button>
+            <button
+              onClick={() => scrollToSection("layanan")}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Layanan
+            </button>
+            <button
+              onClick={focusSearchInput}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Cek Tagihan
+            </button>
+            <button
+              onClick={() => scrollToSection("informasi")}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Informasi
+            </button>
+            <button
+              onClick={() => scrollToSection("kontak")}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Kontak
+            </button>
+          </nav>
+
+          {/* Right Action: Login Pengelola & Mobile Hamburger */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <Link
               href="/login"
-              className="px-2.5 sm:px-4 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white text-[11px] sm:text-sm font-extrabold rounded-xl shadow-md transition active:scale-95 flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap"
+              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white text-xs sm:text-sm font-extrabold transition duration-200 active:scale-95 shadow-xs flex items-center space-x-1.5 whitespace-nowrap"
             >
-              <span className="hidden sm:inline">Masuk Petugas</span>
-              <span className="sm:hidden">Masuk</span>
-              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <ShieldCheck className="w-4 h-4" />
+              <span>Login Pengelola</span>
             </Link>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition active:scale-95"
+              aria-label="Toggle Navigation"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-200 bg-white/98 px-4 pt-3 pb-5 space-y-2 shadow-xl animate-in slide-in-from-top-2">
+            <button
+              onClick={() => scrollToSection("beranda")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-sky-600 bg-sky-50 flex items-center justify-between"
+            >
+              <span>Beranda</span>
+              <ChevronRight className="w-4 h-4 text-sky-500" />
+            </button>
+            <button
+              onClick={() => scrollToSection("tentang-kami")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Tentang Kami</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={() => scrollToSection("layanan")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Layanan Utama</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={focusSearchInput}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Cek Tagihan Warga</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={() => scrollToSection("informasi")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>KPSPAMS Dalam Angka</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={() => scrollToSection("peta-gis")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Peta Satelit GIS &amp; Transparansi</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={() => scrollToSection("kontak")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Kontak &amp; Pengaduan</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+          </div>
+        )}
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full space-y-6 sm:space-y-8 lg:space-y-10">
-        {/* 1. Panoramic Illustrated Banner Desa Kuajang (Sleek Compact Aspect) */}
-        <section className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-800 shadow-xl bg-slate-950 group">
-          <div className="relative w-full aspect-[21/9] sm:aspect-[24/9] max-h-[180px] sm:max-h-[250px] lg:max-h-[280px]">
-            <Image
-              src="/hero-bg.jpg"
-              alt="Ilustrasi KPSPAMS PAMSIMAS Desa Kuajang"
-              fill
-              priority
-              className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
-              sizes="(max-width: 1280px) 100vw, 1280px"
-            />
-            {/* Subtle bottom gradient to blend gently with frame */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+      {/* Main Content Body */}
+      <main id="beranda" className="flex-1 w-full space-y-12 sm:space-y-16 lg:space-y-20">
+        {/* 2. Hero Section: Clean, Modern White & Sky Blue Theme */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/70 via-slate-50/50 to-[#F8FAFC] pt-6 sm:pt-12 lg:pt-16 pb-20 sm:pb-28 border-b border-slate-200/60">
+          {/* Subtle Background Pattern Elements */}
+          <div className="absolute inset-0 bg-[radial-gradient(#0284c7_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.04] pointer-events-none" />
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-sky-200/40 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-teal-200/40 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Floating Identity Badge in bottom-left */}
-            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3.5 sm:left-4 z-10 flex items-center space-x-2 bg-slate-950/85 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border border-slate-700/80 shadow-lg text-[11px] sm:text-xs font-bold text-white">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>KPSPAMS - PAMSIMAS Desa Kuajang</span>
-              <span className="text-slate-400 hidden sm:inline">• Kec. Binuang, Polman</span>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. Interactive Control & Real-Time Operational Status Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
-          {/* Left Column: Headline, Cek Tagihan & Quick Action */}
-          <div className="lg:col-span-7 rounded-2xl sm:rounded-3xl bg-slate-950/80 border border-slate-800/90 p-4 sm:p-6 lg:p-7 shadow-xl flex flex-col justify-between space-y-4 sm:space-y-5">
-            <div className="space-y-2 sm:space-y-3">
-              <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-snug sm:leading-tight">
-                Pengelolaan Transparan &amp; Akuntabel Air Bersih Perdesaan
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
-                Sistem informasi pelayanan air bersih, pencatatan meter digital, dan transparansi kas warga Desa Kuajang.
-              </p>
-            </div>
-
-            {/* Bar Pencarian Cek Tagihan */}
-            <div className="space-y-2.5 pt-2.5 border-t border-slate-800/80">
-              <div className="text-[11px] sm:text-xs font-bold text-slate-300">
-                Cek Tagihan Warga Mandiri:
-              </div>
-              <form onSubmit={handleQuickSearch} className="flex flex-col sm:flex-row gap-2 max-w-lg">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={quickSearch}
-                    onChange={(e) => setQuickSearch(e.target.value)}
-                    placeholder="Cari nama warga atau No. Sambungan..."
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-md transition"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950/40 transition active:scale-95 flex items-center justify-center space-x-1.5 whitespace-nowrap"
-                >
-                  <span>Cek Tagihan</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </form>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                <Link
-                  href="/login"
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold shadow-lg border border-slate-700 text-center transition active:scale-95 flex items-center justify-center space-x-2"
-                >
-                  <ShieldCheck className="w-4 h-4 text-sky-400" />
-                  <span>Akses Pengelola KPSPAMS</span>
-                </Link>
-
-                <Link
-                  href="/portal"
-                  className="text-xs sm:text-sm font-semibold text-slate-400 hover:text-white px-2.5 py-1.5 transition flex items-center space-x-1.5"
-                >
-                  <span>Portal Warga Mandiri</span>
-                  <ChevronRight className="w-4 h-4 text-emerald-400" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Status Operasional Riil Widget */}
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl sm:rounded-3xl bg-slate-950/80 border border-slate-800/90 p-4 sm:p-5 shadow-xl space-y-3.5 h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                <div className="flex items-center space-x-2">
-                  <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                  <span className="text-[11px] sm:text-xs font-bold text-white uppercase tracking-wider">
-                    Status Operasional Riil
-                  </span>
-                </div>
-                <span className="inline-flex items-center space-x-1 text-emerald-400 text-[10px] sm:text-[11px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1" />
-                  <span>Live Database</span>
-                </span>
-              </div>
-
-              {/* Metric Panels: Clean & Compact */}
-              <div className="space-y-2">
-                {/* Metric 1: Kas Operasional */}
-                <div className="p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] sm:text-[11px] font-medium text-slate-400">Total Kas Operasional Riil</div>
-                    <div className="text-xl sm:text-2xl font-black text-amber-400 mt-0.5">
-                      Rp {stats.lmbCash.toLocaleString("id-ID")}
-                    </div>
-                  </div>
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/80">
-                    100% Kas Utuh
-                  </span>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+              {/* Left Column: Heading, Subtitle & Buttons */}
+              <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-center lg:text-left">
+                {/* Government Pill Badge */}
+                <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-100/80 border border-sky-200/80 text-sky-800 text-[11px] sm:text-xs font-bold shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-sky-600 animate-pulse" />
+                  <span>Pelayanan Air Bersih &amp; Sanitasi Mandiri</span>
                 </div>
 
-                {/* Metric 2: Penerimaan Iuran (Clean & Real-Time dengan Bulan Berjalan) */}
-                <div className="p-3 sm:p-3.5 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-emerald-500/40 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
-                      Penerimaan Iuran
-                    </span>
-                    <div className="flex items-center space-x-1.5">
-                      <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-800 text-emerald-300 border border-slate-700">
-                        {stats.billingPeriod.replace(/^Periode\s+/i, "")}
-                      </span>
-                      <div className="w-5 h-5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
-                        <CheckCircle2 className="w-3 h-3" />
-                      </div>
-                    </div>
-                  </div>
+                {/* Hero Title */}
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+                  Mewujudkan Akses Air Bersih &amp; Sanitasi untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-teal-600">Desa Kuajang</span>
+                </h1>
 
-                  <div className="mt-1 flex items-baseline justify-between">
-                    <span className="text-xl sm:text-2xl font-black text-emerald-400 font-tabular">
-                      Rp {stats.totalCollected.toLocaleString("id-ID")}
-                    </span>
-                    <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40">
-                      {stats.collectionRate}%
-                    </span>
-                  </div>
+                {/* Subtitle */}
+                <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Sistem Informasi Kelompok Pengelola Sarana Prasarana Air Minum dan Sanitasi Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.
+                </p>
 
-                  <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
-                    {stats.paidCount} SR terbayar lunas
-                  </div>
-                </div>
-
-                {/* Metric 2: Sambungan Rumah */}
-                <div className="p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] sm:text-[11px] font-medium text-slate-400">Sambungan Rumah (SR) Terlayani</div>
-                    <div className="text-xl sm:text-2xl font-black text-white mt-0.5">
-                      {stats.lmbCustomers} SR Aktif
-                    </div>
-                  </div>
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-800/80">
-                    Lemo Baru
-                  </span>
-                </div>
-
-                {/* Metric 3 & 4 Grid: Pemakaian Air Bulan Ini & Stand Fisik Odometer */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        Pakai Bulan Ini
-                      </span>
-                      <div className="p-1 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/60">
-                        <Activity className="w-3 h-3" />
-                      </div>
-                    </div>
-                    <div className="mt-1 flex items-baseline justify-between">
-                      <span className="text-base sm:text-lg font-black text-white font-tabular">
-                        {stats.lmbUsageM3.toLocaleString("id-ID")}
-                        <span className="text-[9px] font-normal text-slate-400 ml-0.5">m³</span>
-                      </span>
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800/60">
-                        Bulan Ini
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 flex flex-col justify-between">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        Stand Fisik
-                      </span>
-                      <div className="p-1 rounded-lg bg-indigo-950 text-indigo-400 border border-indigo-800/60">
-                        <Gauge className="w-3 h-3" />
-                      </div>
-                    </div>
-                    <div className="mt-1 flex items-baseline justify-between">
-                      <span className="text-base sm:text-lg font-black text-indigo-300 font-tabular truncate">
-                        {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-                        <span className="text-[9px] font-normal text-slate-400 ml-0.5">m³</span>
-                      </span>
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-800/60">
-                        Odometer
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Metric 5: Gravitasi Mata Air */}
-                <div className="p-3 rounded-xl sm:rounded-2xl bg-slate-900/80 border border-slate-800/90 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] sm:text-[11px] font-medium text-slate-400">Debit Aliran Alami Lemo Baru</div>
-                    <div className="text-xl sm:text-2xl font-black text-cyan-400 mt-0.5">
-                      ~12.100 L / Hari
-                    </div>
-                  </div>
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/80">
-                    0 Listrik PLN
-                  </span>
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
+                  <button
+                    onClick={focusSearchInput}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-sky-600/30 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <span>Cek Tagihan Saya</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => scrollToSection("layanan")}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm border border-slate-300 shadow-sm transition active:scale-95 cursor-pointer"
+                  >
+                    Pelajari Selengkapnya
+                  </button>
                 </div>
               </div>
 
-              {/* Progress Health Bar */}
-              <div className="pt-2 border-t border-slate-800/80 space-y-1">
-                <div className="flex justify-between text-[10px] sm:text-[11px]">
-                  <span className="text-slate-400">Kelancaran Distribusi Jaringan:</span>
-                  <span className="font-bold text-emerald-400">99.4% Normal</span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full w-[99.4%]" />
+              {/* Right Column: High Quality 3D Isometric Illustration */}
+              <div className="lg:col-span-6 flex justify-center items-center relative">
+                <div className="relative w-full max-w-lg lg:max-w-none">
+                  {/* Decorative Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/20 via-teal-300/20 to-transparent rounded-3xl blur-2xl transform scale-95" />
+                  
+                  {/* Main Illustration Image */}
+                  <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-sky-100 bg-white shadow-xl shadow-sky-950/10 transition-transform duration-500 hover:scale-[1.01]">
+                    <Image
+                      src="/hero-water-illustration.png"
+                      alt="Ilustrasi Infrastruktur Air Bersih KPSPAMS Desa Kuajang"
+                      width={700}
+                      height={500}
+                      priority
+                      className="w-full h-auto object-contain mx-auto"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Real-time Meter & Usage Showcase (Sesuai Dashboard Penagihan Lapangan) */}
-        <section className="space-y-2 sm:space-y-2.5">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <h3 className="text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider">
-                Pemantauan Konsumsi &amp; Stand Fisik Meteran Riil
-              </h3>
-            </div>
-            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 flex items-center space-x-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1" />
-              <span>Real-Time Database</span>
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
-            {/* Card 1: Pemakaian Air Bulan Ini */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-lg space-y-2 hover:border-cyan-500/40 transition">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
-                  Pemakaian Air Bulan Ini
-                </span>
-                <div className="p-2 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800/80">
-                  <Activity className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl sm:text-3xl font-black text-white font-tabular tracking-tight">
-                  {stats.lmbUsageM3.toLocaleString("id-ID")}
-                  <span className="text-sm font-normal text-slate-400 ml-1">m³</span>
-                </span>
-                <span className="text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                  BULAN BERJALAN
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                {stats.lmbUsageM3 === 0
-                  ? "Masa transisi stand awal • Beban dasar Rp 10.000/SR"
-                  : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
+        {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Overlapping Element) */}
+        <section id="cek-tagihan" className="max-w-4xl mx-auto px-4 sm:px-6 -mt-16 sm:-mt-20 lg:-mt-24 relative z-30">
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-700 p-5 sm:p-7 lg:p-8 shadow-2xl shadow-sky-950/20 text-white">
+            <div className="text-center space-y-1 sm:space-y-1.5 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white flex items-center justify-center space-x-2">
+                <Droplets className="w-5 h-5 sm:w-6 sm:h-6 text-teal-200 fill-teal-200" />
+                <span>Cek Tagihan Meteran Air Anda</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-teal-100 font-medium">
+                Ketikkan Nomor Sambungan Rumah (SR) atau Nama Lengkap Anda
               </p>
             </div>
 
-            {/* Card 2: Total Stand Fisik Meteran (Odometer SR) */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-lg space-y-2 hover:border-indigo-500/40 transition">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
-                  Total Stand Fisik Meteran
-                </span>
-                <div className="p-2 rounded-xl bg-indigo-950 text-indigo-300 border border-indigo-800/80">
-                  <Gauge className="w-4 h-4" />
-                </div>
+            {/* Search Input Bar */}
+            <form onSubmit={handleQuickSearch} className="bg-white rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  placeholder="Masukkan Nomor ID Pelanggan (Contoh: PL-001 / LMB-001)"
+                  className="w-full pl-10 sm:pl-11 pr-3 py-2.5 sm:py-3 text-slate-900 placeholder-slate-400 text-xs sm:text-sm font-semibold focus:outline-none bg-transparent"
+                />
               </div>
-              <div className="mt-1 flex items-baseline justify-between">
-                <span className="text-2xl sm:text-3xl font-black text-indigo-300 font-tabular tracking-tight">
-                  {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
-                  <span className="text-sm font-normal text-slate-400 ml-1">m³</span>
-                </span>
-                <span className="text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
-                  ODOMETER SR
-                </span>
-              </div>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                Total akumulasi putaran meter fisik {stats.lmbCustomers} SR di lapangan
-              </p>
+              <button
+                type="submit"
+                className="px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap cursor-pointer"
+              >
+                <span>Periksa Tagihan</span>
+                <ArrowRight className="w-4 h-4 text-sky-400" />
+              </button>
+            </form>
+
+            {/* Quick Helper Chips */}
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-teal-100">
+              <span className="font-semibold text-white">Contoh Sambungan Cepat:</span>
+              <button
+                type="button"
+                onClick={() => { setQuickSearch("LMB-001"); router.push("/portal?no=LMB-001"); }}
+                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
+              >
+                LMB-001
+              </button>
+              <button
+                type="button"
+                onClick={() => { setQuickSearch("LMB-015"); router.push("/portal?no=LMB-015"); }}
+                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
+              >
+                LMB-015
+              </button>
+              <button
+                type="button"
+                onClick={() => { setQuickSearch("LMB-083"); router.push("/portal?no=LMB-083"); }}
+                className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-mono text-[10px] sm:text-[11px] transition"
+              >
+                LMB-083
+              </button>
             </div>
           </div>
         </section>
 
-        {/* 3 Unit KPSPAMS Grid */}
-        <section id="unit-pengelola" className="space-y-3">
-          <div className="border-b border-slate-800/80 pb-2">
-            <h3 className="text-lg sm:text-xl font-black text-white tracking-tight">
-              3 Unit Pengelola KPSPAMS Desa Kuajang
-            </h3>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-              Pembagian wilayah pelayanan air bersih mandiri berdasarkan sumber air per unit desa.
+        {/* 4. Section: "Layanan Utama" (4 Cards Grid) */}
+        <section id="layanan" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+          <div className="text-center space-y-1.5">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Layanan Utama
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
+              Kelompok Pengelola Sarana Prasarana Air Minum &amp; Sanitasi Desa Kuajang
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-            {/* Unit 1: LMB (Operasional Aktif Penuh) */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border-2 border-emerald-500/50 bg-gradient-to-b from-emerald-950/30 to-slate-900/60 shadow-lg space-y-3 flex flex-col justify-between">
-              <div className="space-y-2.5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            {/* Card 1: Cek & Bayar Tagihan */}
+            <div
+              onClick={() => router.push("/portal")}
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+            >
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Receipt className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-sky-600 transition">
+                Cek &amp; Bayar Tagihan
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
+                Rincian pemakaian meteran &amp; bukti kwitansi resmi digital
+              </p>
+            </div>
+
+            {/* Card 2: Pengaduan & Aspirasi */}
+            <div
+              onClick={() => setActiveModal("complaint")}
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+            >
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Wrench className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-teal-600 transition">
+                Pengaduan &amp; Aspirasi
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
+                Lapor pipa bocor, meter macet, atau kendala aliran air
+              </p>
+            </div>
+
+            {/* Card 3: Pengajuan Pasang Baru */}
+            <div
+              onClick={() => setActiveModal("registration")}
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+            >
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition">
+                Pengajuan Pasang Baru
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
+                Permohonan sambungan rumah (SR) baru untuk warga desa
+              </p>
+            </div>
+
+            {/* Card 4: Informasi & Edukasi */}
+            <div
+              onClick={() => setActiveModal("education")}
+              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+            >
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-indigo-600 transition">
+                Informasi &amp; Edukasi
+              </h3>
+              <p className="text-[10px] sm:text-xs text-slate-500 mt-1 line-clamp-2">
+                Ketentuan tarif kubikasi air &amp; jadwal pemeliharaan jaringan
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Section: "KPSPAMS Dalam Angka" (Summary KPI Grid) */}
+        <section id="informasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+          <div className="text-center space-y-1.5">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              KPSPAMS Dalam Angka
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
+              Infrastruktur Air Minum &amp; Sanitasi Desa Kuajang
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            {/* Stat 1: Pelanggan Terlayani */}
+            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-sky-50 text-sky-600 flex-shrink-0">
+                <Users className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
+                  {stats.totalCustomers}
+                  <span className="text-sky-600 text-base sm:text-xl ml-0.5">+</span>
+                </div>
+                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
+                  Pelanggan SR Aktif
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 2: Dusun Terlayani */}
+            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-blue-50 text-blue-600 flex-shrink-0">
+                <MapPin className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
+                  4
+                </div>
+                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
+                  Dusun Terlayani
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 3: Layanan Siaga */}
+            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-teal-50 text-teal-600 flex-shrink-0">
+                <Clock className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
+                  24/7
+                </div>
+                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
+                  Layanan Siaga
+                </div>
+              </div>
+            </div>
+
+            {/* Stat 4: Air Layak Konsumsi */}
+            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-50 text-emerald-600 flex-shrink-0">
+                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 font-tabular">
+                  100%
+                </div>
+                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 truncate">
+                  Air Alami Gravitasi
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. Section: "Tentang Kami & 3 Unit Pengelola KPSPAMS Desa Kuajang" */}
+        <section id="tentang-kami" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-200 pb-4">
+            <div>
+              <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-sky-600 uppercase tracking-wider mb-1">
+                <span>Struktur Wilayah Pelayanan</span>
+              </div>
+              <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                3 Unit Pengelola KPSPAMS Desa Kuajang
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+                Pengelolaan sarana air minum berbasis masyarakat yang dibagi dalam 3 unit kerja mandiri sesuai letak mata air dan elevasi geografis dusun.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsStructureModalOpen(true)}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs self-start md:self-auto cursor-pointer"
+            >
+              <Maximize2 className="w-4 h-4 text-sky-600" />
+              <span>Lihat SK &amp; Struktur Pengurus</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {/* Unit 1: KPSPAMS Lemo Baru */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border-2 border-emerald-500 shadow-md flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-900 text-emerald-200 border border-emerald-600 shadow-sm">
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
                     Unit 1 (LMB)
                   </span>
-                  <span className="text-[11px] text-emerald-400 font-extrabold flex items-center space-x-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs text-emerald-700 font-extrabold flex items-center space-x-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>Aktif Beroperasi</span>
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-base sm:text-lg font-black text-white">
+                  <h3 className="text-lg font-black text-slate-900">
                     KPSPAMS Lemo Baru
-                  </h4>
-                  <p className="text-[11px] text-emerald-400 font-medium mt-0.5">
-                    Wilayah Layanan: Dusun Lemo Baru
+                  </h3>
+                  <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+                    Wilayah: Dusun Lemo Baru
                   </p>
-                  <p className="text-[11px] text-slate-400">
-                    Mata Air Pegunungan (100% Gravitasi Alami)
+                  <p className="text-xs text-slate-500 mt-1">
+                    Sistem Mata Air Pegunungan (100% Gravitasi Alami tanpa pompa listrik).
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/80 text-xs space-y-1.5">
-                  <div className="flex justify-between items-center text-slate-400">
+                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-slate-600">
                     <span>Pelanggan Terlayani:</span>
-                    <strong className="text-white font-extrabold">{stats.lmbCustomers} Sambungan</strong>
+                    <strong className="text-slate-900 font-extrabold">{stats.lmbCustomers} Sambungan (SR)</strong>
                   </div>
-                  <div className="flex justify-between items-center text-slate-400">
-                    <span>Kas Operasional:</span>
-                    <strong className="text-amber-400 font-extrabold">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>Kas Operasional Riil:</span>
+                    <strong className="text-emerald-700 font-extrabold">Rp {stats.lmbCash.toLocaleString("id-ID")}</strong>
                   </div>
-                  <div className="flex justify-between items-center text-slate-400">
-                    <span>Stand Fisik Meteran:</span>
-                    <strong className="text-indigo-300 font-extrabold">
+                  <div className="flex justify-between items-center text-slate-600">
+                    <span>Total Stand Fisik:</span>
+                    <strong className="text-slate-900 font-extrabold">
                       {stats.lmbPhysicalMeterM3.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 })} m³
                     </strong>
                   </div>
@@ -556,257 +711,468 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => scrollToSection("peta-gis")}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition flex items-center justify-center space-x-1 mt-1"
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition flex items-center justify-center space-x-1.5 cursor-pointer"
               >
-                <span>Lihat Sebaran di Peta GIS</span>
+                <span>Lihat Sebaran Pipa di Peta GIS</span>
                 <ArrowDown className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Unit 2: LMT (Tahap Persiapan) */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-3 opacity-90 flex flex-col justify-between">
-              <div className="space-y-2.5">
+            {/* Unit 2: KPSPAMS Lemo Tua */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                     Unit 2 (LMT)
                   </span>
-                  <span className="text-[11px] text-amber-400 font-bold flex items-center space-x-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span className="text-xs text-amber-600 font-bold flex items-center space-x-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
                     <span>Tahap Persiapan</span>
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-base sm:text-lg font-black text-slate-200">
+                  <h3 className="text-lg font-black text-slate-800">
                     KPSPAMS Lemo Tua
-                  </h4>
-                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                    Wilayah Layanan: Dusun Lemo Tua
+                  </h3>
+                  <p className="text-xs text-slate-600 font-semibold mt-0.5">
+                    Wilayah: Dusun Lemo Tua
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Sumur Bor &amp; Sumber Air Baku
+                  <p className="text-xs text-slate-500 mt-1">
+                    Sumur Bor &amp; Sumber Air Baku Siaga.
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/80 text-xs space-y-1.5">
+                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
                   <div className="flex justify-between items-center text-slate-500">
                     <span>Pelanggan Terdaftar:</span>
-                    <strong className="text-slate-400 font-extrabold">0 Sambungan</strong>
+                    <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
                   </div>
                   <div className="flex justify-between items-center text-slate-500">
-                    <span>Kas Operasional:</span>
-                    <strong className="text-slate-400 font-extrabold">Rp 0</strong>
+                    <span>Status Jaringan:</span>
+                    <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
                   </div>
                 </div>
               </div>
 
-              <div className="py-2 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800/60 mt-1 font-medium">
+              <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
                 Penyusunan Jaringan Air Bersih
               </div>
             </div>
 
-            {/* Unit 3: SRP (Tahap Persiapan) */}
-            <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/60 transition space-y-3 opacity-90 flex flex-col justify-between">
-              <div className="space-y-2.5">
+            {/* Unit 3: KPSPAMS Sarampu 1 & Pakkandoang */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs opacity-90 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                     Unit 3 (SRP)
                   </span>
-                  <span className="text-[11px] text-cyan-400 font-bold flex items-center space-x-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                  <span className="text-xs text-cyan-700 font-bold flex items-center space-x-1">
+                    <span className="w-2 h-2 rounded-full bg-cyan-500" />
                     <span>Tahap Persiapan</span>
                   </span>
                 </div>
 
                 <div>
-                  <h4 className="text-base sm:text-lg font-black text-slate-200">
+                  <h3 className="text-lg font-black text-slate-800">
                     KPSPAMS Sarampu 1
-                  </h4>
-                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                    Wilayah Layanan: Dusun Sarampu 1 &amp; Pakkandoang
+                  </h3>
+                  <p className="text-xs text-slate-600 font-semibold mt-0.5">
+                    Wilayah: Dusun Sarampu 1 &amp; Pakkandoang
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Jaringan Pipa &amp; Bak Penampung
+                  <p className="text-xs text-slate-500 mt-1">
+                    Jaringan Pipa &amp; Bak Penampung Transmisi.
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800/80 text-xs space-y-1.5">
+                <div className="pt-3 border-t border-slate-100 text-xs space-y-2">
                   <div className="flex justify-between items-center text-slate-500">
                     <span>Pelanggan Terdaftar:</span>
-                    <strong className="text-slate-400 font-extrabold">0 Sambungan</strong>
+                    <strong className="text-slate-700 font-bold">Tahap Pendaftaran</strong>
                   </div>
                   <div className="flex justify-between items-center text-slate-500">
-                    <span>Kas Operasional:</span>
-                    <strong className="text-slate-400 font-extrabold">Rp 0</strong>
+                    <span>Status Jaringan:</span>
+                    <strong className="text-slate-700 font-bold">Penyusunan Pipa</strong>
                   </div>
                 </div>
               </div>
 
-              <div className="py-2 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800/60 mt-1 font-medium">
+              <div className="py-2.5 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200 font-medium">
                 Penyusunan Jaringan Air Bersih
               </div>
             </div>
           </div>
         </section>
 
-        {/* Public Interactive GIS Map (Dusun Lemo Baru) */}
-        <div id="peta-gis" className="scroll-mt-28">
-          <PublicGisMapSection />
-        </div>
-
-        {/* Public Transparency & Performance Charts */}
-        <div id="transparansi-kas" className="scroll-mt-28">
-          <PublicTransparencyCharts />
-        </div>
-
-        {/* Fitur Layanan: Mini Badges Ringkas 1 Baris */}
-        <section id="fitur-layanan" className="scroll-mt-28">
-          <div className="rounded-2xl bg-slate-950/70 border border-slate-800/80 p-3 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-2.5">
-            <div className="flex items-center space-x-2 text-slate-400 text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Standar Layanan KPSPAMS Kuajang:</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
-                <Activity className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                <span>Pencatatan Meter Digital</span>
-              </div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
-                <Receipt className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                <span>Kwitansi &amp; QR Resmi</span>
-              </div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
-                <Wallet className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span>Kas Terbuka &amp; Teruji</span>
-              </div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] sm:text-xs text-slate-300 font-medium">
-                <Users className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-                <span>Portal Mandiri Warga</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Pusat Bantuan & Pengaduan Warga */}
-        <section id="pusat-bantuan" className="scroll-mt-28 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-6 shadow-lg">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6">
-            <div className="space-y-1 max-w-2xl">
-              <h3 className="text-lg sm:text-xl font-black text-white">
-                Pusat Bantuan &amp; Layanan Warga
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Pipa bocor, meteran macet, atau kendala air? Laporkan langsung melalui Portal Warga untuk penanganan cepat oleh pengurus KPSPAMS.
-              </p>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-slate-400 pt-0.5">
-                <span>📍 Posko: Dusun Lemo Baru</span>
-                <span>•</span>
-                <span>⏰ Jam Layanan: 08.00 - 17.00 WITA</span>
-              </div>
-            </div>
-            <Link
-              href="/portal"
-              className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black text-xs sm:text-sm shadow-md shadow-blue-600/25 transition active:scale-95 flex items-center space-x-2 whitespace-nowrap flex-shrink-0"
-            >
-              <span>Kirim Laporan Gangguan</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </section>
-        {/* Struktur Organisasi KPSPAMS Lemo Baru */}
-        <section id="struktur-organisasi" className="scroll-mt-28 space-y-3.5 sm:space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-800 pb-3">
+        {/* 7. Section: Peta Satelit GIS Interaktif */}
+        <section id="peta-gis" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <div>
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white tracking-tight">
-                Struktur Pengurus &amp; Tim Kerja KPSPAMS
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                Kelompok Pengelola Sarana Penyediaan Air Minum dan Sanitasi (KPSPAMS) Lemo Baru Desa Kuajang
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Peta Satelit GIS Sambungan Air Warga
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Pemetaan spasial jaringan transmisi pipa dan titik meteran sambungan rumah (SR) Dusun Lemo Baru.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsStructureModalOpen(true)}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition active:scale-95 self-start sm:self-auto cursor-pointer"
-            >
-              <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
-              <span>Perbesar Bagan</span>
-            </button>
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 hidden sm:inline-block">
+              Satelit Resolusi Tinggi
+            </span>
           </div>
 
-          <div className="rounded-2xl sm:rounded-3xl bg-slate-950/90 border border-slate-800 shadow-2xl overflow-hidden p-2.5 sm:p-5 relative group">
-            <div 
-              className="relative rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer bg-slate-900 group"
-              onClick={() => setIsStructureModalOpen(true)}
-            >
-              <Image
-                src="/struktur-organisasi-lemobaru.jpg"
-                alt="Struktur Organisasi KPSPAMS Lemo Baru Desa Kuajang"
-                width={1200}
-                height={850}
-                className="w-full h-auto object-contain mx-auto rounded-xl transition duration-300 group-hover:scale-[1.01]"
-                priority
-              />
-              <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/20 transition flex items-center justify-center pointer-events-none">
-                <span className="opacity-0 group-hover:opacity-100 transition duration-200 px-4 py-2 rounded-xl bg-slate-900/90 text-white text-xs font-bold border border-slate-700 shadow-xl flex items-center space-x-2">
-                  <Maximize2 className="w-4 h-4 text-sky-400" />
-                  <span>Klik untuk Memperbesar</span>
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-2 sm:p-4 overflow-hidden">
+            <PublicGisMapSection />
+          </div>
+        </section>
+
+        {/* 8. Section: Transparansi Keuangan Realtime */}
+        <section id="transparansi-kas" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Transparansi Kas &amp; Iuran Warga Real-Time
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Keterbukaan penerimaan iuran, mutasi kas, dan neraca keuangan yang dapat dipantau oleh seluruh masyarakat Desa Kuajang.
+              </p>
+            </div>
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 hidden sm:inline-block">
+              Audit Akuntabel
+            </span>
+          </div>
+
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-3 sm:p-6 overflow-hidden">
+            <PublicTransparencyCharts />
+          </div>
+        </section>
+
+        {/* 9. Section: Kontak & Pusat Layanan Siaga */}
+        <section id="kontak" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-6 sm:p-8 lg:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <span className="text-sky-400 font-extrabold text-xs tracking-wider uppercase">
+                Pusat Kontak &amp; Siaga Pipa
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white">
+                Butuh Bantuan atau Ada Gangguan Aliran Air?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Tim teknis dan pengurus KPSPAMS Desa Kuajang siap melayani perbaikan kebocoran pipa, keluhan meteran, atau pendaftaran sambungan rumah baru.
+              </p>
+              <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-slate-300 font-medium">
+                <span className="flex items-center space-x-1.5">
+                  <MapPin className="w-4 h-4 text-sky-400" />
+                  <span>Posko: Dusun Lemo Baru, Desa Kuajang</span>
+                </span>
+                <span className="flex items-center space-x-1.5">
+                  <Clock className="w-4 h-4 text-teal-400" />
+                  <span>Siaga: 08.00 - 17.00 WITA</span>
                 </span>
               </div>
             </div>
 
-            {/* Ringkasan Nama Pengurus Berdasarkan SK No. 19/2026 */}
-            <div className="mt-3.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5 text-center">
-              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Ketua</span>
-                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Fadli</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">Sekretaris</span>
-                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Mada Ali</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Bendahara</span>
-                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">M. Darmawan</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90">
-                <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Penagihan</span>
-                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Suardi &amp; Abdul W.</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 col-span-2 sm:col-span-1">
-                <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">Pemeliharaan</span>
-                <span className="text-xs sm:text-sm font-extrabold text-white mt-0.5 block">Sapri &amp; Nurhanuddin</span>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <button
+                onClick={() => setActiveModal("complaint")}
+                className="px-5 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap"
+              >
+                <Wrench className="w-4 h-4" />
+                <span>Kirim Laporan Gangguan</span>
+              </button>
+              <a
+                href="https://wa.me/6282348507873?text=Halo%20Pengurus%20KPSPAMS%20Desa%20Kuajang,%20saya%20warga%20ingin%20bertanya..."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap"
+              >
+                <PhoneCall className="w-4 h-4 text-emerald-600" />
+                <span>WhatsApp Pengurus</span>
+              </a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-950 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div>
-              <p className="font-semibold text-slate-300">© 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.</p>
-              <p className="text-slate-500 text-[11px] mt-0.5">Sistem Informasi Pengelolaan Air Minum dan Sanitasi Desa (SI-KPSPAMS) v1.0</p>
+      {/* 10. Footer Section */}
+      <footer className="bg-white text-slate-600 text-xs py-8 border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start space-x-2">
+                <span className="font-black text-slate-900 text-sm">KPSPAMS KUAJANG</span>
+                <span className="px-2 py-0.5 rounded bg-sky-100 text-sky-800 text-[10px] font-bold">v2.0</span>
+              </div>
+              <p className="text-slate-500 text-[11px] mt-0.5">
+                © 2026 Pemerintah Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar, Sulawesi Barat.
+              </p>
             </div>
-            <div className="flex items-center space-x-3 text-slate-400 text-[11px]">
-              <a href="#struktur-organisasi" className="hover:text-white transition">Struktur Pengurus</a>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-slate-600 text-[11px] font-semibold">
+              <button onClick={() => setIsStructureModalOpen(true)} className="hover:text-sky-600 transition">
+                Struktur Pengurus
+              </button>
               <span>•</span>
-              <Link href="/portal" className="hover:text-white transition">Portal Warga</Link>
+              <Link href="/portal" className="hover:text-sky-600 transition">
+                Portal Warga Mandiri
+              </Link>
               <span>•</span>
-              <Link href="/login" className="hover:text-white transition">Login Pengurus</Link>
-              <span>•</span>
-              <span className="text-emerald-400 font-bold">Sistem Aktif &amp; Terlindungi</span>
+              <Link href="/login" className="hover:text-sky-600 transition font-bold text-sky-700">
+                Login Pengelola
+              </Link>
             </div>
           </div>
-          <div className="pt-3 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
-            <p>
-              Dirancang &amp; Dikembangkan oleh <span className="text-sky-400 font-bold">Pua Kaso</span> untuk Kemandirian Layanan Air Bersih Desa Kuajang.
+
+          <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
+            <p className="text-center sm:text-left">
+              Dirancang &amp; Dikembangkan oleh <span className="text-sky-600 font-bold">Pua Kaso</span> untuk Kemandirian Layanan Air Bersih Desa Kuajang.
             </p>
             <span className="text-slate-400 text-[10px]">Kecamatan Binuang, Polewali Mandar</span>
           </div>
         </div>
       </footer>
+
+      {/* MODAL 1: Pengaduan & Aspirasi Warga */}
+      {activeModal === "complaint" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="relative max-w-lg w-full bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-teal-50 text-teal-600">
+                  <Wrench className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Form Pengaduan &amp; Aspirasi</h3>
+                  <p className="text-[11px] text-slate-500">Tim Siaga Reaksi Cepat KPSPAMS Kuajang</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendWhatsAppComplaint} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Lengkap Pelapor:</label>
+                <input
+                  type="text"
+                  required
+                  value={compName}
+                  onChange={(e) => setCompName(e.target.value)}
+                  placeholder="Contoh: Bpk. Arman"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Nomor WhatsApp / HP:</label>
+                  <input
+                    type="tel"
+                    required
+                    value={compPhone}
+                    onChange={(e) => setCompPhone(e.target.value)}
+                    placeholder="08xxxxxxxxxx"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Wilayah Dusun:</label>
+                  <select
+                    value={compDusun}
+                    onChange={(e) => setCompDusun(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-teal-500 bg-white"
+                  >
+                    <option value="Lemo Baru">Lemo Baru</option>
+                    <option value="Lemo Tua">Lemo Tua</option>
+                    <option value="Sarampu 1">Sarampu 1</option>
+                    <option value="Pakkandoang">Pakkandoang</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Keterangan Kendala / Lokasi:</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={compText}
+                  onChange={(e) => setCompText(e.target.value)}
+                  placeholder="Contoh: Pipa dekat pos ronda bocor air meluber ke jalan..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>Kirim Laporan ke WhatsApp Petugas</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Pengajuan Pasang Baru */}
+      {activeModal === "registration" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="relative max-w-lg w-full bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+                  <Droplets className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Pengajuan Sambungan Baru (SR)</h3>
+                  <p className="text-[11px] text-slate-500">Pemasangan meteran air bersih Desa Kuajang</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendWhatsAppRegistration} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Nama Kepala Keluarga (KK):</label>
+                <input
+                  type="text"
+                  required
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  placeholder="Nama sesuai KTP"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">No. WhatsApp / HP:</label>
+                  <input
+                    type="tel"
+                    required
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="08xxxxxxxxxx"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Pilihan Dusun:</label>
+                  <select
+                    value={regDusun}
+                    onChange={(e) => setRegDusun(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-blue-500 bg-white"
+                  >
+                    <option value="Lemo Baru">Lemo Baru</option>
+                    <option value="Lemo Tua">Lemo Tua</option>
+                    <option value="Sarampu 1">Sarampu 1</option>
+                    <option value="Pakkandoang">Pakkandoang</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Alamat Rumah Lengkap / RT:</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={regAddress}
+                  onChange={(e) => setRegAddress(e.target.value)}
+                  placeholder="Contoh: RT 02 Dusun Lemo Baru (Dekat Lapangan Bola)"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:border-blue-500 resize-none"
+                />
+              </div>
+
+              <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-[11px] text-blue-900 leading-relaxed">
+                ℹ️ <strong>Syarat Pemasangan Baru:</strong> Fotokopi KTP/KK pemohon &amp; bersedia dilakukan survei teknis jalur pipa oleh petugas lapangan.
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center space-x-2"
+              >
+                <Send className="w-4 h-4" />
+                <span>Kirim Formulir Permohonan ke Admin</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Informasi & Edukasi Tarif Air */}
+      {activeModal === "education" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="relative max-w-lg w-full bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Informasi Tarif &amp; Edukasi</h3>
+                  <p className="text-[11px] text-slate-500">Ketentuan Resmi KPSPAMS Desa Kuajang</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs sm:text-sm text-slate-700 leading-relaxed">
+              {/* Box Tarif Air */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="font-extrabold text-slate-900 text-sm flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-sky-600" />
+                  <span>Struktur Tarif Iuran Air Bersih:</span>
+                </div>
+                <ul className="space-y-1.5 text-xs text-slate-600 pl-4 list-disc">
+                  <li>
+                    <strong>Tarif Dasar Bulanan:</strong> <code>Rp 10.000 / bulan</code> (Pemakaian s.d. <strong>35 m³</strong>).
+                  </li>
+                  <li>
+                    <strong>Kelebihan Pemakaian (Progresif):</strong> Di atas 35 m³, dihitung <code>Rp 1.000 / m³</code>.
+                    <p className="text-[10px] text-slate-500 italic mt-0.5">
+                      Contoh: Pemakaian 36 m³ = Beban Dasar Rp 10.000 + (1 m³ x Rp 1.000) = Rp 11.000.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Khusus Unit Lemo Baru:</strong> Menggunakan sistem mata air gravitasi alami tanpa beban pompa listrik PLN.
+                  </li>
+                </ul>
+              </div>
+
+              {/* Box Jadwal Pembayaran */}
+              <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5 text-xs text-sky-950">
+                <div className="font-bold text-sky-900">📅 Periode Pembayaran &amp; Catat Meter:</div>
+                <p>Pencatatan meteran dilakukan oleh petugas setiap tanggal 1-5 awal bulan. Pembayaran iuran dapat dilakukan langsung kepada petugas lapangan atau melalui bendahara desa.</p>
+              </div>
+
+              {/* Tips Hemat Air */}
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1.5 text-xs text-emerald-950">
+                <div className="font-bold text-emerald-900">💡 Tips Pelanggan:</div>
+                <p>Periksa selalu kran penampung agar tidak meluber, dan laporkan segera jika ada indikasi kebocoran pipa bawah tanah untuk menjaga kelancaran debit aliran air warga lainnya.</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setActiveModal(null)}
+              className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition"
+            >
+              Tutup Informasi
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Modal: Struktur Organisasi Fullscreen */}
       {isStructureModalOpen && (
@@ -815,29 +1181,29 @@ export default function HomePage() {
           onClick={() => setIsStructureModalOpen(false)}
         >
           <div 
-            className="relative max-w-5xl w-full bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-800 p-3 sm:p-4 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
+            className="relative max-w-5xl w-full bg-white rounded-2xl sm:rounded-3xl border border-slate-200 p-3 sm:p-5 shadow-2xl overflow-hidden flex flex-col max-h-[94vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800 px-1">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 px-1">
               <div className="flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4 text-sky-400" />
-                <span className="text-xs sm:text-sm font-bold text-white">Struktur Organisasi KPSPAMS Lemo Baru</span>
+                <ShieldCheck className="w-5 h-5 text-sky-600" />
+                <span className="text-xs sm:text-sm font-black text-slate-900">Struktur Pengurus KPSPAMS Lemo Baru Desa Kuajang</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsStructureModalOpen(false)}
-                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+                className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="overflow-auto flex-1 flex items-center justify-center rounded-xl bg-slate-950 p-1 sm:p-2">
+            <div className="overflow-auto flex-1 flex items-center justify-center rounded-xl bg-slate-50 p-1 sm:p-2 border border-slate-100">
               <Image
                 src="/struktur-organisasi-lemobaru.jpg"
                 alt="Struktur Organisasi KPSPAMS Lemo Baru"
                 width={1400}
                 height={1000}
-                className="w-auto h-auto max-h-[80vh] object-contain rounded-lg"
+                className="w-auto h-auto max-h-[75vh] object-contain rounded-lg"
               />
             </div>
           </div>
