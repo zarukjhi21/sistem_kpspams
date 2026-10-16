@@ -188,7 +188,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col selection:bg-sky-500 selection:text-white font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col selection:bg-sky-500 selection:text-white font-sans overflow-x-hidden">
       {/* 1. Navbar / Header Bar */}
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
@@ -266,10 +266,10 @@ export default function HomePage() {
           <div className="flex items-center space-x-2 sm:space-x-3">
             <Link
               href="/login"
-              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white text-xs sm:text-sm font-extrabold transition duration-200 active:scale-95 shadow-xs flex items-center space-x-1.5 whitespace-nowrap"
+              className="px-2.5 sm:px-5 py-1.5 sm:py-2.5 rounded-xl border-2 border-sky-600 text-sky-700 hover:bg-sky-600 hover:text-white text-xs sm:text-sm font-extrabold transition duration-200 active:scale-95 shadow-xs flex items-center space-x-1.5 whitespace-nowrap"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Login Pengelola</span>
+              <span>Login<span className="hidden sm:inline"> Pengelola</span></span>
             </Link>
 
             {/* Mobile Menu Toggle Button */}
@@ -351,35 +351,29 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Heading, Subtitle & Buttons */}
-              <div className="lg:col-span-6 space-y-5 sm:space-y-6 text-center lg:text-left">
-                {/* Government Pill Badge */}
-                <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-sky-100/80 border border-sky-200/80 text-sky-800 text-[11px] sm:text-xs font-bold shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-sky-600 animate-pulse" />
-                  <span>Pelayanan Air Bersih &amp; Sanitasi Mandiri</span>
-                </div>
-
+              <div className="lg:col-span-6 space-y-4 sm:space-y-6 text-center lg:text-left">
                 {/* Hero Title */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-snug sm:leading-[1.15]">
                   Mewujudkan Akses Air Bersih &amp; Sanitasi untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-teal-600">Desa Kuajang</span>
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <p className="text-xs sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0 px-1 sm:px-0">
                   Sistem Informasi Kelompok Pengelola Sarana Prasarana Air Minum dan Sanitasi Desa Kuajang, Kec. Binuang, Kab. Polewali Mandar.
                 </p>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2.5 sm:gap-3 pt-1 sm:pt-2">
                   <button
                     onClick={focusSearchInput}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-sky-600/30 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 sm:py-3.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-sky-600/30 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
                   >
                     <span>Cek Tagihan Saya</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => scrollToSection("layanan")}
-                    className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm border border-slate-300 shadow-sm transition active:scale-95 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 sm:py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm border border-slate-300 shadow-sm transition active:scale-95 cursor-pointer"
                   >
                     Pelajari Selengkapnya
                   </button>
@@ -388,7 +382,7 @@ export default function HomePage() {
 
               {/* Right Column: High Quality 3D Isometric Illustration (Seamless Floating, No White Box) */}
               <div className="lg:col-span-6 flex justify-center items-center relative">
-                <div className="relative w-full max-w-lg lg:max-w-none flex items-center justify-center">
+                <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-none flex items-center justify-center">
                   {/* Atmospheric Depth Glow */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-sky-400/25 via-teal-300/20 to-sky-200/10 rounded-full blur-3xl transform scale-90 pointer-events-none" />
                   
@@ -400,7 +394,7 @@ export default function HomePage() {
                       width={700}
                       height={500}
                       priority
-                      className="w-full h-auto object-contain mx-auto mix-blend-multiply drop-shadow-xl"
+                      className="w-full h-auto max-h-[250px] sm:max-h-[360px] lg:max-h-none object-contain mx-auto mix-blend-multiply drop-shadow-xl"
                     />
                   </div>
                 </div>
@@ -411,8 +405,8 @@ export default function HomePage() {
 
         {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Sleek Minimalist Figma Match) */}
         <section id="cek-tagihan" className="max-w-2xl mx-auto px-4 -mt-10 sm:-mt-14 lg:-mt-16 relative z-30">
-          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-5 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
-            <h2 className="text-base sm:text-xl font-bold tracking-tight text-white text-center mb-3 sm:mb-4">
+          <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-4 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
+            <h2 className="text-sm sm:text-xl font-bold tracking-tight text-white text-center mb-2.5 sm:mb-4">
               Cek Tagihan Meteran Air Anda
             </h2>
 
@@ -431,7 +425,7 @@ export default function HomePage() {
               />
               <button
                 type="submit"
-                className="px-5 sm:px-6 py-2.5 rounded-lg sm:rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold text-xs sm:text-sm transition active:scale-95 whitespace-nowrap shadow-xs cursor-pointer"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 rounded-lg sm:rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold text-xs sm:text-sm transition active:scale-95 whitespace-nowrap shadow-xs cursor-pointer text-center"
               >
                 Periksa Tagihan
               </button>
@@ -450,14 +444,14 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {/* Card 1: Cek & Bayar Tagihan */}
             <div
               onClick={() => router.push("/portal")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-sky-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Receipt className="w-6 h-6 sm:w-7 sm:h-7" />
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Receipt className="w-5 h-5 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-sky-600 transition">
                 Cek &amp; Bayar Tagihan
@@ -470,10 +464,10 @@ export default function HomePage() {
             {/* Card 2: Pengaduan & Aspirasi */}
             <div
               onClick={() => setActiveModal("complaint")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Wrench className="w-6 h-6 sm:w-7 sm:h-7" />
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Wrench className="w-5 h-5 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-teal-600 transition">
                 Pengaduan &amp; Aspirasi
@@ -486,10 +480,10 @@ export default function HomePage() {
             {/* Card 3: Pengajuan Pasang Baru */}
             <div
               onClick={() => setActiveModal("registration")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
-                <Droplets className="w-6 h-6 sm:w-7 sm:h-7" />
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition duration-300 shadow-xs">
+                <Droplets className="w-5 h-5 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition">
                 Pengajuan Pasang Baru
@@ -502,10 +496,10 @@ export default function HomePage() {
             {/* Card 4: Informasi & Edukasi */}
             <div
               onClick={() => setActiveModal("education")}
-              className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
+              className="p-3 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition duration-300 flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
-                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 sm:mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300 shadow-xs">
+                <BookOpen className="w-5 h-5 sm:w-7 sm:h-7" />
               </div>
               <h3 className="text-xs sm:text-base font-black text-slate-900 group-hover:text-indigo-600 transition">
                 Informasi &amp; Edukasi
@@ -521,10 +515,6 @@ export default function HomePage() {
         <section id="informasi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-200 pb-3">
             <div>
-              <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-sky-600 uppercase tracking-wider mb-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Transparansi Data &amp; Operasional Real-Time</span>
-              </div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 Status Operasional &amp; Transparansi Kas
               </h2>
@@ -703,9 +693,6 @@ export default function HomePage() {
         <section id="tentang-kami" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-200 pb-4">
             <div>
-              <div className="inline-flex items-center space-x-1.5 text-xs font-bold text-sky-600 uppercase tracking-wider mb-1">
-                <span>Struktur Wilayah Pelayanan</span>
-              </div>
               <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 3 Unit Pengelola KPSPAMS Desa Kuajang
               </h2>
@@ -715,7 +702,7 @@ export default function HomePage() {
             </div>
             <button
               onClick={() => setIsStructureModalOpen(true)}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs self-start md:self-auto cursor-pointer"
+              className="inline-flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:border-sky-500 text-slate-700 hover:text-sky-700 text-xs font-bold transition shadow-xs w-full md:w-auto cursor-pointer"
             >
               <Maximize2 className="w-4 h-4 text-sky-600" />
               <span>Lihat SK &amp; Struktur Pengurus</span>
