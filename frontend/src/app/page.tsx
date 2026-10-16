@@ -391,10 +391,10 @@ export default function HomePage() {
                     <Image
                       src="/hero-water-illustration.png"
                       alt="Ilustrasi Infrastruktur Air Bersih KPSPAMS Desa Kuajang"
-                      width={700}
-                      height={500}
+                      width={1024}
+                      height={764}
                       priority
-                      className="w-full h-auto max-h-[250px] sm:max-h-[360px] lg:max-h-none object-contain mx-auto mix-blend-multiply drop-shadow-xl"
+                      className="w-full h-auto max-h-[280px] sm:max-h-[420px] lg:max-h-none object-contain mx-auto drop-shadow-2xl"
                     />
                   </div>
                 </div>
