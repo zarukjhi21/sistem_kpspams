@@ -401,50 +401,43 @@ export default function HomePage() {
                   </div>
 
                   {/* Floating Live Badge 1: Flow Rate (Near Phone / IoT) */}
-                  <div className="absolute -top-2 left-0 sm:-top-3 sm:-left-3 lg:-top-3 lg:-left-6 z-20 animate-badge-1 pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 flex items-center space-x-2 sm:space-x-2.5 transition hover:scale-105 select-none">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center flex-shrink-0">
-                        <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600 animate-pulse" />
+                  <div className="absolute -top-1 left-1 sm:top-1 sm:-left-2 lg:-top-1 lg:-left-4 z-20 animate-badge-1 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md shadow-sky-950/5 rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 flex items-center space-x-2 transition hover:scale-105 select-none">
+                      <div className="w-5 h-5 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0">
+                        <Droplets className="w-3 h-3 text-sky-600 animate-pulse" />
                       </div>
-                      <div className="text-left">
-                        <div className="flex items-center space-x-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">Debit Air IoT</span>
-                        </div>
-                        <p className="text-[11px] sm:text-xs font-black text-slate-800 tracking-tight">
-                          3.2 L/dtk <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-0.5">Lancar</span>
-                        </p>
+                      <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-bold text-slate-800">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                        <span className="text-slate-500 font-semibold">Debit:</span>
+                        <span>3.2 L/dtk</span>
+                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">Lancar</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Floating Live Badge 2: Reservoir Status (Top Right / Near Tanks) */}
-                  <div className="absolute top-1 right-0 sm:top-3 sm:-right-3 lg:top-2 lg:-right-6 z-20 animate-badge-2 pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 flex items-center space-x-2 sm:space-x-2.5 transition hover:scale-105 select-none">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0">
-                        <Gauge className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                  <div className="absolute top-2 right-1 sm:top-4 sm:-right-2 lg:top-3 lg:-right-4 z-20 animate-badge-2 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md shadow-sky-950/5 rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 flex items-center space-x-2 transition hover:scale-105 select-none">
+                      <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Gauge className="w-3 h-3 text-blue-600" />
                       </div>
-                      <div className="text-left">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Reservoir Kuajang</span>
-                        <div className="flex items-center space-x-1">
-                          <span className="text-[11px] sm:text-xs font-black text-slate-800">92% Terisi</span>
-                          <span className="text-[9px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded-full">Optimal</span>
-                        </div>
+                      <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-bold text-slate-800">
+                        <span className="text-slate-500 font-semibold">Reservoir:</span>
+                        <span>92%</span>
+                        <span className="text-[9px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded-full">Optimal</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Floating Live Badge 3: Solar & Green Eco (Bottom Left / Near Solar Panel) */}
-                  <div className="hidden sm:flex absolute -bottom-3 left-4 sm:-bottom-2 sm:left-2 lg:-bottom-2 lg:left-0 z-20 animate-badge-3 pointer-events-auto">
-                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-lg shadow-sky-950/10 rounded-2xl px-3 py-2 sm:px-3.5 sm:py-2.5 items-center space-x-2.5 transition hover:scale-105 select-none">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">
-                        <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
+                  <div className="hidden sm:flex absolute bottom-2 left-2 sm:bottom-4 sm:left-4 lg:bottom-3 lg:left-0 z-20 animate-badge-3 pointer-events-auto">
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-md shadow-sky-950/5 rounded-full px-2.5 py-1 sm:px-3 sm:py-1.5 items-center space-x-2 transition hover:scale-105 select-none">
+                      <div className="w-5 h-5 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0">
+                        <Zap className="w-3 h-3 text-amber-500" />
                       </div>
-                      <div className="text-left">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Solar Eco Power</span>
-                        <p className="text-[11px] sm:text-xs font-black text-slate-800">
-                          100% Mandiri Energi
-                        </p>
+                      <div className="flex items-center space-x-1.5 text-[10px] sm:text-xs font-bold text-slate-800">
+                        <span className="text-slate-500 font-semibold">Solar Power:</span>
+                        <span>100% Mandiri</span>
                       </div>
                     </div>
                   </div>
