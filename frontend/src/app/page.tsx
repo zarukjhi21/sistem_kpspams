@@ -435,13 +435,10 @@ export default function HomePage() {
 
         {/* 4. Section: "Layanan Utama" (4 Cards Grid) */}
         <section id="layanan" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-          <div className="text-center space-y-1.5">
+          <div className="text-center">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Layanan Utama
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto">
-              Kelompok Pengelola Sarana Prasarana Air Minum &amp; Sanitasi Desa Kuajang
-            </p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
@@ -506,9 +503,6 @@ export default function HomePage() {
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 Status Operasional &amp; Transparansi Kas
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Data resmi sambungan pelanggan, kubikasi meteran, dan posisi kas unit Desa Kuajang.
-              </p>
             </div>
             <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto flex items-center space-x-1.5 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1" />
@@ -657,24 +651,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Quick Badges Layanan Kuajang */}
-          <div className="rounded-2xl bg-slate-100/80 border border-slate-200/80 p-3 sm:px-5 sm:py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 font-medium">
-            <span className="flex items-center space-x-1.5 font-bold text-slate-800">
-              <MapPin className="w-4 h-4 text-sky-600" />
-              <span>Cakupan 4 Dusun:</span>
-              <span className="font-normal text-slate-600">Lemo Baru, Lemo Tua, Sarampu 1, Pakkandoang</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <Clock className="w-4 h-4 text-teal-600" />
-              <span className="font-bold text-slate-800">24/7</span>
-              <span>Layanan Siaga Pipa</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <Droplets className="w-4 h-4 text-emerald-600" />
-              <span className="font-bold text-slate-800">100%</span>
-              <span>Air Alami Gravitasi</span>
-            </span>
-          </div>
         </section>
 
         {/* 6. Section: "Tentang Kami & 3 Unit Pengelola KPSPAMS Desa Kuajang" */}
@@ -684,9 +660,6 @@ export default function HomePage() {
               <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 3 Unit Pengelola KPSPAMS Desa Kuajang
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-                Pengelolaan sarana air minum berbasis masyarakat yang dibagi dalam 3 unit kerja mandiri sesuai letak mata air dan elevasi geografis dusun.
-              </p>
             </div>
             <button
               onClick={() => setIsStructureModalOpen(true)}
