@@ -344,7 +344,7 @@ export default function HomePage() {
       {/* Main Content Body */}
       <main id="beranda" className="flex-1 w-full space-y-12 sm:space-y-16 lg:space-y-20">
         {/* 2. Hero Section: Clean, Modern White & Sky Blue Theme */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/70 via-slate-50/50 to-[#F8FAFC] pt-6 sm:pt-12 lg:pt-16 pb-20 sm:pb-28 border-b border-slate-200/60">
+        <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/70 via-slate-50/50 to-[#F8FAFC] pt-6 sm:pt-10 lg:pt-14 pb-10 sm:pb-12 lg:pb-14 border-b border-slate-200/60">
           {/* Subtle Background Pattern Elements */}
           <div className="absolute inset-0 bg-[radial-gradient(#0284c7_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.04] pointer-events-none" />
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-sky-200/40 rounded-full blur-3xl pointer-events-none" />
@@ -448,7 +448,7 @@ export default function HomePage() {
         </section>
 
         {/* 3. Floating Card: "Cek Tagihan Meteran Air Anda" (Sleek Minimalist Figma Match) */}
-        <section id="cek-tagihan" className="max-w-2xl mx-auto px-4 -mt-10 sm:-mt-14 lg:-mt-16 relative z-30">
+        <section id="cek-tagihan" className="max-w-2xl mx-auto px-4 !-mt-10 sm:!-mt-14 lg:!-mt-16 relative z-30">
           <ScrollReveal direction="up" distance={20}>
             <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-teal-500 via-sky-600 to-blue-600 p-4 sm:p-7 shadow-xl shadow-sky-950/20 text-white">
               <h2 className="text-sm sm:text-xl font-bold tracking-tight text-white text-center mb-2.5 sm:mb-4">
