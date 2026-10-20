@@ -10,22 +10,25 @@ interface AnimatedCountProps {
   suffix?: string;
   formatter?: (val: number) => string;
   className?: string;
+  startFromZero?: boolean;
 }
 
 /**
- * AnimatedCount counts up smoothly from 0 to target value
+ * AnimatedCount counts up smoothly to target value
  * when the element is first scrolled into view.
+ * Defaults to displaying the real value immediately so it never flashes 0/Rp 0.
  */
 export function AnimatedCount({
   value,
-  duration = 1600,
+  duration = 1400,
   decimals = 0,
   prefix = "",
   suffix = "",
   formatter,
   className = "",
+  startFromZero = false,
 }: AnimatedCountProps) {
-  const [displayValue, setDisplayValue] = useState<number>(0);
+  const [displayValue, setDisplayValue] = useState<number>(value);
   const [hasAnimated, setHasAnimated] = useState<boolean>(false);
   const elementRef = useRef<HTMLSpanElement>(null);
 
@@ -48,7 +51,7 @@ export function AnimatedCount({
           observer.disconnect();
 
           const startTime = performance.now();
-          const startVal = 0;
+          const startVal = startFromZero ? 0 : Math.round(value * 0.6);
           const endVal = value;
 
           // easeOutExpo curve for modern, snappy count-up
@@ -77,7 +80,7 @@ export function AnimatedCount({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [value, duration, hasAnimated]);
+  }, [value, duration, hasAnimated, startFromZero]);
 
   // If value prop changes after initial animation, update to target value
   useEffect(() => {
