@@ -97,6 +97,9 @@ export default function HomePage() {
   const [compDusun, setCompDusun] = useState("Lemo Baru");
   const [compText, setCompText] = useState("");
 
+  // Mode Tampilan Penerimaan Iuran: "current" (Bulan Berjalan November) vs "all" (Akumulasi Kas Keseluruhan)
+  const [collectionPeriodView, setCollectionPeriodView] = useState<"current" | "all">("current");
+
   const [stats, setStats] = useState({
     lmbCash: 8441000,
     lmbCustomers: 293,
@@ -109,8 +112,8 @@ export default function HomePage() {
     totalUsageM3: 0,
     totalPhysicalMeterM3: 523136.49,
     billingPeriod: "November 2026",
-    totalCollected: 2180000,
-    paidCount: 218,
+    totalCollected: 2190000,
+    paidCount: 219,
     totalArrears: 540000,
     unpaidCount: 54,
     totalInvoices: 293,
@@ -119,6 +122,12 @@ export default function HomePage() {
     totalWaived: 210000,
     totalExpenses: 23505000,
     maintenanceExpenses: 19234000,
+    novemberPaidAmount: 10000,
+    novemberPaidCount: 1,
+    novemberBilledAmount: 2930000,
+    novemberCollectionRate: 0.3,
+    allTimeCollected: 2190000,
+    allTimePaidCount: 219,
   });
 
   useEffect(() => {
@@ -127,10 +136,17 @@ export default function HomePage() {
       .then((res) => {
         if (res?.status === "success" && res.data?.kpi) {
           const k = res.data.kpi;
-          const collected = Number(k.total_collected) || 2180000;
+          const collected = Number(k.total_collected) || 2190000;
           const arrears = Number(k.total_arrears) || 540000;
           const expenses = Number(k.total_expenses) || 23505000;
           const maintExpenses = Number(k.maintenance_expenses) || 19234000;
+          const novPaid = Number(k.november_paid_amount) || 0;
+          const novCount = Number(k.november_paid_count) || 0;
+          const novBilled = Number(k.november_billed_amount) || 2930000;
+          const novRate = Number(k.november_collection_rate) || (novBilled > 0 ? Number(((novPaid / novBilled) * 100).toFixed(1)) : 0);
+          const allCollected = Number(k.all_time_collected) || collected;
+          const allPaidCount = Number(k.all_time_paid_count) || Math.round(allCollected / 10000);
+
           setStats((prev) => ({
             ...prev,
             lmbCash: Number(k.total_cash_balance) || prev.lmbCash,
@@ -153,6 +169,12 @@ export default function HomePage() {
             totalWaived: Number(k.total_waived) || 210000,
             totalExpenses: expenses,
             maintenanceExpenses: maintExpenses,
+            novemberPaidAmount: novPaid,
+            novemberPaidCount: novCount,
+            novemberBilledAmount: novBilled,
+            novemberCollectionRate: novRate,
+            allTimeCollected: allCollected,
+            allTimePaidCount: allPaidCount,
           }));
         }
       })
@@ -672,24 +694,71 @@ export default function HomePage() {
             <ScrollReveal direction="up" delay={280}>
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    PENERIMAAN IURAN
-                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                      PENERIMAAN IURAN
+                    </span>
+                    <div className="inline-flex p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-[10px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setCollectionPeriodView("current")}
+                        className={`px-1.5 py-0.5 rounded-md transition ${
+                          collectionPeriodView === "current"
+                            ? "bg-white text-emerald-700 shadow-xs"
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                        title="Tampilkan khusus realisasi tagihan bulan berjalan (November 2026)"
+                      >
+                        Nov
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCollectionPeriodView("all")}
+                        className={`px-1.5 py-0.5 rounded-md transition ${
+                          collectionPeriodView === "all"
+                            ? "bg-white text-emerald-700 shadow-xs"
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                        title="Tampilkan akumulasi total kas iuran masuk (Oktober + November)"
+                      >
+                        Total Kas
+                      </button>
+                    </div>
+                  </div>
                   <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="flex items-baseline justify-between mt-1">
-                  <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular tabular-nums truncate">
-                    <AnimatedCount value={stats.totalCollected} prefix="Rp " duration={1600} />
-                  </span>
-                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/70">
-                    <AnimatedCount value={stats.collectionRate} decimals={1} suffix="%" duration={1600} />
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                  {stats.paidCount} SR terbayar lunas
-                </p>
+
+                {collectionPeriodView === "current" ? (
+                  <>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular tabular-nums truncate">
+                        <AnimatedCount value={stats.novemberPaidAmount} prefix="Rp " duration={1200} />
+                      </span>
+                      <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/70" title="Realisasi penagihan bulan berjalan November">
+                        {stats.novemberPaidCount} SR Lunas
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                      Bulan berjalan: {stats.novemberPaidCount} dari 292 SR • Akumulasi Kas: Rp {(stats.allTimeCollected / 1000).toLocaleString("id-ID")}k
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-baseline justify-between mt-1">
+                      <span className="text-xl sm:text-2xl font-black text-emerald-700 font-tabular tabular-nums truncate">
+                        <AnimatedCount value={stats.allTimeCollected} prefix="Rp " duration={1200} />
+                      </span>
+                      <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200/70" title="Rasio akumulasi kas masuk dari seluruh tagihan">
+                        <AnimatedCount value={stats.collectionRate} decimals={1} suffix="%" duration={1200} />
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                      {stats.allTimePaidCount} SR terbayar lunas (Kumulatif Okt + Nov)
+                    </p>
+                  </>
+                )}
               </div>
             </ScrollReveal>
 

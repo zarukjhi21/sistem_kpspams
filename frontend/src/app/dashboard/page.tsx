@@ -112,6 +112,7 @@ function DashboardContent() {
   const { activeKpspamsId, activeKpspamsName, isDesaLevel, user } = useAuth();
   const [overviewData, setOverviewData] = useState<OverviewApiData | null>(null);
   const [isLoadingOverview, setIsLoadingOverview] = useState<boolean>(true);
+  const [collectionPeriodView, setCollectionPeriodView] = useState<"current" | "all">("current");
 
   // Ambil data pelanggan riil yang tersimpan di sistem / localStorage sebagai fallback
   const [registeredCustomers, setRegisteredCustomers] = useState<DemoCustomer[]>(DEMO_CUSTOMERS);
@@ -513,26 +514,71 @@ function DashboardContent() {
         {/* Metric 5: Penerimaan Iuran Air */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-              Penerimaan Iuran
-            </span>
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                Penerimaan Iuran
+              </span>
+              <div className="inline-flex p-0.5 rounded-lg bg-slate-100 border border-slate-200 text-[9px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setCollectionPeriodView("current")}
+                  className={`px-1.5 py-0.5 rounded-md transition ${
+                    collectionPeriodView === "current"
+                      ? "bg-white text-emerald-700 shadow-xs"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                  title="Tagihan berjalan November 2026"
+                >
+                  Nov
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollectionPeriodView("all")}
+                  className={`px-1.5 py-0.5 rounded-md transition ${
+                    collectionPeriodView === "all"
+                      ? "bg-white text-emerald-700 shadow-xs"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                  title="Akumulasi seluruh kas masuk"
+                >
+                  Total Kas
+                </button>
+              </div>
+            </div>
             <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-700">
               <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
-            <span className="text-base sm:text-2xl font-black text-emerald-700 font-tabular truncate">
-              Rp {Number(totalCollected).toLocaleString("id-ID")}
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
-              {collectionRate}%
-            </span>
-          </div>
-          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
-            {totalCollected === 0
-              ? "Penagihan periode berjalan"
-              : `${Math.round(totalCollected / 10000)} SR terbayar lunas`}
-          </p>
+
+          {collectionPeriodView === "current" ? (
+            <>
+              <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+                <span className="text-base sm:text-2xl font-black text-emerald-700 font-tabular truncate">
+                  Rp {Number((overviewData?.kpi as any)?.november_paid_amount || 0).toLocaleString("id-ID")}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800" title="Realisasi penagihan bulan berjalan November">
+                  {Number((overviewData?.kpi as any)?.november_paid_count || 0)} SR Lunas
+                </span>
+              </div>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+                Bulan berjalan: {Number((overviewData?.kpi as any)?.november_paid_count || 0)} dari 292 SR • Kas Masuk: Rp {(Number((overviewData?.kpi as any)?.all_time_collected || totalCollected) / 1000).toLocaleString("id-ID")}k
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+                <span className="text-base sm:text-2xl font-black text-emerald-700 font-tabular truncate">
+                  Rp {Number((overviewData?.kpi as any)?.all_time_collected || totalCollected).toLocaleString("id-ID")}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  {collectionRate}%
+                </span>
+              </div>
+              <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+                {Number((overviewData?.kpi as any)?.all_time_paid_count || Math.round(totalCollected / 10000))} SR terbayar lunas (Kumulatif Okt + Nov)
+              </p>
+            </>
+          )}
         </Card>
 
         {/* Metric 6: Pengeluaran Belanja Kas */}
