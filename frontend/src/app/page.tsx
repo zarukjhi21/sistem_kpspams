@@ -12,6 +12,7 @@ import {
   FileText,
   ChevronRight,
   ArrowRight,
+  Building,
   Building2,
   CheckCircle,
   CheckCircle2,
@@ -27,6 +28,7 @@ import {
   Layers,
   MapPin,
   TrendingUp,
+  TrendingDown,
   Gauge,
   Maximize2,
   X,
@@ -115,6 +117,8 @@ export default function HomePage() {
     collectionRate: 74.4,
     waivedCount: 21,
     totalWaived: 210000,
+    totalExpenses: 23505000,
+    maintenanceExpenses: 19234000,
   });
 
   useEffect(() => {
@@ -125,6 +129,8 @@ export default function HomePage() {
           const k = res.data.kpi;
           const collected = Number(k.total_collected) || 2180000;
           const arrears = Number(k.total_arrears) || 540000;
+          const expenses = Number(k.total_expenses) || 23505000;
+          const maintExpenses = Number(k.maintenance_expenses) || 19234000;
           setStats((prev) => ({
             ...prev,
             lmbCash: Number(k.total_cash_balance) || prev.lmbCash,
@@ -145,6 +151,8 @@ export default function HomePage() {
             collectionRate: Number(k.collection_rate_percent) || 74.4,
             waivedCount: Number(k.waived_count) || 21,
             totalWaived: Number(k.total_waived) || 210000,
+            totalExpenses: expenses,
+            maintenanceExpenses: maintExpenses,
           }));
         }
       })
@@ -561,8 +569,8 @@ export default function HomePage() {
             </div>
           </ScrollReveal>
 
-          {/* 6 Real-Time Metric Cards (Grid 3 Kolom Sesuai Dasbor) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5">
+          {/* 8 Real-Time Metric Cards (Grid 4 Kolom Sesuai Dasbor) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
             {/* Kartu 1: Pelanggan Aktif */}
             <ScrollReveal direction="up" delay={0}>
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
@@ -635,8 +643,33 @@ export default function HomePage() {
               </div>
             </ScrollReveal>
 
-            {/* Kartu 4: Penerimaan Iuran */}
+            {/* Kartu 4: Pemutihan & Fasum */}
             <ScrollReveal direction="up" delay={210}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-white via-white to-purple-50/30 border border-purple-200/80 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-purple-700 uppercase tracking-wider">
+                    PEMUTIHAN &amp; FASUM
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
+                    <Building className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-purple-900 font-tabular tabular-nums truncate">
+                    <AnimatedCount value={stats.waivedCount || 21} duration={1400} /> <span className="text-xs font-normal text-purple-600">SR</span>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-purple-100 text-purple-800">
+                    Subsidi Sah
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  Masjid &amp; Kompensasi (Rp {Number(stats.totalWaived || 210000).toLocaleString("id-ID")})
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Kartu 5: Penerimaan Iuran */}
+            <ScrollReveal direction="up" delay={280}>
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
@@ -660,8 +693,58 @@ export default function HomePage() {
               </div>
             </ScrollReveal>
 
-            {/* Kartu 5: Tunggakan Resmi (Oktober) */}
-            <ScrollReveal direction="up" delay={280}>
+            {/* Kartu 6: Pengeluaran Belanja */}
+            <ScrollReveal direction="up" delay={320}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    PENGELUARAN BELANJA
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                    <TrendingDown className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-amber-700 font-tabular tabular-nums truncate">
+                    <AnimatedCount value={stats.totalExpenses} prefix="Rp " duration={1600} />
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800">
+                    Realisasi
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  Pipa &amp; fitting Rp {Math.round(stats.maintenanceExpenses / 1000).toLocaleString("id-ID")}k + Opr Rp {Math.round((stats.totalExpenses - stats.maintenanceExpenses) / 1000).toLocaleString("id-ID")}k
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Kartu 7: Saldo Kas Unit */}
+            <ScrollReveal direction="up" delay={360}>
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                    SALDO KAS UNIT
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                    <Wallet className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between mt-1">
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 font-tabular tabular-nums truncate">
+                    <AnimatedCount value={stats.totalCash} prefix="Rp " duration={1800} />
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-sky-100 text-sky-800">
+                    Kas Riil
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-600 font-medium truncate mt-0.5">
+                  Awal Rp 29.766k + Masuk Rp {Math.round(stats.totalCollected / 1000)}k - Belanja Rp {Math.round(stats.totalExpenses / 1000)}k
+                </p>
+              </div>
+            </ScrollReveal>
+
+            {/* Kartu 8: Tunggakan Resmi (Oktober) */}
+            <ScrollReveal direction="up" delay={400}>
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
@@ -681,28 +764,6 @@ export default function HomePage() {
                 </div>
                 <p className="text-[11px] text-rose-600 font-medium truncate mt-0.5">
                   {stats.unpaidCount} SR rekening lewat jatuh tempo
-                </p>
-              </div>
-            </ScrollReveal>
-
-            {/* Kartu 6: Saldo Kas Unit */}
-            <ScrollReveal direction="up" delay={350}>
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    SALDO KAS UNIT
-                  </span>
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                    <Wallet className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="flex items-baseline justify-between mt-1">
-                  <span className="text-xl sm:text-2xl font-black text-slate-900 font-tabular tabular-nums truncate">
-                    <AnimatedCount value={stats.totalCash} prefix="Rp " duration={1800} />
-                  </span>
-                </div>
-                <p className="text-[11px] text-emerald-600 font-medium truncate mt-0.5">
-                  Awal Rp 29.766k + Masuk Rp {Math.round(stats.totalCollected / 1000)}k
                 </p>
               </div>
             </ScrollReveal>

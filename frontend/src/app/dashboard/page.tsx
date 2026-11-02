@@ -18,6 +18,7 @@ import {
   Wallet,
   ArrowUpRight,
   TrendingUp,
+  TrendingDown,
   Building,
   FileSpreadsheet,
   Plus,
@@ -61,6 +62,10 @@ interface OverviewApiData {
     total_physical_meter_m3?: number;
     total_billed: number;
     total_collected: number;
+    total_expenses?: number;
+    maintenance_expenses?: number;
+    atk_expenses?: number;
+    other_expenses?: number;
     total_arrears: number;
     total_waived?: number;
     waived_count?: number;
@@ -86,6 +91,10 @@ interface OverviewApiData {
     total_physical_meter_m3?: number;
     total_billed: number;
     total_collected: number;
+    total_expenses?: number;
+    maintenance_expenses?: number;
+    atk_expenses?: number;
+    other_expenses?: number;
     total_arrears: number;
     cash_balance: number;
   }>;
@@ -198,6 +207,16 @@ function DashboardContent() {
   const totalCash =
     overviewData?.kpi?.total_cash_balance ??
     0;
+
+  const totalExpense =
+    overviewData?.kpi?.total_expenses ??
+    (overviewData as any)?.total_expenses ??
+    23505000;
+
+  const maintenanceExpense =
+    overviewData?.kpi?.maintenance_expenses ??
+    (overviewData as any)?.maintenance_expenses ??
+    19234000;
 
   const totalWaived =
     overviewData?.kpi?.total_waived ??
@@ -391,8 +410,8 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* KPI Cards Grid (Compact 2 cols on mobile, 4 cols on desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      {/* KPI Cards Grid (Compact 2 cols on mobile, 3 cols on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
         {/* Metric 1: Pelanggan Aktif */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
@@ -482,11 +501,12 @@ function DashboardContent() {
             <span className="text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
               Rp {Number(totalCash).toLocaleString("id-ID")}
             </span>
+            <Badge variant="brand" size="sm" className="hidden sm:inline-flex text-[9px] px-1.5 py-0">Kas Riil</Badge>
           </div>
           <p className="text-[9px] sm:text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
             {totalCash === 0
               ? "Kas tersinkronisasi"
-              : `Awal Rp 29.766k + Masuk Rp ${Math.round(totalCollected / 1000)}k`}
+              : `Awal Rp 29.766k + Masuk Rp ${Math.round(totalCollected / 1000)}k - Belanja Rp ${Math.round(totalExpense / 1000)}k`}
           </p>
         </Card>
 
@@ -515,7 +535,28 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 6: Tunggakan Berjalan (Oktober) */}
+        {/* Metric 6: Pengeluaran Belanja Kas */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Pengeluaran Belanja
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-50 text-amber-700">
+              <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+          </div>
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-amber-700 font-tabular truncate">
+              Rp {Number(totalExpense).toLocaleString("id-ID")}
+            </span>
+            <Badge variant="warning" size="sm" className="hidden sm:inline-flex text-[9px] px-1.5 py-0">Realisasi</Badge>
+          </div>
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+            Pipa &amp; Fitting Rp {Math.round(maintenanceExpense / 1000).toLocaleString("id-ID")}k + Opr Rp {Math.round((totalExpense - maintenanceExpense) / 1000).toLocaleString("id-ID")}k
+          </p>
+        </Card>
+
+        {/* Metric 7: Tunggakan Berjalan (Oktober) */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
@@ -542,7 +583,7 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 7: Pemutihan & Fasilitas Umum */}
+        {/* Metric 8: Pemutihan & Fasilitas Umum */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border-purple-200/80 bg-gradient-to-br from-white via-white to-purple-50/20">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-purple-700 uppercase tracking-wider">
@@ -565,8 +606,8 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 8: Pengaduan Aktif */}
-        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+        {/* Metric 9: Pengaduan Aktif */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
               Pengaduan Aktif

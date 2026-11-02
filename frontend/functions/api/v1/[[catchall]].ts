@@ -2001,6 +2001,21 @@ export async function onRequest(context: any) {
         compParams.push(kId);
       }
 
+      let expenseQuery = `
+        SELECT 
+          COALESCE(sum(CAST(amount AS numeric)), 0)::numeric as total_expenses,
+          COALESCE(sum(CASE WHEN category = 'MAINTENANCE' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as maintenance_expenses,
+          COALESCE(sum(CASE WHEN category = 'ATK_KONSUMSI' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as atk_expenses,
+          COALESCE(sum(CASE WHEN category = 'LAINNYA' THEN CAST(amount AS numeric) ELSE 0 END), 0)::numeric as other_expenses
+        FROM financial_transactions
+        WHERE transaction_type = 'EXPENSE'
+      `;
+      const expenseParams: any[] = [];
+      if (kId) {
+        expenseQuery += " AND CAST(kpspams_id AS integer) = $1";
+        expenseParams.push(kId);
+      }
+
       let trendQuery = `
         SELECT 
           SUBSTRING(invoice_date, 1, 7) as ym,
@@ -2090,6 +2105,7 @@ export async function onRequest(context: any) {
         unitBreakdownRows,
         dusunRows,
         trendRows,
+        expenseRes,
         kRow,
       ] = await Promise.all([
         sql.query(custQuery, queryParams),
@@ -2103,6 +2119,7 @@ export async function onRequest(context: any) {
         sql.query(unitBreakdownQuery),
         sql.query(dusunQuery),
         sql.query(trendQuery, queryParams),
+        sql.query(expenseQuery, expenseParams),
         kId && kId > 3 ? sql.query("SELECT name FROM kpspams WHERE id = $1 LIMIT 1", [kId]) : Promise.resolve([]),
       ]);
 
@@ -2190,6 +2207,10 @@ export async function onRequest(context: any) {
             total_physical_meter_m3: Number(physicalMeter[0]?.total_physical_meter) || 0,
             total_billed: billed,
             total_collected: collected,
+            total_expenses: Number(expenseRes[0]?.total_expenses) || 0,
+            maintenance_expenses: Number(expenseRes[0]?.maintenance_expenses) || 0,
+            atk_expenses: Number(expenseRes[0]?.atk_expenses) || 0,
+            other_expenses: Number(expenseRes[0]?.other_expenses) || 0,
             total_arrears: Number(invStats[0]?.october_arrears_amount) || 540000,
             arrears_count: Number(invStats[0]?.october_arrears_count) || 54,
             november_current_amount: Number(invStats[0]?.november_current_amount) || 2920000,
