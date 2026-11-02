@@ -21,7 +21,6 @@ import {
   Building,
   FileSpreadsheet,
   Plus,
-  Sparkles,
   MapPin,
   Clock,
   Smartphone,
@@ -550,7 +549,7 @@ function DashboardContent() {
               Pemutihan &amp; Fasum
             </span>
             <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-50 text-purple-700">
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
