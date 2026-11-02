@@ -1259,8 +1259,8 @@ export default function HomePage() {
 
               {/* Box Jadwal Pembayaran */}
               <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 space-y-1.5 text-xs text-sky-950">
-                <div className="font-bold text-sky-900">📅 Periode Pembayaran &amp; Catat Meter:</div>
-                <p>Pencatatan meteran dilakukan oleh petugas setiap tanggal 1-5 awal bulan. Pembayaran iuran dapat dilakukan langsung kepada petugas lapangan atau melalui bendahara desa.</p>
+                <div className="font-bold text-sky-900">📅 Jadwal Penagihan &amp; Catat Meter Lapangan:</div>
+                <p>Petugas lapangan turun langsung ke rumah warga setiap tanggal 1–20 untuk mencatat stand meter air sekaligus melayani penerimaan iuran di tempat secara serentak (atau dapat disetor langsung ke bendahara desa).</p>
               </div>
 
               {/* Tips Hemat Air */}

@@ -187,7 +187,7 @@ export function DashboardAnalyticsCharts({
       rate: Number(t.rate) || 0,
       note: t.ym?.endsWith("-10")
         ? `Tutup Buku: ${t.paid_count} Lunas, ${t.unpaid_count} Tunggakan`
-        : `Periode Berjalan: Pencatatan 1–5 Nov`,
+        : `Periode Berjalan: Catat & Tagih Langsung`,
     }));
   } else {
     // Fallback data teruji jika overviewData belum memuat monthly_trend
@@ -197,14 +197,14 @@ export function DashboardAnalyticsCharts({
         billed: 2920000,
         collected: 2180000,
         rate: 74.7,
-        note: "Tutup Buku: 218 Lunas, 54 Tunggakan, 20 Putih",
+        note: "Tutup Buku: 218 Lunas, 54 Tunggakan, 21 Putih",
       },
       {
         month: "Nov",
         billed: 2930000,
         collected: 0,
         rate: 0,
-        note: "Periode Berjalan: Pencatatan 1–5 Nov",
+        note: "Periode Berjalan: Catat & Tagih Langsung",
       },
     ];
   }
@@ -353,7 +353,7 @@ export function DashboardAnalyticsCharts({
               </span>
               <span className="font-semibold text-sky-800 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-amber-600" />
-                Pencatatan Lapangan: 1–5 Nov 2026 (Jatuh Tempo: 20 Nov)
+                Catat Stand &amp; Tagih Langsung: 1–20 Nov 2026
               </span>
             </div>
 
@@ -416,9 +416,9 @@ export function DashboardAnalyticsCharts({
                             </div>
                             <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-800">
                               {label === "Okt"
-                                ? "Oktober: 218 Lunas (Rp 2.180.000), 54 Tunggakan, 20 Pemutihan"
+                                ? "Oktober: 218 Lunas (Rp 2.180.000), 54 Tunggakan, 21 Pemutihan"
                                 : label === "Nov"
-                                ? "November (Aktif): Tagihan berjalan terbit, masa pencatatan meter 1–5 Nov"
+                                ? "November (Aktif): Tagihan berjalan terbit, petugas mencatat stand meter & menagih langsung di rumah warga"
                                 : "Pra-digitalisasi sistem (belum ada transaksi)"}
                             </p>
                           </div>
@@ -469,7 +469,7 @@ export function DashboardAnalyticsCharts({
               <strong className="text-sky-900 font-tabular text-sm">
                 Rp {(realCustomerCount * 10000).toLocaleString("id-ID")}
               </strong>
-              <span className="text-[10px] text-sky-700/80 block mt-0.5">Masa Pencatatan 1–5 Nov</span>
+              <span className="text-[10px] text-sky-700/80 block mt-0.5">Catat &amp; Tagih Langsung (s/d 20 Nov)</span>
             </div>
           </div>
         </Card>
