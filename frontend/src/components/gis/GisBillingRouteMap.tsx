@@ -483,6 +483,7 @@ export function GisBillingRouteMap({
   const totalNovemberCurrent = customers.filter(
     (c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears
   ).length;
+  const totalWaived = customers.filter((c) => c.billingStatus === "WAIVED").length;
   const totalMeterDamaged = customers.filter(
     (c) => c.meterCondition === "STUCK" || c.isMeterDamaged
   ).length;
@@ -530,6 +531,12 @@ export function GisBillingRouteMap({
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
             <span>🟢 Sudah Lunas: {totalPaid} Rumah</span>
           </div>
+          {totalWaived > 0 && (
+            <div className="px-3 py-1 rounded-xl bg-purple-50 border border-purple-300 text-purple-800 font-bold flex items-center space-x-1.5 shadow-sm" title="Fasilitas Umum Bebas Iuran Resmi (Masjid Dusun)">
+              <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+              <span>🏛️ Bebas Iuran: {totalWaived}</span>
+            </div>
+          )}
           {totalMeterDamaged > 0 && (
             <div className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-bold flex items-center space-x-1.5 shadow-sm">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />

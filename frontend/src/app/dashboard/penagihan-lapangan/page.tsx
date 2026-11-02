@@ -782,7 +782,7 @@ function PenagihanLapanganContent() {
                     <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
                     <span>
                       🔵 Berjalan Nov:{" "}
-                      {availableCustomers.filter((c) => c.billingStatus !== "PAID" && !c.hasOctoberArrears).length}
+                      {availableCustomers.filter((c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears).length}
                     </span>
                   </div>
                   <span className="text-slate-300">|</span>
@@ -793,6 +793,18 @@ function PenagihanLapanganContent() {
                       {availableCustomers.filter((c) => c.billingStatus === "PAID").length}
                     </span>
                   </div>
+                  {availableCustomers.some((c) => c.billingStatus === "WAIVED") && (
+                    <>
+                      <span className="text-slate-300">|</span>
+                      <div className="flex items-center space-x-1.5 text-purple-700" title="Fasilitas Umum Bebas Iuran Resmi (Masjid Dusun)">
+                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                        <span>
+                          🏛️ Bebas Iuran:{" "}
+                          {availableCustomers.filter((c) => c.billingStatus === "WAIVED").length}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

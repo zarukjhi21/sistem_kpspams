@@ -215,7 +215,7 @@ export interface DemoCustomer {
   tariffType: string;
   latitude?: number;
   longitude?: number;
-  billingStatus?: 'PAID' | 'UNPAID';
+  billingStatus?: 'PAID' | 'UNPAID' | 'WAIVED';
   hasOctoberArrears?: boolean;
   unpaidMonths?: number;
   totalArrears?: number;
