@@ -133,15 +133,38 @@ export function GisBillingRouteMap({
       const lng = !isSea ? rawLng! : 119.3768;
       const isSelected = cust.id === selectedCustomerId;
 
-      // Determine pin color based on billing status
+      // Determine pin color based on billing status & October arrears
       const isPaid = cust.billingStatus === "PAID";
       const isSealed = cust.status === "SEALED";
+      const isStuck = cust.meterCondition === "STUCK" || cust.isMeterDamaged;
+      const hasOctober = Boolean(cust.hasOctoberArrears);
 
-      const bgColor = isSealed ? "#F59E0B" : isPaid ? "#10B981" : "#EF4444";
+      let bgColor = "#10B981"; // 🟢 Lunas
+      let symbol = "✓";
+      let pulseHtml = "";
+
+      if (isStuck) {
+        bgColor = "#EA580C"; // 🟠 Jarum macet
+        symbol = "⚙️";
+        pulseHtml = `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(234, 88, 12, 0.45); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`;
+      } else if (isSealed) {
+        bgColor = "#F59E0B";
+        symbol = "!";
+      } else if (hasOctober) {
+        // 🔴 Merah Pekat Berdenyut: Menunggak dari Oktober (2 Bulan)
+        bgColor = "#DC2626";
+        symbol = "!2";
+        pulseHtml = `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(220, 38, 38, 0.45); animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`;
+      } else if (!isPaid) {
+        // 🔵 Biru Langit: Tagihan Normal Berjalan November (Oktober Sudah Lunas)
+        bgColor = "#0284C7";
+        symbol = "Nov";
+      }
+
       const borderColor = isSelected ? "#FCD34D" : "#FFFFFF";
-      const pulseHtml = isSelected
-        ? `<div style="position: absolute; top: -4px; left: -4px; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid #F59E0B; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
-        : "";
+      if (isSelected) {
+        pulseHtml = `<div style="position: absolute; top: -5px; left: -5px; width: 32px; height: 32px; border-radius: 50%; border: 2.5px solid #FCD34D; animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`;
+      }
 
       const pinIcon = L.divIcon({
         className: "custom-gis-pin",
@@ -164,11 +187,11 @@ export function GisBillingRouteMap({
               <div style="
                 transform: rotate(45deg);
                 color: #FFFFFF;
-                font-size: 9px;
+                font-size: ${symbol === "Nov" ? "8px" : "9px"};
                 font-weight: 900;
                 line-height: 1;
               ">
-                ${isPaid ? "✓" : isSealed ? "!" : "Rp"}
+                ${symbol}
               </div>
             </div>
           </div>
@@ -179,6 +202,26 @@ export function GisBillingRouteMap({
 
       const marker = L.marker([lat, lng], { icon: pinIcon });
 
+      const statusText = isStuck
+        ? "⚠️ Jarum Macet"
+        : hasOctober
+        ? "🔴 Menunggak Okt (2 Bln)"
+        : !isPaid
+        ? "🔵 Berjalan Nov (1 Bln)"
+        : isSealed
+        ? "⚠ Disegel"
+        : "✓ Sudah Lunas";
+
+      const statusBadgeBg = isStuck
+        ? "#ffedd5; color: #9a3412;"
+        : hasOctober
+        ? "#fee2e2; color: #991b1b;"
+        : !isPaid
+        ? "#e0f2fe; color: #075985;"
+        : isSealed
+        ? "#fef3c7; color: #92400e;"
+        : "#d1fae5; color: #065f46;";
+
       const popupHtml = `
         <div style="font-family: inherit; font-size: 12px; min-width: 170px; padding: 2px;">
           <div style="font-weight: 800; color: #0f172a; font-size: 13px;">${cust.name}</div>
@@ -186,10 +229,8 @@ export function GisBillingRouteMap({
             ${cust.connectionNo} • ${cust.dusun}
           </div>
           <div style="margin-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-            <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: ${
-              isPaid ? '#d1fae5; color: #065f46;' : isSealed ? '#fef3c7; color: #92400e;' : '#fee2e2; color: #991b1b;'
-            }">
-              ${isPaid ? '✓ Sudah Lunas' : isSealed ? '⚠ Disegel' : '● Belum Bayar'}
+            <span style="font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: ${statusBadgeBg}">
+              ${statusText}
             </span>
             <span style="font-size: 11px; font-weight: 800; font-family: monospace; color: #0f172a;">
               ${cust.lastReading.toFixed(1)} m³
@@ -438,8 +479,12 @@ export function GisBillingRouteMap({
 
   // Compute status summary counts
   const totalPaid = customers.filter((c) => c.billingStatus === "PAID").length;
-  const totalUnpaid = customers.filter(
-    (c) => c.billingStatus === "UNPAID" && c.status !== "SEALED"
+  const totalOctoberArrears = customers.filter((c) => Boolean(c.hasOctoberArrears)).length;
+  const totalNovemberCurrent = customers.filter(
+    (c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears
+  ).length;
+  const totalMeterDamaged = customers.filter(
+    (c) => c.meterCondition === "STUCK" || c.isMeterDamaged
   ).length;
   const totalSealed = customers.filter((c) => c.status === "SEALED").length;
 
@@ -474,13 +519,23 @@ export function GisBillingRouteMap({
           )}
 
           <div className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 font-bold flex items-center space-x-1.5 shadow-sm">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-            <span>Belum Bayar: {totalUnpaid} Rumah</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" />
+            <span>🔴 Tunggakan Okt: {totalOctoberArrears} Rumah</span>
+          </div>
+          <div className="px-3 py-1 rounded-xl bg-sky-50 border border-sky-300 text-sky-800 font-bold flex items-center space-x-1.5 shadow-sm">
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+            <span>🔵 Berjalan Nov: {totalNovemberCurrent} Rumah</span>
           </div>
           <div className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 font-bold flex items-center space-x-1.5 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span>Sudah Lunas: {totalPaid} Rumah</span>
+            <span>🟢 Sudah Lunas: {totalPaid} Rumah</span>
           </div>
+          {totalMeterDamaged > 0 && (
+            <div className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-bold flex items-center space-x-1.5 shadow-sm">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span>🟠 Macet: {totalMeterDamaged}</span>
+            </div>
+          )}
           {totalSealed > 0 && (
             <div className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-bold flex items-center space-x-1.5 shadow-sm">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />

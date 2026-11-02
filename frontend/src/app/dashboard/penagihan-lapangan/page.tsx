@@ -63,6 +63,10 @@ const mapApiCustomerToDemo = (item: any): DemoCustomer => {
       return rawLng;
     })(),
     billingStatus: item.billing_status || "UNPAID",
+    hasOctoberArrears: Boolean(item.has_october_arrears),
+    unpaidMonths: Number(item.unpaid_months || (item.billing_status === "UNPAID" ? 1 : 0)),
+    totalArrears: Number(item.total_arrears || (item.billing_status === "UNPAID" ? 10000 : 0)),
+    octoberInvoiceId: item.october_invoice_id ? Number(item.october_invoice_id) : null,
     ktpPhotoUrl: item.ktp_photo_path,
     meterCondition: item.meter_condition || primaryConn?.meter?.condition || "GOOD",
     isMeterDamaged: item.meter_condition === "STUCK" || item.is_meter_damaged || primaryConn?.meter?.condition === "STUCK",
@@ -758,19 +762,27 @@ function PenagihanLapanganContent() {
                   <span className="hidden sm:inline">Tagihan</span>
                 </button>
 
-                <div className="flex items-center space-x-3 text-xs font-bold bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-xs">
-                  <div className="flex items-center space-x-1.5 text-rose-600">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+                  <div className="flex items-center space-x-1.5 text-rose-700" title="Tunggakan dari bulan Oktober 2026">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
                     <span>
-                      Belum:{" "}
-                      {availableCustomers.filter((c) => c.billingStatus !== "PAID").length}
+                      🔴 Tunggakan Okt:{" "}
+                      {availableCustomers.filter((c) => Boolean(c.hasOctoberArrears)).length}
+                    </span>
+                  </div>
+                  <span className="text-slate-300">|</span>
+                  <div className="flex items-center space-x-1.5 text-sky-700" title="Tagihan berjalan November 2026 (Oktober sudah lunas)">
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                    <span>
+                      🔵 Berjalan Nov:{" "}
+                      {availableCustomers.filter((c) => c.billingStatus !== "PAID" && !c.hasOctoberArrears).length}
                     </span>
                   </div>
                   <span className="text-slate-300">|</span>
                   <div className="flex items-center space-x-1.5 text-emerald-600">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                     <span>
-                      Lunas:{" "}
+                      🟢 Lunas:{" "}
                       {availableCustomers.filter((c) => c.billingStatus === "PAID").length}
                     </span>
                   </div>
@@ -844,11 +856,17 @@ function PenagihanLapanganContent() {
                                   {cust.name}
                                 </span>
                                 <Badge
-                                  variant={isPaid ? "success" : "danger"}
+                                  variant={
+                                    isPaid
+                                      ? "success"
+                                      : cust.hasOctoberArrears
+                                      ? "danger"
+                                      : "info"
+                                  }
                                   size="sm"
                                   className="text-[9px] px-1.5 py-0"
                                 >
-                                  {isPaid ? "✓ Lunas" : "● Belum"}
+                                  {isPaid ? "✓ Lunas" : cust.hasOctoberArrears ? "🔴 Menunggak Okt" : "🔵 Berjalan Nov"}
                                 </Badge>
                               </div>
                               <div className="text-[10px] text-slate-500 font-mono mt-0.5">
@@ -872,8 +890,9 @@ function PenagihanLapanganContent() {
                                   e.stopPropagation();
                                   const clean = cust.phone?.replace(/^0/, "62").replace(/\D/g, "");
                                   const kName = cust.kpspamsName || "KPSPAMS Lemo Baru";
+                                  const amount = (cust.totalArrears || (cust.hasOctoberArrears ? 20000 : 10000)).toLocaleString("id-ID");
                                   const text = encodeURIComponent(
-                                    `Yth. Bpk/Ibu ${cust.name}, tagihan air bersih ${kName} periode Oktober 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${cust.connectionNo}`
+                                    `Yth. Bpk/Ibu ${cust.name}, tagihan air bersih ${kName} periode November 2026 sebesar Rp ${amount},- telah terbit. Jatuh tempo: 20 November. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${cust.connectionNo}`
                                   );
                                   window.open(`https://wa.me/${clean}?text=${text}`, "_blank");
                                 }}
@@ -898,11 +917,21 @@ function PenagihanLapanganContent() {
                     Rumah Pelanggan Terpilih
                   </span>
                   <Badge
-                    variant={selectedCustomer.billingStatus === "PAID" ? "success" : "danger"}
+                    variant={
+                      selectedCustomer.billingStatus === "PAID"
+                        ? "success"
+                        : selectedCustomer.hasOctoberArrears
+                        ? "danger"
+                        : "info"
+                    }
                     size="sm"
                     className="whitespace-nowrap font-bold"
                   >
-                    {selectedCustomer.billingStatus === "PAID" ? "✓ Lunas" : "● Belum Bayar"}
+                    {selectedCustomer.billingStatus === "PAID"
+                      ? "✓ Lunas"
+                      : selectedCustomer.hasOctoberArrears
+                      ? "🔴 Menunggak Okt & Nov (2 Bln)"
+                      : "🔵 Berjalan Nov (1 Bln)"}
                   </Badge>
                 </div>
                 <Badge variant="brand" size="sm" className="whitespace-nowrap font-mono font-bold">
