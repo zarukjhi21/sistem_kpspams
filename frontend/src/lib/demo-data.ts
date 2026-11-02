@@ -216,6 +216,10 @@ export interface DemoCustomer {
   latitude?: number;
   longitude?: number;
   billingStatus?: 'PAID' | 'UNPAID';
+  hasOctoberArrears?: boolean;
+  unpaidMonths?: number;
+  totalArrears?: number;
+  octoberInvoiceId?: number | null;
   ktpPhotoUrl?: string;
   meterCondition?: 'GOOD' | 'STUCK' | 'DAMAGED' | 'BROKEN' | string;
   isMeterDamaged?: boolean;

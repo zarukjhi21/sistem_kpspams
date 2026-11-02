@@ -602,6 +602,10 @@ export async function onRequest(context: any) {
             COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
             inv.invoice_id,
             inv.total_amount as invoice_total,
+            COALESCE(arr.unpaid_months_count, 0) as unpaid_months,
+            COALESCE(arr.total_arrears, 0) as total_arrears,
+            COALESCE(arr.has_october_arrears, false) as has_october_arrears,
+            arr.october_invoice_id,
             k.name as kpspams_name, k.code as kpspams_code
           FROM customers c
           LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
@@ -617,6 +621,16 @@ export async function onRequest(context: any) {
             WHERE connection_id = conn.id::text OR customer_id = c.id::text 
             ORDER BY id DESC LIMIT 1
           ) inv ON true
+          LEFT JOIN LATERAL (
+            SELECT 
+              count(*)::int as unpaid_months_count,
+              COALESCE(sum(balance_due::numeric), 0) as total_arrears,
+              bool_or(billing_period_id = '6') as has_october_arrears,
+              MAX(CASE WHEN billing_period_id = '6' THEN id ELSE NULL END) as october_invoice_id
+            FROM invoices 
+            WHERE (connection_id = conn.id::text OR customer_id = c.id::text)
+              AND status = 'UNPAID'
+          ) arr ON true
           LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
           WHERE c.deleted_at IS NULL
           ORDER BY c.id DESC
@@ -775,6 +789,10 @@ export async function onRequest(context: any) {
           COALESCE(inv.invoice_status, 'UNPAID') as billing_status,
           inv.invoice_id,
           inv.total_amount as invoice_total,
+          COALESCE(arr.unpaid_months_count, 0) as unpaid_months,
+          COALESCE(arr.total_arrears, 0) as total_arrears,
+          COALESCE(arr.has_october_arrears, false) as has_october_arrears,
+          arr.october_invoice_id,
           k.name as kpspams_name, k.code as kpspams_code
         FROM customers c
         LEFT JOIN connections conn ON c.id = CAST(conn.customer_id AS integer)
@@ -790,6 +808,16 @@ export async function onRequest(context: any) {
           WHERE connection_id = conn.id::text OR customer_id = c.id::text 
           ORDER BY id DESC LIMIT 1
         ) inv ON true
+        LEFT JOIN LATERAL (
+          SELECT 
+            count(*)::int as unpaid_months_count,
+            COALESCE(sum(balance_due::numeric), 0) as total_arrears,
+            bool_or(billing_period_id = '6') as has_october_arrears,
+            MAX(CASE WHEN billing_period_id = '6' THEN id ELSE NULL END) as october_invoice_id
+          FROM invoices 
+          WHERE (connection_id = conn.id::text OR customer_id = c.id::text)
+            AND status = 'UNPAID'
+        ) arr ON true
         LEFT JOIN kpspams k ON CAST(c.kpspams_id AS integer) = k.id
         WHERE c.id = $1 AND c.deleted_at IS NULL
         LIMIT 1
@@ -1117,6 +1145,91 @@ export async function onRequest(context: any) {
           invoice_id: invoiceId,
           status: "UNPAID",
           deducted_amount: totalAmount
+        }
+      });
+    }
+
+    // 11c. Invoices: Pemutihan Tagihan / Kompensasi Kemarau / Afirmasi Warga Kurang Mampu
+    if ((path === "billing/waive-invoice" || path === "invoices/waive") && method === "POST") {
+      const b = await request.json().catch(() => ({}));
+      let invoiceId = b.invoice_id ? Number(b.invoice_id) : null;
+      const custId = b.customer_id ? b.customer_id.toString() : "";
+      const connNo = b.connection_no ? b.connection_no.toString() : "";
+      const bpId = b.billing_period_id ? b.billing_period_id.toString() : "6"; // Default ke periode Oktober 2026 (ID 6)
+      const reasonCategory = (b.reason_category || "KEMARAU_AIR_MATI").trim();
+      const customNotes = (b.notes || "").trim();
+
+      // Jika invoice_id belum diberikan, cari tagihan UNPAID pada periode yang ditentukan
+      if (!invoiceId && (custId || connNo)) {
+        const findInv = await sql.query(`
+          SELECT inv.id, inv.invoice_number, inv.total_amount, inv.customer_id
+          FROM invoices inv
+          LEFT JOIN connections conn ON CAST(inv.connection_id AS text) = CAST(conn.id AS text)
+          WHERE (
+            ($1 != '' AND CAST(inv.customer_id AS text) = $1)
+            OR ($2 != '' AND conn.connection_no = $2)
+          )
+          AND inv.billing_period_id = $3
+          AND inv.status = 'UNPAID'
+          ORDER BY inv.id DESC LIMIT 1
+        `, [custId, connNo, bpId]);
+
+        if (findInv.length > 0) {
+          invoiceId = findInv[0].id;
+        }
+      }
+
+      if (!invoiceId) {
+        return jsonResponse({
+          status: "fail",
+          message: "Tagihan belum lunas pada periode ini tidak ditemukan untuk diproses pemutihan."
+        }, 404);
+      }
+
+      const invRows = await sql.query(`
+        SELECT inv.*, c.full_name, bp.name as period_name
+        FROM invoices inv
+        LEFT JOIN customers c ON CAST(inv.customer_id AS integer) = c.id
+        LEFT JOIN billing_periods bp ON CAST(inv.billing_period_id AS integer) = bp.id
+        WHERE inv.id = $1 LIMIT 1
+      `, [invoiceId]);
+
+      if (invRows.length === 0) {
+        return jsonResponse({ status: "fail", message: "Tagihan tidak ditemukan dalam database." }, 404);
+      }
+
+      const inv = invRows[0];
+      const categoryLabel = reasonCategory === "KEMARAU_AIR_MATI" 
+        ? "Kompensasi Kemarau: Air Tidak Mengalir" 
+        : reasonCategory === "WARGA_KURANG_MAMPU"
+        ? "Afirmasi Warga Kurang Mampu / Bansos Desa"
+        : "Kebijakan Khusus Musyawarah Desa";
+
+      const finalNotes = customNotes 
+        ? `Pemutihan Resmi (${categoryLabel}) - Catatan: ${customNotes}` 
+        : `Pemutihan Resmi (${categoryLabel})`;
+
+      // Update invoice: status = WAIVED, balance_due = 0, catat alasan resmi
+      await sql.query(`
+        UPDATE invoices SET
+          status = 'WAIVED',
+          balance_due = '0',
+          penalty_fee = '0',
+          paid_at = NOW(),
+          notes = $1,
+          updated_at = NOW()
+        WHERE id = $2
+      `, [finalNotes, invoiceId]);
+
+      return jsonResponse({
+        status: "success",
+        message: `Tagihan ${inv.period_name || 'Oktober 2026'} atas nama "${inv.full_name || 'Warga'}" (${inv.invoice_number}) berhasil diputihkan. Tunggakan resmi dihapus tanpa memengaruhi saldo kas fisik bendahara.`,
+        data: {
+          invoice_id: invoiceId,
+          customer_name: inv.full_name,
+          period_name: inv.period_name,
+          status: "WAIVED",
+          notes: finalNotes
         }
       });
     }

@@ -154,7 +154,11 @@ export default function PetaGisPage() {
             latitude: finalLat,
             longitude: finalLng,
             billingStatus: isUnpaid ? "UNPAID" : "PAID",
-            unpaidAmount: isUnpaid ? unpaidMap[c.id] || 10000 : 0,
+            unpaidAmount: isUnpaid ? (Number(c.total_arrears) || unpaidMap[c.id] || 10000) : 0,
+            hasOctoberArrears: Boolean(c.has_october_arrears),
+            unpaidMonths: Number(c.unpaid_months || (isUnpaid ? 1 : 0)),
+            totalArrears: Number(c.total_arrears || (isUnpaid ? 10000 : 0)),
+            octoberInvoiceId: c.october_invoice_id ? Number(c.october_invoice_id) : null,
             meterCondition: cond,
             isMeterDamaged: isDamaged,
             activeComplaint: activeComp,
@@ -198,7 +202,7 @@ export default function PetaGisPage() {
               <span>Peta GIS Sambungan Rumah &amp; Kondisi Meteran</span>
             </h1>
             <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Pemantauan spasial 83 sambungan rumah (SR), status kelancaran meter air, dan pembayaran iuran Desa Kuajang.
+              Pemantauan spasial 293 sambungan rumah (SR), status kelancaran meter air, dan pembayaran iuran Desa Kuajang.
             </p>
           </div>
 
@@ -231,6 +235,7 @@ export default function PetaGisPage() {
           customers={displayCustomers}
           selectedCustomerId={selectedCustomerId}
           onSelectCustomer={(cust) => setSelectedCustomerId(cust.id)}
+          onCustomerUpdated={fetchAllGisData}
         />
       </div>
     </DashboardLayout>

@@ -33,6 +33,7 @@ import {
 import L from "leaflet";
 import { Badge } from "@/components/ui/Badge";
 import { MasterGisCustomer } from "@/types/gis";
+import { apiClient } from "@/lib/api-client";
 
 interface MasterDesaGisMapProps {
   customers: MasterGisCustomer[];
@@ -40,12 +41,14 @@ interface MasterDesaGisMapProps {
   selectedCustomerId?: number | null;
   onSelectCustomer?: (customer: MasterGisCustomer) => void;
   onSelectReservoir?: (reservoir: any) => void;
+  onCustomerUpdated?: () => void;
 }
 
 export function MasterDesaGisMap({
   customers,
   selectedCustomerId,
   onSelectCustomer,
+  onCustomerUpdated,
 }: MasterDesaGisMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -57,13 +60,19 @@ export function MasterDesaGisMap({
     "google-hybrid"
   );
   const [filterLayer, setFilterLayer] = useState<
-    "ALL" | "PAID" | "UNPAID" | "STUCK" | "COMPLAINT"
+    "ALL" | "PAID" | "UNPAID" | "OCTOBER_ARREARS" | "NOVEMBER_CURRENT" | "STUCK" | "COMPLAINT"
   >("ALL");
   const [filterDusun, setFilterDusun] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeCustomer, setActiveCustomer] = useState<MasterGisCustomer | null>(null);
   const [showMeterAnalysis, setShowMeterAnalysis] = useState(false);
+
+  // State Pemutihan Tagihan (Waiver)
+  const [waiveModalOpen, setWaiveModalOpen] = useState(false);
+  const [waiveReason, setWaiveReason] = useState("KEMARAU_AIR_MATI");
+  const [waiveNotes, setWaiveNotes] = useState("");
+  const [isWaiving, setIsWaiving] = useState(false);
 
   // Dusun list from customers
   const dusunList = useMemo(() => {
@@ -88,6 +97,15 @@ export function MasterDesaGisMap({
     const unpaidCount = customers.filter(
       (c) => c.billingStatus === "UNPAID"
     ).length;
+
+    // Diferensiasi Tunggakan Riil Oktober (75 SR) vs Tagihan Berjalan November (218 SR)
+    const octoberArrearsCount = customers.filter(
+      (c) => Boolean(c.hasOctoberArrears)
+    ).length;
+    const novemberCurrentCount = customers.filter(
+      (c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears
+    ).length;
+
     const complaintCount = customers.filter((c) => !!c.activeComplaint).length;
 
     // Keluhan per dusun
@@ -104,6 +122,8 @@ export function MasterDesaGisMap({
       meterGoodCount,
       paidCount,
       unpaidCount,
+      octoberArrearsCount,
+      novemberCurrentCount,
       complaintCount,
       complaintsByDusun,
     };
@@ -122,6 +142,12 @@ export function MasterDesaGisMap({
       }
       if (filterLayer === "PAID") {
         return c.billingStatus === "PAID";
+      }
+      if (filterLayer === "OCTOBER_ARREARS") {
+        return Boolean(c.hasOctoberArrears);
+      }
+      if (filterLayer === "NOVEMBER_CURRENT") {
+        return c.billingStatus === "UNPAID" && !c.hasOctoberArrears;
       }
       if (filterLayer === "UNPAID") {
         return c.billingStatus === "UNPAID";
@@ -209,7 +235,7 @@ export function MasterDesaGisMap({
 
       // Logika Penentuan Tipe dan Warna Pin
       let pinColor = "#10b981"; // 🟢 Default: Hijau (Lunas & Normal)
-      let pinType: "METER_DAMAGED" | "COMPLAINT" | "UNPAID" | "PAID" = "PAID";
+      let pinType: "METER_DAMAGED" | "COMPLAINT" | "OCTOBER_ARREARS" | "NOVEMBER_CURRENT" | "PAID" = "PAID";
       let pinSymbol = "✓";
       let pulseRing = "";
 
@@ -241,11 +267,25 @@ export function MasterDesaGisMap({
             animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
           "></div>
         `;
+      } else if (cust.hasOctoberArrears) {
+        // 🔴 Pin Merah Pekat Berdenyut: Tunggakan Riil dari Bulan Oktober (2 Bulan Belum Bayar)
+        pinColor = "#dc2626";
+        pinType = "OCTOBER_ARREARS";
+        pinSymbol = "!2";
+        pulseRing = `
+          <div style="
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: rgba(220, 38, 38, 0.45);
+            animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+          "></div>
+        `;
       } else if (cust.billingStatus === "UNPAID") {
-        // 🔴 Pin Merah: Belum Lunas
-        pinColor = "#ef4444";
-        pinType = "UNPAID";
-        pinSymbol = "Rp";
+        // 🔵 Pin Biru Langit: Tagihan Normal Berjalan November (Oktober Sudah Lunas)
+        pinColor = "#0284c7";
+        pinType = "NOVEMBER_CURRENT";
+        pinSymbol = "Nov";
       }
 
       const customerIcon = L.divIcon({
@@ -274,7 +314,7 @@ export function MasterDesaGisMap({
               <div style="
                 transform: rotate(45deg);
                 color: #ffffff;
-                font-size: ${pinType === "METER_DAMAGED" ? "10px" : pinType === "COMPLAINT" ? "9px" : "9px"};
+                font-size: ${pinType === "METER_DAMAGED" ? "10px" : pinType === "COMPLAINT" ? "9px" : pinType === "NOVEMBER_CURRENT" ? "8px" : "9px"};
                 font-weight: 900;
                 display: flex;
                 align-items: center;
@@ -294,8 +334,10 @@ export function MasterDesaGisMap({
         pinType === "METER_DAMAGED"
           ? 400
           : pinType === "COMPLAINT"
+          ? 350
+          : pinType === "OCTOBER_ARREARS"
           ? 300
-          : pinType === "UNPAID"
+          : pinType === "NOVEMBER_CURRENT"
           ? 200
           : 100;
 
@@ -308,8 +350,10 @@ export function MasterDesaGisMap({
         ? "⚠️ Jarum Meteran Macet (Air Mengalir)"
         : pinType === "COMPLAINT"
         ? `🟡 Gangguan: ${cust.activeComplaint?.category.replace(/_/g, " ")}`
-        : pinType === "UNPAID"
-        ? "🔴 Menunggak (Belum Bayar)"
+        : pinType === "OCTOBER_ARREARS"
+        ? `🔴 Menunggak Okt & Nov (Total: Rp ${(cust.totalArrears || 20000).toLocaleString("id-ID")})`
+        : pinType === "NOVEMBER_CURRENT"
+        ? "🔵 Berjalan November (Rp 10.000 • Jth Tempo 20 Nov)"
         : "🟢 Lunas & Meter Normal";
 
       marker.bindTooltip(
@@ -322,8 +366,10 @@ export function MasterDesaGisMap({
               ? "#fb923c"
               : pinType === "COMPLAINT"
               ? "#fcd34d"
-              : pinType === "UNPAID"
-              ? "#fca5a5"
+              : pinType === "OCTOBER_ARREARS"
+              ? "#f87171"
+              : pinType === "NOVEMBER_CURRENT"
+              ? "#38bdf8"
               : "#6ee7b7"
           };">
             ${statusBadgeText}
@@ -418,6 +464,48 @@ export function MasterDesaGisMap({
     window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
   };
 
+  // Eksekusi Pemutihan Tagihan Resmi (Bansos / Kompensasi Kemarau)
+  const handleConfirmWaiver = async () => {
+    if (!activeCustomer) return;
+    setIsWaiving(true);
+    try {
+      const res = await apiClient("/billing/waive-invoice", {
+        method: "POST",
+        body: JSON.stringify({
+          customer_id: activeCustomer.id,
+          connection_no: activeCustomer.connectionNo,
+          billing_period_id: "6", // Periode Oktober 2026
+          reason_category: waiveReason,
+          notes: waiveNotes,
+        }),
+      });
+
+      if (res?.status === "success") {
+        alert(`Sukses: Tagihan Oktober untuk ${activeCustomer.name} berhasil diputihkan (Rp 0).`);
+        setWaiveModalOpen(false);
+        setWaiveNotes("");
+        // Update state lokal active customer langsung di drawer
+        setActiveCustomer((prev) =>
+          prev
+            ? {
+                ...prev,
+                hasOctoberArrears: false,
+                unpaidMonths: Math.max(0, (prev.unpaidMonths || 1) - 1),
+                totalArrears: Math.max(0, (prev.totalArrears || 10000) - 10000),
+              }
+            : null
+        );
+        onCustomerUpdated?.();
+      } else {
+        alert(res?.message || "Gagal memproses pemutihan tagihan.");
+      }
+    } catch (err: any) {
+      alert("Terjadi kesalahan saat memproses pemutihan: " + (err?.message || err));
+    } finally {
+      setIsWaiving(false);
+    }
+  };
+
   return (
     <div
       className={
@@ -433,8 +521,51 @@ export function MasterDesaGisMap({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mr-1 flex items-center space-x-1">
               <Compass className="w-3.5 h-3.5 text-sky-600" />
-              <span>Status SR Riil:</span>
+              <span>Status SR:</span>
             </span>
+
+            {/* Tombol Tampilkan Semua */}
+            <button
+              type="button"
+              onClick={() => setFilterLayer("ALL")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                filterLayer === "ALL"
+                  ? "bg-slate-900 border-slate-900 text-white shadow-xs"
+                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              Semua ({customers.length})
+            </button>
+
+            {/* 🔴 Pin Merah Pekat: Tunggakan Riil Oktober */}
+            <button
+              type="button"
+              onClick={() => setFilterLayer(filterLayer === "OCTOBER_ARREARS" ? "ALL" : "OCTOBER_ARREARS")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                filterLayer === "OCTOBER_ARREARS"
+                  ? "bg-rose-700 border-rose-700 text-white shadow-xs"
+                  : "bg-rose-50 border-rose-200/80 text-rose-800 hover:bg-rose-100/70"
+              }`}
+              title="Filter 75 warga yang menunggak tagihan bulan Oktober 2026"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
+              <span>🔴 Tunggakan Okt ({spatialMetrics.octoberArrearsCount})</span>
+            </button>
+
+            {/* 🔵 Pin Biru: Tagihan Berjalan November */}
+            <button
+              type="button"
+              onClick={() => setFilterLayer(filterLayer === "NOVEMBER_CURRENT" ? "ALL" : "NOVEMBER_CURRENT")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                filterLayer === "NOVEMBER_CURRENT"
+                  ? "bg-sky-600 border-sky-600 text-white shadow-xs"
+                  : "bg-sky-50 border-sky-200/80 text-sky-800 hover:bg-sky-100/70"
+              }`}
+              title="Filter warga yang Oktobernya sudah lunas, hanya tagihan November berjalan (Jatuh tempo 20 Nov)"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+              <span>🔵 Berjalan Nov ({spatialMetrics.novemberCurrentCount})</span>
+            </button>
 
             {/* 🟢 Pin Hijau: Lunas */}
             <button
@@ -450,20 +581,6 @@ export function MasterDesaGisMap({
               <span>Lunas ({spatialMetrics.paidCount})</span>
             </button>
 
-            {/* 🔴 Pin Merah: Belum Lunas */}
-            <button
-              type="button"
-              onClick={() => setFilterLayer(filterLayer === "UNPAID" ? "ALL" : "UNPAID")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
-                filterLayer === "UNPAID"
-                  ? "bg-rose-600 border-rose-600 text-white shadow-xs"
-                  : "bg-rose-50 border-rose-200/80 text-rose-800 hover:bg-rose-100/70"
-              }`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-              <span>Tunggakan ({spatialMetrics.unpaidCount})</span>
-            </button>
-
             {/* 🟠 Pin Oranye: Meteran Rusak / Jarum Macet */}
             <button
               type="button"
@@ -476,7 +593,7 @@ export function MasterDesaGisMap({
               title="Filter rumah warga yang jarum meterannya macet tetapi air tetap mengalir"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-              <span>Meteran Rusak / Jarum Macet ({spatialMetrics.meterDamagedCount})</span>
+              <span>Meteran Macet ({spatialMetrics.meterDamagedCount})</span>
             </button>
 
             {/* 🟡 Pin Kuning: Pengaduan Gangguan Air */}
@@ -721,8 +838,10 @@ export function MasterDesaGisMap({
                     ? "⚙️"
                     : activeCustomer.activeComplaint
                     ? "🟡"
-                    : activeCustomer.billingStatus === "UNPAID"
+                    : activeCustomer.hasOctoberArrears
                     ? "🔴"
+                    : activeCustomer.billingStatus === "UNPAID"
+                    ? "🔵"
                     : "🟢"}
                 </span>
                 <div>
@@ -746,15 +865,19 @@ export function MasterDesaGisMap({
             <div className="space-y-3 text-xs">
               {/* Status Badges */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <Badge
-                  variant={activeCustomer.billingStatus === "PAID" ? "success" : "danger"}
-                  size="sm"
-                  className="font-bold text-[10px]"
-                >
-                  {activeCustomer.billingStatus === "PAID"
-                    ? "🟢 Tagihan Lunas"
-                    : "🔴 Belum Lunas (Tunggakan)"}
-                </Badge>
+                {activeCustomer.hasOctoberArrears ? (
+                  <Badge variant="danger" size="sm" className="font-bold text-[10px] bg-rose-700 text-white animate-pulse">
+                    🔴 Menunggak Okt &amp; Nov ({activeCustomer.unpaidMonths || 2} Bln)
+                  </Badge>
+                ) : activeCustomer.billingStatus === "UNPAID" ? (
+                  <Badge variant="info" size="sm" className="font-bold text-[10px] bg-sky-100 text-sky-800 border-sky-300">
+                    🔵 Berjalan Nov (1 Bln)
+                  </Badge>
+                ) : (
+                  <Badge variant="success" size="sm" className="font-bold text-[10px]">
+                    🟢 Tagihan Lunas
+                  </Badge>
+                )}
 
                 {activeCustomer.meterCondition === "STUCK" ||
                 activeCustomer.meterCondition === "DAMAGED" ||
@@ -774,6 +897,36 @@ export function MasterDesaGisMap({
                   </Badge>
                 )}
               </div>
+
+              {/* Alert Khusus jika Menunggak Bulan Oktober (Fitur Pemutihan Tagihan) */}
+              {activeCustomer.hasOctoberArrears && (
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 space-y-2">
+                  <div className="flex items-center justify-between font-bold text-xs text-rose-800">
+                    <span className="flex items-center space-x-1.5">
+                      <AlertCircle className="w-4 h-4 text-rose-600" />
+                      <span>Tunggakan Rekening Oktober 2026</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-rose-200/80 text-rose-900 text-[10px] font-black">
+                      {activeCustomer.unpaidMonths || 2} Bulan Belum Bayar
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-rose-700 leading-relaxed">
+                    Warga ini belum melunasi tagihan Oktober (Rp 10.000) dan telah terbit tagihan November (Rp 10.000). Total: <strong>Rp {(activeCustomer.totalArrears || 20000).toLocaleString("id-ID")}</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWaiveReason("KEMARAU_AIR_MATI");
+                      setWaiveNotes("");
+                      setWaiveModalOpen(true);
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-xs shadow-xs transition flex items-center justify-center space-x-1.5 active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>✨ Putihkan Tagihan Oktober (Kompensasi)</span>
+                  </button>
+                </div>
+              )}
 
               {/* Alert Khusus jika Jarum Meteran Macet */}
               {(activeCustomer.meterCondition === "STUCK" ||
@@ -830,8 +983,13 @@ export function MasterDesaGisMap({
                   </p>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px]">Tagihan Periode Ini:</span>
-                  <p className="font-black text-slate-900">Rp 10.000,-</p>
+                  <span className="text-slate-400 text-[10px]">Total Tagihan Tertagih:</span>
+                  <p className="font-black text-slate-900">
+                    Rp {(activeCustomer.totalArrears || (activeCustomer.hasOctoberArrears ? 20000 : 10000)).toLocaleString("id-ID")},-
+                    <span className="text-[10px] text-slate-500 font-normal ml-1">
+                      ({activeCustomer.unpaidMonths || (activeCustomer.hasOctoberArrears ? 2 : 1)} Bln)
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -889,25 +1047,25 @@ export function MasterDesaGisMap({
         <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              🟢 Status Lunas
+              🔴 Tunggakan Riil Oktober
             </span>
-            <div className="text-xl font-black text-emerald-600 mt-0.5">
-              {spatialMetrics.paidCount} SR
+            <div className="text-xl font-black text-rose-600 mt-0.5">
+              {spatialMetrics.octoberArrearsCount} SR
             </div>
           </div>
-          <span className="text-2xl">💧</span>
+          <span className="text-2xl">⏳</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              🔴 Belum Lunas / Tunggakan
+              🔵 Berjalan November
             </span>
-            <div className="text-xl font-black text-rose-600 mt-0.5">
-              {spatialMetrics.unpaidCount} SR
+            <div className="text-xl font-black text-sky-600 mt-0.5">
+              {spatialMetrics.novemberCurrentCount} SR
             </div>
           </div>
-          <span className="text-2xl">⏳</span>
+          <span className="text-2xl">💧</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-between">
@@ -922,6 +1080,149 @@ export function MasterDesaGisMap({
           <span className="text-2xl">⚙️</span>
         </div>
       </div>
+
+      {/* Modal Dialog Pemutihan Tagihan (Waiver) */}
+      {waiveModalOpen && activeCustomer && (
+        <div className="fixed inset-0 z-[10000] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div className="space-y-1">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-extrabold">
+                  <Sparkles className="w-3 h-3 text-amber-700" />
+                  <span>Keputusan Resmi Pengurus KPSPAMS</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  Pemutihan Tagihan Air (Kompensasi)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWaiveModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Nama Warga:</span>
+                <strong className="text-slate-900">{activeCustomer.name}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Nomor Sambungan:</span>
+                <span className="font-mono font-bold text-sky-700">{activeCustomer.connectionNo}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Tagihan Diputihkan:</span>
+                <strong className="text-rose-700">Periode Oktober 2026 (Rp 10.000,-)</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Sisa Tagihan Pasca Pemutihan:</span>
+                <strong className="text-emerald-700">Rp 10.000,- (Hanya Tagihan November Berjalan)</strong>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <label className="font-bold text-slate-700 block">
+                Pilih Alasan Resmi Pemutihan:
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="waiveReason"
+                    value="KEMARAU_AIR_MATI"
+                    checked={waiveReason === "KEMARAU_AIR_MATI"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Kompensasi Kemarau / Air Tidak Mengalir</strong>
+                    <span className="text-slate-500 text-[11px]">Air tidak mengalir di pipa distribusi warga selama bulan Oktober karena kemarau.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="waiveReason"
+                    value="WARGA_KURANG_MAMPU"
+                    checked={waiveReason === "WARGA_KURANG_MAMPU"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Warga Kurang Mampu / Bansos Desa</strong>
+                    <span className="text-slate-500 text-[11px]">Bantuan sosial kemanusiaan bagi warga tidak mampu atau lansia sebatang kara.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="waiveReason"
+                    value="KOREKSI_ADMINISTRASI"
+                    checked={waiveReason === "KOREKSI_ADMINISTRASI"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Koreksi Administrasi / Rumah Kosong</strong>
+                    <span className="text-slate-500 text-[11px]">Rumah tidak berpenghuni sementara waktu atau penyesuaian data.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <label className="font-bold text-slate-700 block">
+                Catatan Berita Acara (Opsional):
+              </label>
+              <textarea
+                value={waiveNotes}
+                onChange={(e) => setWaiveNotes(e.target.value)}
+                placeholder="Contoh: Berdasarkan hasil musyawarah warga dusun tanggal 2 November 2026..."
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                rows={2}
+              />
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+              🔒 <strong>Prinsip Akuntansi Aman:</strong> Pemutihan ini mengubah status tagihan menjadi <em>WAIVED</em> (Rp 0). Tidak ada uang tunai semu yang dicatat di kas bendahara, sehingga buku kas fisik tetap 100% cocok dengan uang tunai riil di brankas.
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setWaiveModalOpen(false)}
+                disabled={isWaiving}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmWaiver}
+                disabled={isWaiving}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-xs shadow-md flex items-center space-x-1.5 active:scale-95 disabled:opacity-50"
+              >
+                {isWaiving ? (
+                  <>
+                    <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Setujui Pemutihan (Rp 0)</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

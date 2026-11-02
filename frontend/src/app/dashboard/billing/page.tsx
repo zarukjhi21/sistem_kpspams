@@ -66,7 +66,7 @@ export default function BillingPage() {
   const [unpaidInvoices, setUnpaidInvoices] = useState<Record<string, any>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [filterDusun, setFilterDusun] = useState("ALL");
-  const [filterStatus, setFilterStatus] = useState<"ALL" | "UNPAID" | "PAID">("ALL");
+  const [filterStatus, setFilterStatus] = useState<"ALL" | "UNPAID" | "OCTOBER_ARREARS" | "NOVEMBER_CURRENT" | "PAID">("ALL");
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +80,13 @@ export default function BillingPage() {
   const [isExecutingRollover, setIsExecutingRollover] = useState(false);
   const [rolloverSuccessMsg, setRolloverSuccessMsg] = useState<string | null>(null);
 
+  // State Pemutihan Tagihan (Waiver Tagihan Oktober)
+  const [waiveCustomer, setWaiveCustomer] = useState<DemoCustomer | null>(null);
+  const [waiveReason, setWaiveReason] = useState<string>("KEMARAU_AIR_MATI");
+  const [waiveNotes, setWaiveNotes] = useState<string>("");
+  const [isWaiving, setIsWaiving] = useState<boolean>(false);
+  const [waiveSuccessMsg, setWaiveSuccessMsg] = useState<string | null>(null);
+
   // State Revert / Anulir Pembayaran (Koreksi Salah Klik - Bendahara & Super Admin)
   const [revertCustomer, setRevertCustomer] = useState<DemoCustomer | null>(null);
   const [revertReason, setRevertReason] = useState<string>("Petugas lapangan salah klik pelunasan (uang belum diterima)");
@@ -90,6 +97,37 @@ export default function BillingPage() {
     user?.role === "bendahara_kpspams" ||
     user?.role === "super_admin" ||
     user?.role === "admin_desa";
+
+  const handleExecuteWaiveInvoice = async () => {
+    if (!waiveCustomer) return;
+    setIsWaiving(true);
+    try {
+      const res = await apiClient("/billing/waive-invoice", {
+        method: "POST",
+        body: JSON.stringify({
+          customer_id: waiveCustomer.id,
+          connection_no: waiveCustomer.connectionNo,
+          billing_period_id: "6", // Oktober 2026
+          reason_category: waiveReason,
+          notes: waiveNotes,
+        }),
+      });
+
+      if (res?.status === "success") {
+        setWaiveSuccessMsg(`Tagihan Oktober untuk ${waiveCustomer.name} berhasil diputihkan (Rp 0).`);
+        setWaiveCustomer(null);
+        setWaiveNotes("");
+        await fetchData();
+        setTimeout(() => setWaiveSuccessMsg(null), 6000);
+      } else {
+        alert(res?.message || "Gagal memproses pemutihan tagihan.");
+      }
+    } catch (err: any) {
+      alert("Terjadi kesalahan saat memproses pemutihan: " + (err?.message || err));
+    } finally {
+      setIsWaiving(false);
+    }
+  };
 
   const handleExecuteRevertPayment = async () => {
     if (!revertCustomer) return;
@@ -190,6 +228,10 @@ export default function BillingPage() {
               : "INACTIVE") as any,
             tariffType: item.customer_type?.name || "Rumah Tangga",
             billingStatus: item.billing_status || "UNPAID",
+            hasOctoberArrears: Boolean(item.has_october_arrears),
+            unpaidMonths: Number(item.unpaid_months || (item.billing_status === "UNPAID" ? 1 : 0)),
+            totalArrears: Number(item.total_arrears || (item.billing_status === "UNPAID" ? 10000 : 0)),
+            octoberInvoiceId: item.october_invoice_id ? Number(item.october_invoice_id) : null,
           };
         });
         setCustomers(mapped);
@@ -243,6 +285,8 @@ export default function BillingPage() {
     const total = filteredByTenant.length;
     const paid = filteredByTenant.filter((c) => c.billingStatus === "PAID").length;
     const unpaid = total - paid;
+    const octoberArrears = filteredByTenant.filter((c) => Boolean(c.hasOctoberArrears)).length;
+    const novemberCurrent = filteredByTenant.filter((c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears).length;
     const withPhone = filteredByTenant.filter((c) => !!c.phone).length;
     const totalAmount = total * 10000;
     const paidAmount = paid * 10000;
@@ -251,6 +295,8 @@ export default function BillingPage() {
       total,
       paid,
       unpaid,
+      octoberArrears,
+      novemberCurrent,
       withPhone,
       totalAmount,
       paidAmount,
@@ -261,6 +307,7 @@ export default function BillingPage() {
 
   // List untuk Broadcast Modal
   const broadcastList: BroadcastCustomer[] = useMemo(() => {
+    const activePeriod = rolloverStatus?.current_period_name || "November 2026";
     return filteredByTenant.map((c) => {
       const inv = unpaidInvoices[c.connectionNo] || unpaidInvoices[`CUST_${c.id}`];
       return {
@@ -274,11 +321,11 @@ export default function BillingPage() {
           (Number(c.kpspamsId) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${c.kpspamsId}`),
         billingStatus: c.billingStatus,
         totalAmount: inv?.total_amount ? Number(inv.total_amount) : 10000,
-        periodName: inv?.period_name || "Oktober 2026",
-        dueDate: "20 Oktober 2026",
+        periodName: inv?.period_name || activePeriod,
+        dueDate: "20 November 2026",
       };
     });
-  }, [filteredByTenant, unpaidInvoices]);
+  }, [filteredByTenant, unpaidInvoices, rolloverStatus]);
 
   // Filter Table
   const tableData = useMemo(() => {
@@ -286,6 +333,8 @@ export default function BillingPage() {
       if (filterDusun !== "ALL" && c.dusun !== filterDusun) return false;
       if (filterStatus === "PAID" && c.billingStatus !== "PAID") return false;
       if (filterStatus === "UNPAID" && c.billingStatus === "PAID") return false;
+      if (filterStatus === "OCTOBER_ARREARS" && !c.hasOctoberArrears) return false;
+      if (filterStatus === "NOVEMBER_CURRENT" && (c.billingStatus === "PAID" || c.hasOctoberArrears)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const mName = c.name.toLowerCase().includes(q);
@@ -370,7 +419,7 @@ export default function BillingPage() {
               Billing &amp; Pengingat Tagihan (Broadcast WA)
             </h1>
             <p className="text-xs text-slate-300 mt-1 max-w-xl">
-              Monitoring status pelunasan 83 sambungan rumah dan pengiriman notifikasi WhatsApp massal.
+              Monitoring status pelunasan 293 sambungan rumah dan pengiriman notifikasi WhatsApp massal.
             </p>
           </div>
 
@@ -421,13 +470,13 @@ export default function BillingPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs sm:text-sm font-black text-slate-900">
-                  {rolloverStatus?.current_period_name || "Periode Oktober 2026"}
+                  {rolloverStatus?.current_period_name || "Periode November 2026"}
                 </span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   {stats.paid}/{stats.total} Lunas ({stats.collectionRate}%)
                 </span>
                 <span className="hidden md:inline-flex text-[11px] text-slate-400">
-                  • Target siklus: <strong className="text-slate-700 ml-1">{rolloverStatus?.target_next_period || "Periode November 2026"}</strong>
+                  • Target siklus: <strong className="text-slate-700 ml-1">{rolloverStatus?.target_next_period || "Periode Desember 2026"}</strong>
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -451,6 +500,13 @@ export default function BillingPage() {
           </div>
         </div>
 
+        {waiveSuccessMsg && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-start space-x-2.5 shadow-sm animate-in fade-in">
+            <CheckCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <span className="leading-relaxed">{waiveSuccessMsg}</span>
+          </div>
+        )}
+
         {revertSuccessMsg && (
           <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-start space-x-2.5 shadow-sm animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -473,7 +529,7 @@ export default function BillingPage() {
               </div>
             </div>
             <p className="text-[11px] text-slate-500 mt-2">
-              Periode Aktif: <strong>Oktober 2026</strong>
+              Periode Aktif: <strong>{rolloverStatus?.current_period_name || "November 2026"}</strong>
             </p>
           </Card>
 
@@ -512,7 +568,7 @@ export default function BillingPage() {
               </div>
             </div>
             <p className="text-[11px] text-rose-600 font-bold mt-2">
-              Rp {stats.unpaidAmount.toLocaleString("id-ID")} tertunggak
+              🔴 {stats.octoberArrears} Menunggak Okt • 🔵 {stats.novemberCurrent} Berjalan Nov
             </p>
           </Card>
 
@@ -546,7 +602,7 @@ export default function BillingPage() {
               <span>Format Pesan Otomatis Pengingat WhatsApp Resmi:</span>
             </div>
             <div className="font-mono text-xs bg-white/90 p-3 rounded-xl border border-emerald-200 text-slate-800 shadow-xs">
-              &quot;Yth. Bpk/Ibu [Nama], tagihan air bersih KPSPAMS Lemo Baru periode Oktober 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=[NoSR]&quot;
+              &quot;Yth. Bpk/Ibu [Nama], tagihan air bersih KPSPAMS Lemo Baru periode {rolloverStatus?.current_period_name || "November 2026"} sebesar Rp [Nominal],- telah terbit. Jatuh tempo: 20 November 2026. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=[NoSR]&quot;
             </div>
           </div>
           <button
@@ -609,14 +665,27 @@ export default function BillingPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFilterStatus("UNPAID")}
+                  onClick={() => setFilterStatus("OCTOBER_ARREARS")}
                   className={`px-3 py-1 rounded-lg transition ${
-                    filterStatus === "UNPAID"
-                      ? "bg-white text-rose-700 shadow-xs"
-                      : "text-slate-500 hover:text-rose-700"
+                    filterStatus === "OCTOBER_ARREARS"
+                      ? "bg-rose-700 text-white shadow-xs"
+                      : "text-rose-700 hover:text-rose-900"
                   }`}
+                  title="Warga yang masih menunggak tagihan Oktober 2026"
                 >
-                  Belum ({stats.unpaid})
+                  🔴 Tunggakan Okt ({stats.octoberArrears})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterStatus("NOVEMBER_CURRENT")}
+                  className={`px-3 py-1 rounded-lg transition ${
+                    filterStatus === "NOVEMBER_CURRENT"
+                      ? "bg-sky-600 text-white shadow-xs"
+                      : "text-sky-700 hover:text-sky-900"
+                  }`}
+                  title="Warga tagihan berjalan November (Oktober sudah lunas)"
+                >
+                  🔵 Berjalan Nov ({stats.novemberCurrent})
                 </button>
                 <button
                   type="button"
@@ -668,12 +737,33 @@ export default function BillingPage() {
                       </span>
                       <div className="flex items-center space-x-1.5">
                         <Badge
-                          variant={isPaid ? "success" : "danger"}
+                          variant={isPaid ? "success" : c.hasOctoberArrears ? "danger" : "info"}
                           size="sm"
-                          className="font-bold text-[10px]"
+                          className={`font-bold text-[10px] ${
+                            c.hasOctoberArrears
+                              ? "bg-rose-700 text-white animate-pulse"
+                              : !isPaid
+                              ? "bg-sky-100 text-sky-800 border-sky-300"
+                              : ""
+                          }`}
                         >
-                          {isPaid ? "✓ Lunas" : "● Belum Bayar"}
+                          {isPaid ? "✓ Lunas" : c.hasOctoberArrears ? "🔴 Menunggak Okt" : "🔵 Berjalan Nov"}
                         </Badge>
+                        {c.hasOctoberArrears && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWaiveCustomer(c);
+                              setWaiveReason("KEMARAU_AIR_MATI");
+                              setWaiveNotes("");
+                            }}
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[10px] font-bold transition active:scale-95 shadow-2xs"
+                            title="Putihkan tagihan bulan Oktober (kompensasi)"
+                          >
+                            <Sparkles className="w-3 h-3 text-amber-700" />
+                            <span>Putihkan</span>
+                          </button>
+                        )}
                         {isPaid && canRevertPayment && (
                           <button
                             type="button"
@@ -709,7 +799,12 @@ export default function BillingPage() {
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 block uppercase font-bold">Tagihan</span>
-                        <span className="font-black font-tabular text-slate-900">Rp 10.000,-</span>
+                        <span className="font-black font-tabular text-slate-900">
+                          Rp {(c.totalArrears || (c.hasOctoberArrears ? 20000 : 10000)).toLocaleString("id-ID")},-
+                        </span>
+                        {c.hasOctoberArrears && (
+                          <span className="block text-[10px] font-bold text-rose-600">2 Bln (Okt + Nov)</span>
+                        )}
                       </div>
                     </div>
 
@@ -825,17 +920,45 @@ export default function BillingPage() {
                           {c.lastReading.toFixed(2)} m³
                         </td>
                         <td className="py-3 px-4 text-right font-black font-tabular text-slate-900">
-                          Rp 10.000,-
+                          <div>
+                            Rp {(c.totalArrears || (c.hasOctoberArrears ? 20000 : 10000)).toLocaleString("id-ID")},-
+                          </div>
+                          {c.hasOctoberArrears ? (
+                            <span className="text-[10px] font-bold text-rose-600 block">2 Bln (Okt+Nov)</span>
+                          ) : !isPaid ? (
+                            <span className="text-[10px] font-bold text-sky-600 block">1 Bln (Nov)</span>
+                          ) : null}
                         </td>
                         <td className="py-3 px-4 text-center">
                           <div className="flex flex-col items-center justify-center space-y-1">
                             <Badge
-                              variant={isPaid ? "success" : "danger"}
+                              variant={isPaid ? "success" : c.hasOctoberArrears ? "danger" : "info"}
                               size="sm"
-                              className="font-bold text-[10px]"
+                              className={`font-bold text-[10px] ${
+                                c.hasOctoberArrears
+                                  ? "bg-rose-700 text-white animate-pulse"
+                                  : !isPaid
+                                  ? "bg-sky-100 text-sky-800 border-sky-300"
+                                  : ""
+                              }`}
                             >
-                              {isPaid ? "✓ Lunas" : "● Belum Bayar"}
+                              {isPaid ? "✓ Lunas" : c.hasOctoberArrears ? "🔴 Menunggak Okt" : "🔵 Berjalan Nov"}
                             </Badge>
+                            {c.hasOctoberArrears && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setWaiveCustomer(c);
+                                  setWaiveReason("KEMARAU_AIR_MATI");
+                                  setWaiveNotes("");
+                                }}
+                                className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-[10px] font-bold transition active:scale-95 shadow-2xs"
+                                title="Putihkan tagihan bulan Oktober (kompensasi)"
+                              >
+                                <Sparkles className="w-3 h-3 text-amber-700" />
+                                <span>Putihkan Okt</span>
+                              </button>
+                            )}
                             {isPaid && canRevertPayment && (
                               <button
                                 type="button"
@@ -1171,6 +1294,149 @@ export default function BillingPage() {
                   <>
                     <Undo2 className="w-3.5 h-3.5" />
                     <span>Konfirmasi Anulir Lunas</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Dialog Pemutihan Tagihan Oktober (Waiver) */}
+      {waiveCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in zoom-in-95 space-y-4 p-5 sm:p-6">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div className="space-y-1">
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-extrabold">
+                  <Sparkles className="w-3 h-3 text-amber-700" />
+                  <span>Keputusan Resmi Pengurus KPSPAMS</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
+                  Pemutihan Tagihan Air (Kompensasi)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWaiveCustomer(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Nama Warga:</span>
+                <strong className="text-slate-900">{waiveCustomer.name}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Nomor Sambungan:</span>
+                <span className="font-mono font-bold text-sky-700">{waiveCustomer.connectionNo}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Tagihan Diputihkan:</span>
+                <strong className="text-rose-700">Periode Oktober 2026 (Rp 10.000,-)</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Sisa Tagihan Pasca Pemutihan:</span>
+                <strong className="text-emerald-700">Rp 10.000,- (Hanya Tagihan November Berjalan)</strong>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <label className="font-bold text-slate-700 block">
+                Pilih Alasan Resmi Pemutihan:
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="billingWaiveReason"
+                    value="KEMARAU_AIR_MATI"
+                    checked={waiveReason === "KEMARAU_AIR_MATI"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Kompensasi Kemarau / Air Tidak Mengalir</strong>
+                    <span className="text-slate-500 text-[11px]">Air tidak mengalir di pipa warga selama bulan Oktober karena kemarau.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="billingWaiveReason"
+                    value="WARGA_KURANG_MAMPU"
+                    checked={waiveReason === "WARGA_KURANG_MAMPU"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Warga Kurang Mampu / Bansos Desa</strong>
+                    <span className="text-slate-500 text-[11px]">Bantuan sosial kemanusiaan desa bagi warga tidak mampu atau lansia sebatang kara.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start space-x-2.5 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="billingWaiveReason"
+                    value="KOREKSI_ADMINISTRASI"
+                    checked={waiveReason === "KOREKSI_ADMINISTRASI"}
+                    onChange={(e) => setWaiveReason(e.target.value)}
+                    className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <strong className="text-slate-800 block">Koreksi Administrasi / Rumah Kosong</strong>
+                    <span className="text-slate-500 text-[11px]">Rumah tidak berpenghuni sementara waktu atau penyesuaian catatan iuran.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <label className="font-bold text-slate-700 block">
+                Catatan Berita Acara (Opsional):
+              </label>
+              <textarea
+                value={waiveNotes}
+                onChange={(e) => setWaiveNotes(e.target.value)}
+                placeholder="Contoh: Berdasarkan hasil musyawarah warga dusun tanggal 2 November 2026..."
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                rows={2}
+              />
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+              🔒 <strong>Prinsip Akuntansi Aman:</strong> Pemutihan ini mengubah status tagihan menjadi <em>WAIVED</em> (Rp 0). Tidak ada uang tunai semu yang dicatat di kas bendahara, sehingga buku kas fisik tetap 100% cocok dengan uang tunai riil di brankas.
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+              <Button
+                variant="outline"
+                onClick={() => setWaiveCustomer(null)}
+                disabled={isWaiving}
+                className="rounded-xl text-xs font-bold"
+              >
+                Batal
+              </Button>
+              <button
+                type="button"
+                onClick={handleExecuteWaiveInvoice}
+                disabled={isWaiving}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-xs shadow-md flex items-center space-x-1.5 active:scale-95 disabled:opacity-50"
+              >
+                {isWaiving ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Setujui Pemutihan (Rp 0)</span>
                   </>
                 )}
               </button>
