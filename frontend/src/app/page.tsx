@@ -769,23 +769,6 @@ export default function HomePage() {
             </ScrollReveal>
           </div>
 
-          {/* Banner Komitmen Sosial & Subsidi KPSPAMS */}
-          <ScrollReveal direction="up" delay={80}>
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-purple-800/40">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs sm:text-sm font-black text-white">Program Subsidi Sosial &amp; Fasilitas Umum Desa</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/40">
-                    {stats.waivedCount || 21} SR Bebas Iuran Resmi
-                  </span>
-                </div>
-                <p className="text-[11px] text-purple-200/80 mt-0.5">
-                  KPSPAMS Desa Kuajang membebaskan iuran bulanan bagi fasilitas ibadah (Masjid Dusun) serta memberikan kompensasi sosial resmi bagi sambungan rumah tangga terdampak kemarau &amp; kendala pipa distribusi.
-                </p>
-              </div>
-            </div>
-          </ScrollReveal>
-
           {/* Visualisasi Grafik Transparansi Keuangan Terpadu */}
           <ScrollReveal direction="up" delay={100}>
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-3 sm:p-6 overflow-hidden">
