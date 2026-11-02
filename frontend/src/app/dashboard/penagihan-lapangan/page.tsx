@@ -265,6 +265,8 @@ function PenagihanLapanganContent() {
 
   const broadcastList: BroadcastCustomer[] = availableCustomers.map((c) => {
     const inv = unpaidInvoices[c.connectionNo] || unpaidInvoices[`CUST_${c.id}`];
+    const kId = Number(c.kpspamsId) || 1;
+    const activePeriodName = activePeriods[kId]?.name || "Periode November 2026";
     return {
       id: c.id,
       name: c.name,
@@ -274,8 +276,8 @@ function PenagihanLapanganContent() {
       kpspamsName: c.kpspamsName || (Number(c.kpspamsId) === 1 ? "KPSPAMS Lemo Baru" : `KPSPAMS Unit ${c.kpspamsId}`),
       billingStatus: c.billingStatus,
       totalAmount: inv?.total_amount ? Number(inv.total_amount) : 10000,
-      periodName: inv?.period_name || "Oktober 2026",
-      dueDate: "20 Oktober 2026",
+      periodName: inv?.period_name || activePeriodName,
+      dueDate: inv?.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "20 November 2026",
     };
   });
 
@@ -312,8 +314,8 @@ function PenagihanLapanganContent() {
   const [currentReading, setCurrentReading] = useState<string>(
     selectedCustomer.lastReading > 0 ? selectedCustomer.lastReading.toFixed(2) : ""
   );
-  // Opsi Mode Opname Stand Awal untuk meteran yang baru pertama kali dicatat
-  const [isInitialSetup, setIsInitialSetup] = useState<boolean>(selectedCustomer.lastReading === 0);
+  // Opsi Khusus: Reset stand titik nol jika meteran fisik baru dipasang / baru diganti di lapangan
+  const [isInitialSetup, setIsInitialSetup] = useState<boolean>(false);
   // Opsi Penanda Meteran Rusak / Jarum Macet tapi air mengalir
   const [isMeterDamaged, setIsMeterDamaged] = useState<boolean>(false);
 
@@ -332,9 +334,8 @@ function PenagihanLapanganContent() {
     if (selectedCustomer) {
       setCustomerPhone(selectedCustomer.phone || "");
       setCurrentReading(selectedCustomer.lastReading > 0 ? selectedCustomer.lastReading.toFixed(2) : "");
-      if (selectedCustomer.lastReading === 0) {
-        setIsInitialSetup(true);
-      }
+      // Default: Selalu mode penagihan reguler bulanan (false). Petugas hanya mencentang secara manual jika ada pergantian fisik meter
+      setIsInitialSetup(false);
       const cond = (selectedCustomer as any).meter_condition || (selectedCustomer as any).meterCondition;
       setIsMeterDamaged(cond === "STUCK" || cond === "DAMAGED");
     }
@@ -351,7 +352,7 @@ function PenagihanLapanganContent() {
         totalAmount: rawBillCalc.baseFee,
         excessM3: 0,
         excessFee: 0,
-        formulaDescription: `Pencatatan Perdana Stand Awal (${currentNum.toFixed(2)} m³) — Paket Beban Dasar: Rp ${rawBillCalc.baseFee.toLocaleString("id-ID")}`,
+        formulaDescription: `Reset Stand Titik Nol (${currentNum.toFixed(2)} m³) — Paket Beban Dasar: Rp ${rawBillCalc.baseFee.toLocaleString("id-ID")}`,
       }
     : rawBillCalc;
   const totalDue = billCalc.totalAmount;
@@ -360,9 +361,9 @@ function PenagihanLapanganContent() {
   // Handler Pilih Pelanggan Baru
   const handleSelectCustomer = (cust: DemoCustomer) => {
     setSelectedCustomerId(cust.id);
-    // Isi otomatis dengan stand fisik terakhir yang tercatat di sistem (tidak mengarang tambahan 14.5 m3)
     setCurrentReading(cust.lastReading > 0 ? cust.lastReading.toFixed(2) : "");
     setCustomerPhone(cust.phone || "");
+    setIsInitialSetup(false);
   };
 
   // Step 1 -> Step 2
@@ -397,7 +398,8 @@ function PenagihanLapanganContent() {
   const handleConfirmPayment = async () => {
     setIsSubmittingPayment(true);
 
-    let receiptNo = `KW/202610/KP0${selectedCustomer.kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
+    const currentYearMonth = new Date().toISOString().slice(0, 7).replace("-", ""); // e.g. "202611"
+    let receiptNo = `KW/${currentYearMonth}/KP0${selectedCustomer.kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
     const nowTime = new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + " WITA";
     setTransactionTime(nowTime);
 
@@ -410,9 +412,9 @@ function PenagihanLapanganContent() {
     let invoiceId = activeInvoice?.id;
     const connectionId = activeInvoice?.connection_id || selectedCustomer.id;
 
-    // Default billing period ID: dari invoice, open billing period, atau fallback resmi Kuajang (KP1: 6, KP2: 12, KP3: 18)
+    // Default billing period ID: dari invoice, open billing period, atau fallback resmi Kuajang November 2026 (KP1: 19, KP2: 20, KP3: 21)
     const kId = Number(selectedCustomer.kpspamsId) || 1;
-    const defaultBpId = kId === 1 ? 6 : kId === 2 ? 12 : 18;
+    const defaultBpId = kId === 1 ? 19 : kId === 2 ? 20 : 21;
     const billingPeriodId = activeInvoice?.billing_period_id || activePeriods[kId]?.id || defaultBpId;
 
     // Petakan Akun Kas Tunai Resmi KPSPAMS
@@ -445,7 +447,7 @@ function PenagihanLapanganContent() {
             notes: isMeterDamaged
               ? `Jarum meteran macet / tidak berputar (air tetap mengalir). Dicatat oleh ${user?.name || "Petugas Lapangan"}`
               : isInitialSetup
-              ? `Pencatatan perdana stand awal (${currentNum.toFixed(2)} m³)`
+              ? `Reset stand awal / pasang baru (${currentNum.toFixed(2)} m³)`
               : `Dicatat tunai di tempat oleh ${user?.name || "Petugas Lapangan"}`,
           }),
         });
@@ -556,6 +558,11 @@ function PenagihanLapanganContent() {
 
   // Teks Resmi Kwitansi WhatsApp SI-KPSPAMS
   const getWhatsAppMessage = () => {
+    const kId = Number(selectedCustomer.kpspamsId) || 1;
+    const activePeriodObj = activePeriods[kId];
+    const invoiceForCustomer = unpaidInvoices[selectedCustomer.connectionNo] || unpaidInvoices[`CUST_${selectedCustomer.id}`];
+    const displayPeriodName = invoiceForCustomer?.period_name || activePeriodObj?.name || "Periode November 2026";
+
     if (isInitialSetup) {
       return encodeURIComponent(
         `*KWITANSI PEMBAYARAN AIR BERSIH RESMI*\n` +
@@ -566,10 +573,10 @@ function PenagihanLapanganContent() {
         `No. Sambungan : ${selectedCustomer.connectionNo}\n` +
         `Nama Warga    : ${selectedCustomer.name}\n` +
         `Wilayah       : ${selectedCustomer.dusun}\n` +
-        `Periode       : Oktober 2026 (Pencatatan Perdana)\n` +
+        `Periode       : ${displayPeriodName} (Reset Titik Nol Baru)\n` +
         `Stand Meter Fisik: ${currentNum.toFixed(2)} m³ (Titik Dasar Baru)\n` +
-        `Status Catat  : *STAND AWAL TRANSISI*\n` +
-        `Paket Dasar   : Rp ${totalDue.toLocaleString("id-ID")},- (Masa Transisi s.d 35 m³)\n` +
+        `Status Catat  : *STAND AWAL BARU / METERAN BARU*\n` +
+        `Paket Dasar   : Rp ${totalDue.toLocaleString("id-ID")},- (Beban Dasar Pemakaian Awal)\n` +
         `Total Bayar   : Rp ${totalDue.toLocaleString("id-ID")},-\n` +
         `Uang Diterima : Rp ${tenderAmount.toLocaleString("id-ID")},-\n` +
         `Kembalian     : Rp ${changeDue.toLocaleString("id-ID")},-\n` +
@@ -577,7 +584,7 @@ function PenagihanLapanganContent() {
         `Petugas Kasir : ${user?.name || "Petugas Lapangan"}\n` +
         `Waktu Transaksi: ${transactionTime}\n` +
         `----------------------------------------\n` +
-        `*Catatan*: Angka meteran ${currentNum.toFixed(2)} m³ telah resmi terekam di sistem sebagai Stand Awal. Mulai bulan depan, pemakaian kubikasi riil akan dihitung dari angka ini.\n` +
+        `*Catatan*: Angka meteran ${currentNum.toFixed(2)} m³ telah resmi terekam di sistem sebagai Stand Awal Baru. Tagihan bulan depan akan dihitung murni dari selisih kubikasi di atas angka ini.\n` +
         `_Terima kasih telah berpartisipasi menjaga kelestarian & operasional air bersih Desa Kuajang._`
       );
     }
@@ -591,7 +598,7 @@ function PenagihanLapanganContent() {
       `No. Sambungan : ${selectedCustomer.connectionNo}\n` +
       `Nama Warga    : ${selectedCustomer.name}\n` +
       `Wilayah       : ${selectedCustomer.dusun}\n` +
-      `Periode       : Oktober 2026\n` +
+      `Periode       : ${displayPeriodName}\n` +
       `Stand Lalu    : ${previousReading.toFixed(2)} m³\n` +
       `Stand Kini    : ${currentNum.toFixed(2)} m³\n` +
       `Pemakaian Air : ${usageM3.toFixed(2)} m³\n` +
@@ -1040,20 +1047,23 @@ function PenagihanLapanganContent() {
             {/* Input Stand Meter Angka */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-slate-500 uppercase font-bold">Stand Lalu (Awal):</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold">Stand Lalu (Oktober 2026):</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-800">
+                    Titik Dasar Riil
+                  </span>
+                </div>
                 <div className="text-xl font-black font-tabular text-slate-700 mt-1">
                   {previousReading.toFixed(2)} m³
                 </div>
-                {previousReading === 0 && (
-                  <span className="text-[10px] text-amber-700 font-semibold block mt-1">
-                    Stand lalu masih 0 m³. Sangat disarankan aktifkan Mode Opname Perdana di bawah jika meteran fisik sudah berjalan lama.
-                  </span>
-                )}
+                <span className="text-[10px] text-slate-500 block mt-1">
+                  Angka stand meter fisik resmi periode sebelumnya sebagai dasar hitung pemakaian November.
+                </span>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Stand Meter Terbaca Saat Ini (m³) <span className="text-rose-500">*</span>
+                  Stand Meter Fisik Saat Ini (m³) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -1063,15 +1073,18 @@ function PenagihanLapanganContent() {
                     value={currentReading}
                     onFocus={(e) => e.target.select()}
                     onChange={(e) => setCurrentReading(e.target.value)}
-                    placeholder={previousReading > 0 ? previousReading.toFixed(2) : "0.00"}
+                    placeholder={previousReading > 0 ? (previousReading + 5).toFixed(2) : "0.00"}
                     className="w-full px-3.5 py-2.5 text-xl font-black font-tabular border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-600"
                   />
                   <span className="absolute right-3.5 top-3 text-xs font-bold text-slate-400">m³</span>
                 </div>
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Ketik angka yang tertera pada meteran fisik rumah warga saat penagihan.
+                </span>
               </div>
             </div>
 
-            {/* Opsi Transisi / Opname Perdana (Solusi Meteran Fisik yang Sudah Berjalan Lama) */}
+            {/* Opsi Khusus: Reset Titik Nol Baru (Khusus Sambungan Baru / Ganti Meter Rusak) */}
             <div className={`p-3.5 rounded-2xl border transition-all ${
               isInitialSetup 
                 ? "bg-amber-50/90 border-amber-300 ring-2 ring-amber-400/40" 
@@ -1087,12 +1100,12 @@ function PenagihanLapanganContent() {
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-bold text-slate-900">
-                      Pencatatan Perdana / Opname Stand Awal (Bulan Pertama Aplikasi)
+                      Khusus: Pasang Meteran Baru / Ganti Meter Rusak (Reset Titik Nol Baru)
                     </span>
-                    <Badge variant="warning" size="sm" className="text-[9px]">Transisi</Badge>
+                    <Badge variant="warning" size="sm" className="text-[9px]">Khusus</Badge>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Centang ini jika meteran fisik warga sudah berjalan berbulan-bulan sebelumnya. Angka yang Anda catat hari ini ({parseFloat(currentReading) || 0} m³) akan ditetapkan sebagai <strong>titik nol baru (baseline)</strong>, dan tagihan warga bulan ini otomatis <strong>Paket Beban Dasar (Rp 10.000)</strong> agar warga tidak terbebani selisih akumulasi bulan lalu.
+                    Jangan centang untuk penagihan bulanan normal. Hanya centang jika sambungan rumah ini baru pertama kali dipasang meteran baru atau baru saja diganti meteran fisiknya di lapangan, sehingga angka ({parseFloat(currentReading) || 0} m³) dijadikan titik nol baru dan tagihan bulan ini otomatis Paket Beban Dasar (Rp 10.000).
                   </p>
                 </div>
               </label>
@@ -1154,9 +1167,21 @@ function PenagihanLapanganContent() {
               </div>
 
               <div className="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1.5 text-xs">
-                {isInitialSetup && (
+                {isInitialSetup ? (
                   <div className="p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-950 text-[11px] font-medium leading-relaxed">
-                    ⚡ <strong>Mode Transisi Aktif:</strong> Angka stand meter fisik ({currentNum.toFixed(2)} m³) akan disimpan resmi sebagai <strong>titik awal (baseline)</strong>. Tagihan bulan ini otomatis Paket Beban Dasar Rp 10.000. Mulai bulan depan penagihan dihitung murni dari selisih pemakaian kubikasi.
+                    ⚡ <strong>Mode Pasang Baru / Reset Stand:</strong> Angka stand meter fisik ({currentNum.toFixed(2)} m³) akan disimpan resmi sebagai <strong>titik nol baru (baseline)</strong>. Tagihan bulan ini dipatok Beban Dasar Rp 10.000.
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-950 text-[11px] font-medium leading-relaxed flex items-center justify-between">
+                    <div>
+                      <strong>Siklus Penagihan Reguler Bulanan (November 2026)</strong>
+                      <div className="text-[10px] text-sky-800 mt-0.5">
+                        Stand Lalu ({previousReading.toFixed(2)} m³) → Stand Kini ({currentNum.toFixed(2)} m³)
+                      </div>
+                    </div>
+                    <span className="px-2 py-0.5 bg-sky-200/80 text-sky-900 font-bold rounded text-[10px]">
+                      Pemakaian: {usageM3.toFixed(2)} m³
+                    </span>
                   </div>
                 )}
 
@@ -1548,8 +1573,8 @@ function PenagihanLapanganContent() {
         onClose={() => setBroadcastModalOpen(false)}
         customers={broadcastList}
         defaultKpspamsName={selectedCustomer?.kpspamsName || "KPSPAMS Lemo Baru"}
-        defaultPeriodName="Oktober 2026"
-        defaultDueDate="20 Oktober 2026"
+        defaultPeriodName={activePeriods[Number(selectedCustomer?.kpspamsId) || 1]?.name || "Periode November 2026"}
+        defaultDueDate="20 November 2026"
       />
     </div>
   );

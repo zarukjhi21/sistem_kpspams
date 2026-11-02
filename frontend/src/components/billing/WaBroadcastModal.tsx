@@ -51,8 +51,8 @@ export function WaBroadcastModal({
   onClose,
   customers,
   defaultKpspamsName = "KPSPAMS Lemo Baru",
-  defaultPeriodName = "Oktober 2026",
-  defaultDueDate = "20 Oktober 2026",
+  defaultPeriodName = "Periode November 2026",
+  defaultDueDate = "20 November 2026",
 }: WaBroadcastModalProps) {
   const [filterStatus, setFilterStatus] = useState<"ALL" | "UNPAID" | "PAID">("ALL");
   const [filterDusun, setFilterDusun] = useState<string>("ALL");

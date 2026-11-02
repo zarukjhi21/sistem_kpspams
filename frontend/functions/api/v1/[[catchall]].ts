@@ -1276,7 +1276,7 @@ export async function onRequest(context: any) {
             WHERE CAST(kpspams_id AS text) = $1 AND status = 'OPEN' 
             ORDER BY id DESC LIMIT 1
           `, [kId.toString()]);
-          billingPeriodId = bpRows.length > 0 ? bpRows[0].id.toString() : (kId === "1" ? "6" : kId === "2" ? "12" : "18");
+          billingPeriodId = bpRows.length > 0 ? bpRows[0].id.toString() : (kId === "1" ? "19" : kId === "2" ? "20" : "21");
         }
 
         let prevReading = 0;
@@ -1299,10 +1299,10 @@ export async function onRequest(context: any) {
         } else {
           usageM3 = Math.round(Math.max(0, currentReading - prevReading) * 100) / 100;
           if (kId.toString() === "1") {
-            // Gravitasi Kuajang (LMB): Beban dasar Rp 10.000 s.d 15 m3, kelebihan > 15 m3 = +Rp 1.000 / m3
+            // Gravitasi Kuajang (LMB): Beban dasar Rp 10.000 s.d 35 m3, kelebihan > 35 m3 = +Rp 1.000 / m3
             totalAmount = 10000;
-            if (usageM3 > 15) {
-              const excess = usageM3 - 15;
+            if (usageM3 > 35) {
+              const excess = usageM3 - 35;
               waterAmount = excess * 1000;
               totalAmount = 10000 + waterAmount;
             }
