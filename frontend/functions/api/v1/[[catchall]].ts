@@ -495,9 +495,9 @@ export async function onRequest(context: any) {
       const nextBpLmb = newBpRes.find((p: any) => String(p.kpspams_id) === '1') || newBpRes[0];
       const nextBpId = String(nextBpLmb.id);
 
-      // 4. Ambil seluruh 83 sambungan aktif beserta stand akhir meteran sebelumnya
+      // 4. Ambil seluruh sambungan aktif beserta stand akhir meteran sebelumnya
       const activeConns = await sql.query(`
-        SELECT conn.id as connection_id, conn.connection_no, conn.customer_id, conn.meter_id, c.full_name, c.kpspams_id,
+        SELECT conn.id as connection_id, conn.connection_no, conn.customer_id, conn.meter_id, c.full_name, c.kpspams_id, c.customer_type_id,
                COALESCE(mr.current_reading::text, m.initial_reading::text, '0') as latest_reading
         FROM connections conn
         JOIN customers c ON CAST(conn.customer_id AS integer) = c.id
@@ -511,7 +511,7 @@ export async function onRequest(context: any) {
         ORDER BY c.id ASC
       `);
 
-      // 5. Terbitkan lembar tagihan (Invoices) & Stand Awal Meteran periode baru untuk seluruh 83 SR
+      // 5. Terbitkan lembar tagihan (Invoices) & Stand Awal Meteran periode baru untuk seluruh SR
       let createdCount = 0;
       if (activeConns.length > 0) {
         const invoiceValues: string[] = [];
@@ -521,16 +521,21 @@ export async function onRequest(context: any) {
         for (const c of activeConns) {
           const srCode = (c.connection_no || `SR-${c.connection_id}`).replace(/[^A-Za-z0-9]/g, "").slice(-6);
           const invNum = `INV/${nextYear}${nextMonthStr}/KP01/${srCode.toUpperCase()}`;
+          const isSosial = String(c.customer_type_id) === '3' || (c.full_name && c.full_name.toLowerCase().includes('mesjid'));
+          const invStatus = isSosial ? 'WAIVED' : 'UNPAID';
+          const balDue = isSosial ? '0' : '10000';
+          const notesText = isSosial ? 'Pemutihan Resmi Fasilitas Ibadah / Sosial (Subsidi Penuh)' : null;
 
-          invoiceValues.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, '${nextYear}-${nextMonthStr}-01 00:00:00+00', '${nextYear}-${nextMonthStr}-20 23:59:59+00', '0', '0', '10000', '0', '0', '10000', '0', '10000', 'UNPAID', NOW(), NOW())`);
+          invoiceValues.push(`($${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, '${nextYear}-${nextMonthStr}-01 00:00:00+00', '${nextYear}-${nextMonthStr}-20 23:59:59+00', '0', '0', '10000', '0', '0', '10000', '0', '${balDue}', '${invStatus}', $${pIdx + 5}, NOW(), NOW())`);
           invoiceParams.push(
             String(c.kpspams_id || 1),
             nextBpId,
             String(c.connection_id),
             String(c.customer_id),
-            invNum
+            invNum,
+            notesText
           );
-          pIdx += 5;
+          pIdx += 6;
           createdCount++;
         }
 
@@ -539,7 +544,7 @@ export async function onRequest(context: any) {
             kpspams_id, billing_period_id, connection_id, customer_id,
             invoice_number, invoice_date, due_date,
             usage_m3, water_amount, admin_fee, maintenance_fee, penalty_fee,
-            total_amount, paid_amount, balance_due, status,
+            total_amount, paid_amount, balance_due, status, notes,
             created_at, updated_at
           ) VALUES ${invoiceValues.join(", ")}
         `, invoiceParams);
@@ -1938,7 +1943,9 @@ export async function onRequest(context: any) {
           COALESCE(sum(CAST(total_amount AS numeric)), 0)::numeric as total_billed,
           COALESCE(sum(CASE WHEN status ILIKE 'paid' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_collected,
           COALESCE(sum(CASE WHEN status ILIKE 'unpaid' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_unpaid,
-          count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count
+          count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count,
+          COALESCE(sum(CASE WHEN status ILIKE 'waived' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_waived,
+          count(CASE WHEN status ILIKE 'waived' THEN 1 END)::int as waived_count
         FROM invoices
       `;
       let cashQuery = "SELECT COALESCE(SUM(CAST(current_balance AS numeric)), 0) as balance FROM cash_accounts WHERE is_active = '1'";
@@ -2180,6 +2187,8 @@ export async function onRequest(context: any) {
             total_billed: billed,
             total_collected: collected,
             total_arrears: arrears,
+            total_waived: Number(invStats[0]?.total_waived) || 0,
+            waived_count: Number(invStats[0]?.waived_count) || 0,
             collection_rate_percent: rate,
             total_cash_balance: totalCashBalance,
             active_complaints: Number(complaintsCount[0]?.count) || 0,
@@ -2199,6 +2208,8 @@ export async function onRequest(context: any) {
           total_billed: billed,
           total_collected: collected,
           total_unpaid: arrears,
+          total_waived: Number(invStats[0]?.total_waived) || 0,
+          waived_count: Number(invStats[0]?.waived_count) || 0,
           unpaid_invoices: Number(invStats[0]?.unpaid_count) || 0,
           total_consumption_m3: Number(meterUsage[0]?.total_usage) || 0,
           collection_rate: rate,

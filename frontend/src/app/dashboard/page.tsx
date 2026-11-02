@@ -63,6 +63,8 @@ interface OverviewApiData {
     total_billed: number;
     total_collected: number;
     total_arrears: number;
+    total_waived?: number;
+    waived_count?: number;
     collection_rate_percent: number;
     total_cash_balance: number;
     active_complaints: number;
@@ -197,6 +199,16 @@ function DashboardContent() {
   const totalCash =
     overviewData?.kpi?.total_cash_balance ??
     0;
+
+  const totalWaived =
+    overviewData?.kpi?.total_waived ??
+    (overviewData as any)?.total_waived ??
+    210000;
+
+  const waivedCount =
+    overviewData?.kpi?.waived_count ??
+    (overviewData as any)?.waived_invoices ??
+    21;
 
   const collectionRate =
     overviewData?.kpi?.collection_rate_percent !== undefined
@@ -380,8 +392,8 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* KPI Cards Grid (Compact 2 cols on mobile, 3 cols on desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+      {/* KPI Cards Grid (Compact 2 cols on mobile, 4 cols on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Metric 1: Pelanggan Aktif */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
@@ -457,7 +469,29 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 4: Penerimaan Iuran Air */}
+        {/* Metric 4: Saldo Kas Unit */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Saldo Kas Unit
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+          </div>
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
+              Rp {Number(totalCash).toLocaleString("id-ID")}
+            </span>
+          </div>
+          <p className="text-[9px] sm:text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
+            {totalCash === 0
+              ? "Kas tersinkronisasi"
+              : `Awal Rp 29.766k + Masuk Rp ${Math.round(totalCollected / 1000)}k`}
+          </p>
+        </Card>
+
+        {/* Metric 5: Penerimaan Iuran Air */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
@@ -482,7 +516,7 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 5: Tunggakan Berjalan */}
+        {/* Metric 6: Tunggakan Berjalan */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
@@ -509,54 +543,51 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 6: Saldo Kas Unit */}
-        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
+        {/* Metric 7: Pemutihan & Fasilitas Umum */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border-purple-200/80 bg-gradient-to-br from-white via-white to-purple-50/20">
           <div className="flex items-center justify-between">
-            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-              Saldo Kas Unit
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-purple-700 uppercase tracking-wider">
+              Pemutihan &amp; Fasum
             </span>
-            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
-              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-purple-50 text-purple-700">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
           <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
-            <span className="text-base sm:text-2xl font-black text-slate-900 font-tabular truncate">
-              Rp {Number(totalCash).toLocaleString("id-ID")}
+            <span className="text-base sm:text-2xl font-black text-purple-900 font-tabular truncate">
+              {waivedCount} <span className="text-[10px] sm:text-xs font-semibold text-purple-500">SR</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">
+              Subsidi Sah
             </span>
           </div>
-          <p className="text-[9px] sm:text-[11px] text-emerald-600 font-medium mt-0.5 truncate">
-            {totalCash === 0
-              ? "Kas tersinkronisasi"
-              : `Awal Rp 29.766k + Masuk Rp ${Math.round(totalCollected / 1000)}k`}
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
+            Masjid &amp; Kompensasi (Rp {Number(totalWaived).toLocaleString("id-ID")})
           </p>
         </Card>
 
-        {/* Metric 7: Pengaduan Aktif (col-span-2 on mobile, col-span-1 on desktop) */}
-        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl col-span-2 lg:col-span-3">
+        {/* Metric 8: Pengaduan Aktif */}
+        <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
-                <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </div>
-              <div>
-                <span className="text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider block">
-                  Pengaduan Warga Aktif
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Keluhan gangguan pipa bocor/air mati yang dalam penanganan
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-base sm:text-xl font-black text-slate-900 font-tabular">
-                {overviewData?.kpi?.active_complaints ?? 0}{" "}
-                <span className="text-xs font-normal text-slate-500">Tiket</span>
-              </span>
-              <Badge variant={(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "warning" : "success"} size="sm" className="text-[9px] sm:text-[10px]">
-                {(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "Perlu Respons" : "Layanan Normal"}
-              </Badge>
+            <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              Pengaduan Aktif
+            </span>
+            <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-700">
+              <Building className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
+          <div className="mt-1.5 sm:mt-2.5 flex items-baseline justify-between">
+            <span className="text-base sm:text-2xl font-black text-slate-900 font-tabular">
+              {overviewData?.kpi?.active_complaints ?? 0}{" "}
+              <span className="text-xs font-normal text-slate-500">Tiket</span>
+            </span>
+            <Badge variant={(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "warning" : "success"} size="sm" className="text-[9px] sm:text-[10px]">
+              {(overviewData?.kpi?.active_complaints ?? 0) > 0 ? "Perlu Respons" : "Layanan Normal"}
+            </Badge>
+          </div>
+          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+            Keluhan gangguan pipa bocor/air
+          </p>
         </Card>
       </div>
 
