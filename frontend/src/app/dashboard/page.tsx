@@ -516,11 +516,11 @@ function DashboardContent() {
           </p>
         </Card>
 
-        {/* Metric 6: Tunggakan Berjalan */}
+        {/* Metric 6: Tunggakan Berjalan (Oktober) */}
         <Card className="p-3 sm:p-4 rounded-xl sm:rounded-2xl">
           <div className="flex items-center justify-between">
             <span className="text-[9px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-              Tunggakan Berjalan
+              Tunggakan Okt
             </span>
             <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-rose-50 text-rose-700">
               <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -533,13 +533,13 @@ function DashboardContent() {
             {totalArrears === 0 ? (
               <Badge variant="success" size="sm" className="text-[9px] px-1.5 py-0">Nihil</Badge>
             ) : (
-              <Badge variant="danger" size="sm" className="text-[9px] px-1.5 py-0">Belum</Badge>
+              <Badge variant="danger" size="sm" className="text-[9px] px-1.5 py-0">{Math.round(totalArrears / 10000)} SR</Badge>
             )}
           </div>
-          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+          <p className="text-[9px] sm:text-[11px] text-rose-600 font-medium mt-0.5 truncate">
             {totalArrears === 0
               ? "Tidak ada piutang"
-              : `${Math.round(totalArrears / 10000)} SR belum terbayar`}
+              : `${Math.round(totalArrears / 10000)} SR rekening lewat jatuh tempo`}
           </p>
         </Card>
 

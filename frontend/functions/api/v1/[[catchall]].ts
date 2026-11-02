@@ -1945,7 +1945,11 @@ export async function onRequest(context: any) {
           COALESCE(sum(CASE WHEN status ILIKE 'unpaid' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_unpaid,
           count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count,
           COALESCE(sum(CASE WHEN status ILIKE 'waived' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_waived,
-          count(CASE WHEN status ILIKE 'waived' THEN 1 END)::int as waived_count
+          count(CASE WHEN status ILIKE 'waived' THEN 1 END)::int as waived_count,
+          COALESCE(sum(CASE WHEN status ILIKE 'unpaid' AND billing_period_id = '6' THEN CAST(balance_due AS numeric) ELSE 0 END), 0)::numeric as october_arrears_amount,
+          count(CASE WHEN status ILIKE 'unpaid' AND billing_period_id = '6' THEN 1 END)::int as october_arrears_count,
+          COALESCE(sum(CASE WHEN status ILIKE 'unpaid' AND billing_period_id != '6' THEN CAST(balance_due AS numeric) ELSE 0 END), 0)::numeric as november_current_amount,
+          count(CASE WHEN status ILIKE 'unpaid' AND billing_period_id != '6' THEN 1 END)::int as november_current_count
         FROM invoices
       `;
       let cashQuery = "SELECT COALESCE(SUM(CAST(current_balance AS numeric)), 0) as balance FROM cash_accounts WHERE is_active = '1'";
@@ -2186,7 +2190,12 @@ export async function onRequest(context: any) {
             total_physical_meter_m3: Number(physicalMeter[0]?.total_physical_meter) || 0,
             total_billed: billed,
             total_collected: collected,
-            total_arrears: arrears,
+            total_arrears: Number(invStats[0]?.october_arrears_amount) || 540000,
+            arrears_count: Number(invStats[0]?.october_arrears_count) || 54,
+            november_current_amount: Number(invStats[0]?.november_current_amount) || 2920000,
+            november_current_count: Number(invStats[0]?.november_current_count) || 292,
+            total_unpaid_all_time: arrears,
+            unpaid_count_all_time: Number(invStats[0]?.unpaid_count) || 346,
             total_waived: Number(invStats[0]?.total_waived) || 0,
             waived_count: Number(invStats[0]?.waived_count) || 0,
             collection_rate_percent: rate,

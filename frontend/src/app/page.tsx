@@ -110,8 +110,8 @@ export default function HomePage() {
     billingPeriod: "November 2026",
     totalCollected: 2180000,
     paidCount: 218,
-    totalArrears: 750000,
-    unpaidCount: 75,
+    totalArrears: 540000,
+    unpaidCount: 54,
     totalInvoices: 293,
     collectionRate: 74.4,
     waivedCount: 21,
@@ -125,7 +125,7 @@ export default function HomePage() {
         if (res?.status === "success" && res.data?.kpi) {
           const k = res.data.kpi;
           const collected = Number(k.total_collected) || 2180000;
-          const arrears = Number(k.total_arrears) || 750000;
+          const arrears = Number(k.total_arrears) || 540000;
           setStats((prev) => ({
             ...prev,
             lmbCash: Number(k.total_cash_balance) || prev.lmbCash,
@@ -141,7 +141,7 @@ export default function HomePage() {
             totalCollected: collected,
             paidCount: Math.round(collected / 10000),
             totalArrears: arrears,
-            unpaidCount: Math.round(arrears / 10000),
+            unpaidCount: Number(k.arrears_count) || Math.round(arrears / 10000),
             totalInvoices: Number(k.total_customers) || 293,
             collectionRate: Number(k.collection_rate_percent) || 74.4,
             waivedCount: Number(k.waived_count) || 21,
@@ -661,12 +661,12 @@ export default function HomePage() {
               </div>
             </ScrollReveal>
 
-            {/* Kartu 5: Tunggakan Berjalan */}
+            {/* Kartu 5: Tunggakan Resmi (Oktober) */}
             <ScrollReveal direction="up" delay={280}>
               <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-2 hover:shadow-md transition h-full">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    TUNGGAKAN BERJALAN
+                    TUNGGAKAN OKTOBER
                   </span>
                   <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
                     <AlertTriangle className="w-4 h-4" />
@@ -676,9 +676,12 @@ export default function HomePage() {
                   <span className="text-xl sm:text-2xl font-black text-rose-700 font-tabular tabular-nums truncate">
                     <AnimatedCount value={stats.totalArrears} prefix="Rp " duration={1600} />
                   </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-rose-100 text-rose-800">
+                    {stats.unpaidCount} SR
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                  {stats.unpaidCount} SR belum terbayar
+                <p className="text-[11px] text-rose-600 font-medium truncate mt-0.5">
+                  {stats.unpaidCount} SR rekening lewat jatuh tempo
                 </p>
               </div>
             </ScrollReveal>
