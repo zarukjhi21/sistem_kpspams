@@ -81,7 +81,7 @@ export default function PetaGisPage() {
       // 2. Ambil data tagihan aktif (Unpaid invoices)
       const unpaidMap: Record<number, number> = {};
       try {
-        const invRes = await apiClient("/invoices?status=UNPAID&per_page=100");
+        const invRes = await apiClient("/invoices?status=UNPAID&per_page=1000");
         if (invRes?.status === "success" && Array.isArray(invRes.data)) {
           invRes.data.forEach((inv: any) => {
             if (inv.customer_id) {
@@ -94,7 +94,7 @@ export default function PetaGisPage() {
       }
 
       // 3. Ambil data sambungan & koordinat pelanggan riil dari database
-      const custRes = await apiClient("/customers?per_page=200");
+      const custRes = await apiClient("/customers?per_page=1000");
       if (custRes?.status === "success" && Array.isArray(custRes.data) && custRes.data.length > 0) {
         const liveCustomers: MasterGisCustomer[] = custRes.data.map((c: any) => {
           const primaryConn = c.connections?.[0];

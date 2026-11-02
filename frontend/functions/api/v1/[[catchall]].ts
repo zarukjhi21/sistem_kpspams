@@ -2326,10 +2326,14 @@ export async function onRequest(context: any) {
         `, [custIdStr, connIdStr]),
         sql.query(`
           SELECT id, name, month, year 
-          FROM billing_periods 
-          WHERE CAST(kpspams_id AS text) = $1
+          FROM (
+            SELECT id, name, month, year 
+            FROM billing_periods 
+            WHERE CAST(kpspams_id AS text) = $1
+            ORDER BY id DESC
+            LIMIT 6
+          ) sub
           ORDER BY id ASC
-          LIMIT 6
         `, [kpspamsIdStr]),
         sql.query(`
           SELECT DISTINCT ON (billing_period_id)

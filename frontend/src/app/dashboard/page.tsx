@@ -229,7 +229,7 @@ function DashboardContent() {
           <div>
             <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold mb-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{overviewData?.context?.period || "Periode Berjalan Oktober 2026"}</span>
+              <span>{overviewData?.context?.period || "Periode Berjalan November 2026"}</span>
             </div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white">
               {activeKpspamsId === null
