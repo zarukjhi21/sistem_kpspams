@@ -363,9 +363,18 @@ export default function BillingPage() {
   // Build Personalized WA Draft Message
   const getPersonalWaMessage = (customer: DemoCustomer) => {
     const kName = customer.kpspamsName || "KPSPAMS Lemo Baru";
+    const periodName = rolloverStatus?.current_period_name || "November 2026";
+    const hasOktArrears = (customer as any).hasOctoberArrears;
+    if (hasOktArrears) {
+      return (
+        `Yth. Bpk/Ibu ${customer.name}, tagihan air bersih ${kName} terdapat tunggakan periode Oktober 2026 dan tagihan berjalan ${periodName}. ` +
+        `Total kewajiban: Rp ${((customer as any).totalArrears || 20000).toLocaleString("id-ID")},-. ` +
+        `Mohon segera melakukan pembayaran. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${customer.connectionNo}`
+      );
+    }
     return (
-      `Yth. Bpk/Ibu ${customer.name}, tagihan air bersih ${kName} periode Oktober 2026 ` +
-      `sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. ` +
+      `Yth. Bpk/Ibu ${customer.name}, tagihan air bersih ${kName} ${periodName} ` +
+      `sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 November 2026. ` +
       `Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${customer.connectionNo}`
     );
   };

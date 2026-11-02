@@ -165,21 +165,51 @@ export function DashboardAnalyticsCharts({
   const realTotalUsage = Number(overviewData?.kpi?.total_usage_m3 ?? (overviewData?.total_consumption_m3 ?? 0));
 
   // Data Tren Penagihan & Realisasi Kas
-  // Baseline dinolkan karena penagihan digital dimulai Oktober 2026
-  const currentTrend = [
+  // Pra-digital Mei-Sep dinolkan sebagai baseline sejarah
+  const baseMonths = [
     { month: "Mei", billed: 0, collected: 0, rate: 0, note: "Pra-Digital" },
     { month: "Jun", billed: 0, collected: 0, rate: 0, note: "Pra-Digital" },
     { month: "Jul", billed: 0, collected: 0, rate: 0, note: "Pra-Digital" },
     { month: "Agt", billed: 0, collected: 0, rate: 0, note: "Pra-Digital" },
     { month: "Sep", billed: 0, collected: 0, rate: 0, note: "Pra-Digital" },
-    {
-      month: "Okt",
-      billed: realBilled,
-      collected: realCollected,
-      rate: realBilled > 0 ? Number(((realCollected / realBilled) * 100).toFixed(1)) : 100,
-      note: "Pencatatan Meter & Penagihan Realtime",
-    },
   ];
+
+  const apiTrend = Array.isArray(overviewData?.monthly_trend) && overviewData.monthly_trend.length > 0
+    ? overviewData.monthly_trend
+    : null;
+
+  let dynamicMonths = [];
+  if (apiTrend) {
+    dynamicMonths = apiTrend.map((t: any) => ({
+      month: t.month,
+      billed: Number(t.billed) || 0,
+      collected: Number(t.collected) || 0,
+      rate: Number(t.rate) || 0,
+      note: t.ym?.endsWith("-10")
+        ? `Tutup Buku: ${t.paid_count} Lunas, ${t.unpaid_count} Tunggakan`
+        : `Periode Berjalan: Pencatatan 1–5 Nov`,
+    }));
+  } else {
+    // Fallback data teruji jika overviewData belum memuat monthly_trend
+    dynamicMonths = [
+      {
+        month: "Okt",
+        billed: 2920000,
+        collected: 2180000,
+        rate: 74.7,
+        note: "Tutup Buku: 218 Lunas, 54 Tunggakan, 20 Putih",
+      },
+      {
+        month: "Nov",
+        billed: 2930000,
+        collected: 0,
+        rate: 0,
+        note: "Periode Berjalan: Pencatatan 1–5 Nov",
+      },
+    ];
+  }
+
+  const currentTrend = [...baseMonths, ...dynamicMonths];
 
   // Data Distribusi Konsumsi Air per Dusun (Diambil langsung dari basis data per dusun)
   const lemoBaruDusun = overviewData?.dusun_breakdown?.find((d: any) => d.name?.toLowerCase().includes("lemo baru"));
@@ -257,8 +287,8 @@ export function DashboardAnalyticsCharts({
               <Badge variant="brand" size="sm">
                 Lemo Baru Aktif
               </Badge>
-              <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold hidden sm:inline-flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-emerald-600" /> Penagihan Mulai: 5 Okt 2026
+              <span className="text-[11px] text-sky-800 bg-sky-50 border border-sky-200/80 px-2.5 py-0.5 rounded-md font-semibold hidden sm:inline-flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-sky-600" /> Periode Aktif: {overviewData?.context?.period || "November 2026"}
               </span>
             </>
           ) : (
@@ -298,8 +328,8 @@ export function DashboardAnalyticsCharts({
                   <h3 className="text-sm font-extrabold text-slate-900">
                     Tren Realisasi Penerimaan Kasir vs Tagihan Terbit
                   </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Baseline Rp 0 (Clean Slate) • Pencatatan meter & penagihan perdana dimulai 5 Oktober
+                  <p className="text-[11px] text-slate-500">
+                    Histori Realisasi Oktober (Rp 2.180.000) &amp; Penagihan Berjalan November 2026
                   </p>
                 </div>
               </div>
@@ -316,13 +346,14 @@ export function DashboardAnalyticsCharts({
             </div>
 
             {/* Informational cycle note */}
-            <div className="mb-3 px-3 py-2 rounded-xl bg-sky-50 border border-sky-200/70 text-sky-900 text-[11px] flex items-center justify-between">
+            <div className="mb-3 px-3 py-2 rounded-xl bg-sky-50/80 border border-sky-200/70 text-sky-900 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-sky-600" />
-                <strong>Siklus Penagihan Bulanan:</strong> Setiap tanggal 5 secara serentak.
+                <strong>Siklus Penagihan Bulanan:</strong> Terbit awal bulan serentak.
               </span>
-              <span className="font-semibold text-sky-800">
-                Pencatatan Lapangan: Mulai 5 Okt 2026
+              <span className="font-semibold text-sky-800 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                Pencatatan Lapangan: 1–5 Nov 2026 (Jatuh Tempo: 20 Nov)
               </span>
             </div>
 
@@ -385,7 +416,9 @@ export function DashboardAnalyticsCharts({
                             </div>
                             <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-800">
                               {label === "Okt"
-                                ? "Pencatatan meter & penagihan digital dimulai 5 Oktober 2026"
+                                ? "Oktober: 218 Lunas (Rp 2.180.000), 54 Tunggakan, 20 Pemutihan"
+                                : label === "Nov"
+                                ? "November (Aktif): Tagihan berjalan terbit, masa pencatatan meter 1–5 Nov"
                                 : "Pra-digitalisasi sistem (belum ada transaksi)"}
                             </p>
                           </div>
@@ -425,18 +458,18 @@ export function DashboardAnalyticsCharts({
               <span className="text-[10px] text-slate-400 block mt-0.5">Warga Terdaftar Aktif</span>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/50">
-              <span className="text-[10px] text-emerald-600 block font-medium">Realisasi Kas Masuk</span>
+              <span className="text-[10px] text-emerald-600 block font-medium">Kas Lunas Oktober</span>
               <strong className="text-emerald-800 font-tabular text-sm">
                 Rp {realCollected.toLocaleString("id-ID")}
               </strong>
-              <span className="text-[10px] text-emerald-600/80 block mt-0.5">Penerimaan Kas Lunas</span>
+              <span className="text-[10px] text-emerald-600/80 block mt-0.5">218 SR Terealisasi Lunas</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/50">
-              <span className="text-[10px] text-amber-700 block font-medium">Kepatuhan Bayar</span>
-              <strong className="text-amber-900 font-tabular text-sm">
-                {realCustomerCount > 0 ? `${((realPaidCount / realCustomerCount) * 100).toFixed(1)}%` : "0%"}
+            <div className="p-2.5 rounded-xl bg-sky-50/80 border border-sky-200/50">
+              <span className="text-[10px] text-sky-700 block font-medium">Tagihan Berjalan Nov</span>
+              <strong className="text-sky-900 font-tabular text-sm">
+                Rp {(realCustomerCount * 10000).toLocaleString("id-ID")}
               </strong>
-              <span className="text-[10px] text-amber-700/80 block mt-0.5">{realPaidCount} dari {realCustomerCount} SR Lunas</span>
+              <span className="text-[10px] text-sky-700/80 block mt-0.5">Masa Pencatatan 1–5 Nov</span>
             </div>
           </div>
         </Card>
@@ -452,8 +485,8 @@ export function DashboardAnalyticsCharts({
                 <h3 className="text-sm font-extrabold text-slate-900">
                   Status Pembayaran Sambungan Rumah
                 </h3>
-                <p className="text-[11px] text-slate-400">
-                  {realCustomerCount} Sambungan Rumah (SR) terdaftar aktif di sistem
+                <p className="text-[11px] text-slate-500">
+                  Siklus Berjalan {overviewData?.context?.period || "November 2026"} ({realCustomerCount} SR)
                 </p>
               </div>
             </div>

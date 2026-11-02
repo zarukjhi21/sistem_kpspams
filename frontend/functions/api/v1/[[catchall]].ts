@@ -1990,6 +1990,21 @@ export async function onRequest(context: any) {
         compParams.push(kId);
       }
 
+      let trendQuery = `
+        SELECT 
+          SUBSTRING(invoice_date, 1, 7) as ym,
+          COALESCE(sum(CAST(total_amount AS numeric)), 0)::numeric as total_billed,
+          COALESCE(sum(CASE WHEN status ILIKE 'paid' THEN CAST(total_amount AS numeric) ELSE 0 END), 0)::numeric as total_collected,
+          count(CASE WHEN status ILIKE 'paid' THEN 1 END)::int as paid_count,
+          count(CASE WHEN status ILIKE 'unpaid' THEN 1 END)::int as unpaid_count,
+          count(CASE WHEN status ILIKE 'waived' THEN 1 END)::int as waived_count
+        FROM invoices
+      `;
+      if (kId) {
+        trendQuery += " WHERE CAST(kpspams_id AS integer) = $1";
+      }
+      trendQuery += " GROUP BY SUBSTRING(invoice_date, 1, 7) ORDER BY ym ASC";
+
       const activeBpQuery = `
         SELECT name FROM billing_periods WHERE status = 'OPEN' ORDER BY id DESC LIMIT 1
       `;
@@ -2063,6 +2078,7 @@ export async function onRequest(context: any) {
         activeBp,
         unitBreakdownRows,
         dusunRows,
+        trendRows,
         kRow,
       ] = await Promise.all([
         sql.query(custQuery, queryParams),
@@ -2075,6 +2091,7 @@ export async function onRequest(context: any) {
         sql.query(activeBpQuery),
         sql.query(unitBreakdownQuery),
         sql.query(dusunQuery),
+        sql.query(trendQuery, queryParams),
         kId && kId > 3 ? sql.query("SELECT name FROM kpspams WHERE id = $1 LIMIT 1", [kId]) : Promise.resolve([]),
       ]);
 
@@ -2086,6 +2103,38 @@ export async function onRequest(context: any) {
       const totalCashBalance = Number(cashRes[0]?.balance) || 0;
 
       const periodLabel = activeBp.length > 0 ? activeBp[0].name : "Periode Berjalan";
+
+      const MONTH_SHORT: Record<string, string> = {
+        "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "Mei", "06": "Jun",
+        "07": "Jul", "08": "Agt", "09": "Sep", "10": "Okt", "11": "Nov", "12": "Des"
+      };
+      const MONTH_FULL: Record<string, string> = {
+        "01": "Januari", "02": "Februari", "03": "Maret", "04": "April", "05": "Mei", "06": "Juni",
+        "07": "Juli", "08": "Agustus", "09": "September", "10": "Oktober", "11": "November", "12": "Desember"
+      };
+
+      const monthlyTrend = (trendRows || []).map((r: any) => {
+        const parts = (r.ym || "").split("-");
+        const mKey = parts[1] || "";
+        const mShort = MONTH_SHORT[mKey] || mKey;
+        const mFull = MONTH_FULL[mKey] || mKey;
+        const b = Number(r.total_billed) || 0;
+        const c = Number(r.total_collected) || 0;
+        const pCount = Number(r.paid_count) || 0;
+        const uCount = Number(r.unpaid_count) || 0;
+        const wCount = Number(r.waived_count) || 0;
+        return {
+          ym: r.ym,
+          month: mShort,
+          name: `${mFull} ${parts[0]}`,
+          billed: b,
+          collected: c,
+          rate: b > 0 ? Number(((c / b) * 100).toFixed(1)) : 0,
+          paid_count: pCount,
+          unpaid_count: uCount,
+          waived_count: wCount,
+        };
+      });
 
       let scopeLabel = "Konsolidasi Seluruh Desa Kuajang";
       if (kId === 1) scopeLabel = "KPSPAMS Lemo Baru";
@@ -2144,6 +2193,7 @@ export async function onRequest(context: any) {
             total_physical_meter_m3: Number(d.total_physical_meter_m3) || 0,
           })),
           unit_breakdown: unitBreakdown,
+          monthly_trend: monthlyTrend,
           active_customers: activeCust,
           total_kpspams: kpspamsCount[0]?.count || 1,
           total_billed: billed,

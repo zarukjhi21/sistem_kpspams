@@ -973,8 +973,11 @@ function PenagihanLapanganContent() {
                         onClick={() => {
                           const clean = selectedCustomer.phone?.replace(/^0/, "62").replace(/\D/g, "");
                           const kName = selectedCustomer.kpspamsName || "KPSPAMS Lemo Baru";
+                          const hasOktArrears = (selectedCustomer as any).hasOctoberArrears;
                           const text = encodeURIComponent(
-                            `Yth. Bpk/Ibu ${selectedCustomer.name}, tagihan air bersih ${kName} periode Oktober 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 Oktober. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${selectedCustomer.connectionNo}`
+                            hasOktArrears
+                              ? `Yth. Bpk/Ibu ${selectedCustomer.name}, tagihan air bersih ${kName} terdapat tunggakan Oktober 2026 dan tagihan berjalan November 2026. Total: Rp ${((selectedCustomer as any).totalArrears || 20000).toLocaleString("id-ID")},-. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${selectedCustomer.connectionNo}`
+                              : `Yth. Bpk/Ibu ${selectedCustomer.name}, tagihan air bersih ${kName} periode November 2026 sebesar Rp 10.000,- telah terbit. Jatuh tempo: 20 November 2026. Cek rincian di: sikpspams-kuajang.pages.dev/portal?sr=${selectedCustomer.connectionNo}`
                           );
                           window.open(`https://wa.me/${clean}?text=${text}`, "_blank");
                         }}
