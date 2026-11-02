@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -84,8 +84,8 @@ function buildSystemAllocation(
   lmbExp?: UnitExpenses,
   lmtExp?: UnitExpenses,
   sr1Exp?: UnitExpenses,
-  lmbCust: number = 43,
-  totalCust: number = 43
+  lmbCust: number = 293,
+  totalCust: number = 293
 ): Record<SystemViewKey, SystemData> {
   const defaultExp: UnitExpenses = {
     operasional: 0,
@@ -407,8 +407,9 @@ function formatRupiahDisplay(val: number): string {
 export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
+  const [customerCount, setCustomerCount] = useState<number>(293);
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
-    buildSystemAllocation(30196000, 0, 0, undefined, undefined, undefined, 43, 43)
+    buildSystemAllocation(8441000, 0, 0, undefined, undefined, undefined, 293, 293)
   );
 
   useEffect(() => {
@@ -423,14 +424,15 @@ export function PublicTransparencyCharts() {
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmb = res.data.units.LMB?.cash ?? 30196000;
+          const lmb = res.data.units.LMB?.cash ?? 8441000;
           const lmt = res.data.units.LMT?.cash ?? 0;
           const sr1 = res.data.units.SR1?.cash ?? 0;
           const lmbExp = res.data.units.LMB?.expenses;
           const lmtExp = res.data.units.LMT?.expenses;
           const sr1Exp = res.data.units.SR1?.expenses;
-          const lmbCust = res.data.units.LMB?.customers ?? 43;
+          const lmbCust = res.data.units.LMB?.customers ?? res.data.total_customers ?? 293;
           const totalCust = res.data.total_customers ?? lmbCust;
+          setCustomerCount(lmbCust);
           setSystemDataMap(buildSystemAllocation(lmb, lmt, sr1, lmbExp, lmtExp, sr1Exp, lmbCust, totalCust));
         }
       })
@@ -438,6 +440,41 @@ export function PublicTransparencyCharts() {
         console.warn("PublicTransparencyCharts: fallback to baseline initial cash", err);
       });
   }, []);
+
+  // Perhitungan Volume Debit Air Bersih Otomatis Berdasarkan Jumlah Sambungan Rumah Riil (293 SR)
+  // Menggunakan standar konsumsi air bersih pedesaan gravitasi pegunungan (~350 Liter / SR / Hari)
+  const dailyDistributionData = useMemo(() => {
+    const base = customerCount * 350;
+    const factors = [
+      { day: "Senin", mult: 0.93 },
+      { day: "Selasa", mult: 0.96 },
+      { day: "Rabu", mult: 1.00 },
+      { day: "Kamis", mult: 0.97 },
+      { day: "Jumat", mult: 1.04 },
+      { day: "Sabtu", mult: 1.12 },
+      { day: "Minggu", mult: 1.06 },
+    ];
+    return factors.map((f) => {
+      const vol = Math.round(base * f.mult);
+      return {
+        day: f.day,
+        volume: vol,
+        formatted: `${(vol / 1000).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}k L`,
+      };
+    });
+  }, [customerCount]);
+
+  const totalWeeklyVolume = useMemo(() => {
+    return dailyDistributionData.reduce((acc: number, d: { volume: number }) => acc + d.volume, 0);
+  }, [dailyDistributionData]);
+
+  const peakDay = useMemo(() => {
+    return dailyDistributionData.reduce((prev, curr) => (curr.volume > prev.volume ? curr : prev), dailyDistributionData[0]);
+  }, [dailyDistributionData]);
+
+  const avgDaily = useMemo(() => {
+    return Math.round(totalWeeklyVolume / 7);
+  }, [totalWeeklyVolume]);
 
   const currentSystemData = systemDataMap[selectedSystem];
 
@@ -484,7 +521,7 @@ export function PublicTransparencyCharts() {
                 </div>
               </div>
               <span className="hidden sm:inline-block text-xs font-mono font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl">
-                Estimasi ~12.100 L / Hari
+                Estimasi ~{(avgDaily / 1000).toFixed(1)}k L / Hari
               </span>
             </div>
 
@@ -492,7 +529,7 @@ export function PublicTransparencyCharts() {
             <div className="h-64 sm:h-72 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={DAILY_DISTRIBUTION_DATA}
+                  data={dailyDistributionData}
                   margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
                 >
                   <defs>
@@ -582,7 +619,9 @@ export function PublicTransparencyCharts() {
                 <div className="min-w-0">
                   <div className="text-[10px] text-slate-400 font-medium">Tekanan Pipa Distribusi</div>
                   <div className="text-xs font-bold text-slate-900 truncate">1.8 - 2.2 Bar (Stabil)</div>
-                  <div className="text-[10px] text-amber-700 font-semibold mt-0.5">Aliran Lancar ke 37 Rumah</div>
+                  <div className="text-[10px] text-amber-700 font-semibold mt-0.5">
+                    Aliran Lancar ke {customerCount} Sambungan Rumah
+                  </div>
                 </div>
               </div>
 
@@ -603,11 +642,15 @@ export function PublicTransparencyCharts() {
           <div className="pt-3.5 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs mt-3">
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-50/80 border border-slate-100">
               <span className="text-[9px] sm:text-[10px] text-slate-500 block font-medium truncate">Minggu Ini</span>
-              <strong className="text-slate-900 font-black text-xs sm:text-sm">85.000 L</strong>
+              <strong className="text-slate-900 font-black text-xs sm:text-sm">
+                {(totalWeeklyVolume / 1000).toLocaleString("id-ID", { maximumFractionDigits: 0 })}.000 L
+              </strong>
             </div>
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-50/80 border border-slate-100">
               <span className="text-[9px] sm:text-[10px] text-slate-500 block font-medium truncate">Puncak Hari</span>
-              <strong className="text-sky-700 font-black text-xs sm:text-sm truncate block">Sabtu (13.2k L)</strong>
+              <strong className="text-sky-700 font-black text-xs sm:text-sm truncate block">
+                {peakDay.day} ({(peakDay.volume / 1000).toFixed(1)}k L)
+              </strong>
             </div>
             <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-50/80 border border-slate-100">
               <span className="text-[9px] sm:text-[10px] text-slate-500 block font-medium truncate">Kualitas Air</span>
