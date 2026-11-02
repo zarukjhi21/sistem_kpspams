@@ -29,13 +29,13 @@ export const DEMO_KPSPAMS_LIST: DemoKpspams[] = [
     name: 'KPSPAMS Lemo Baru',
     dusuns: ['Dusun Lemo Baru'],
     head: 'Fadli',
-    activeCustomers: 42, // SR Aktif Terverifikasi Server
+    activeCustomers: 293, // SR Aktif Terverifikasi Server
     waterUsageThisMonth: 0, // Pencatatan Perdana Stand Awal
-    totalPhysicalMeterM3: 49635.5, // Total kumulatif stand fisik seluruh SR
-    totalBilled: 420000,
-    totalCollected: 420000,
-    outstandingArrears: 0,
-    cashBalance: 30186000,
+    totalPhysicalMeterM3: 523136.49, // Total kumulatif stand fisik seluruh SR
+    totalBilled: 2930000,
+    totalCollected: 2180000,
+    outstandingArrears: 750000,
+    cashBalance: 8441000,
     activeComplaints: 0,
     systemType: 'GRAVITASI',
     waterSource: 'Mata Air Alami Pegunungan (Sistem Gravitasi Murni - Tanpa Pompa Listrik)',

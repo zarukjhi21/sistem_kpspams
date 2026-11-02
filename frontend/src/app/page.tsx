@@ -97,23 +97,23 @@ export default function HomePage() {
   const [compText, setCompText] = useState("");
 
   const [stats, setStats] = useState({
-    lmbCash: 31616000,
-    lmbCustomers: 202,
-    lmbActiveConnections: 202,
+    lmbCash: 8441000,
+    lmbCustomers: 293,
+    lmbActiveConnections: 293,
     lmbSealedConnections: 0,
     lmbUsageM3: 0,
-    lmbPhysicalMeterM3: 322684.49,
-    totalCash: 31616000,
-    totalCustomers: 202,
+    lmbPhysicalMeterM3: 523136.49,
+    totalCash: 8441000,
+    totalCustomers: 293,
     totalUsageM3: 0,
-    totalPhysicalMeterM3: 322684.49,
-    billingPeriod: "Oktober 2026",
-    totalCollected: 1850000,
-    paidCount: 185,
-    totalArrears: 170000,
-    unpaidCount: 17,
-    totalInvoices: 202,
-    collectionRate: 91.6,
+    totalPhysicalMeterM3: 523136.49,
+    billingPeriod: "November 2026",
+    totalCollected: 2180000,
+    paidCount: 218,
+    totalArrears: 750000,
+    unpaidCount: 75,
+    totalInvoices: 293,
+    collectionRate: 74.4,
   });
 
   useEffect(() => {
@@ -122,13 +122,13 @@ export default function HomePage() {
       .then((res) => {
         if (res?.status === "success" && res.data?.kpi) {
           const k = res.data.kpi;
-          const collected = Number(k.total_collected) || 1850000;
-          const arrears = Number(k.total_arrears) || 170000;
+          const collected = Number(k.total_collected) || 2180000;
+          const arrears = Number(k.total_arrears) || 750000;
           setStats((prev) => ({
             ...prev,
             lmbCash: Number(k.total_cash_balance) || prev.lmbCash,
             lmbCustomers: Number(k.total_customers) || prev.lmbCustomers,
-            lmbActiveConnections: Number(k.active_connections) || Number(k.total_customers) || 202,
+            lmbActiveConnections: Number(k.active_connections) || Number(k.total_customers) || 293,
             lmbSealedConnections: Number(k.sealed_connections) || 0,
             lmbUsageM3: Number(k.total_usage_m3) || 0,
             lmbPhysicalMeterM3: Number(k.total_physical_meter_m3) || prev.lmbPhysicalMeterM3,
@@ -140,8 +140,8 @@ export default function HomePage() {
             paidCount: Math.round(collected / 10000),
             totalArrears: arrears,
             unpaidCount: Math.round(arrears / 10000),
-            totalInvoices: Number(k.total_customers) || 202,
-            collectionRate: Number(k.collection_rate_percent) || 91.6,
+            totalInvoices: Number(k.total_customers) || 293,
+            collectionRate: Number(k.collection_rate_percent) || 74.4,
           }));
         }
       })
@@ -882,7 +882,7 @@ export default function HomePage() {
                 Peta Satelit GIS Sambungan Air Warga
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Pemetaan digital jalur transmisi pipa mata air pegunungan dan sebaran 202 sambungan rumah warga Desa Kuajang.
+                Pemetaan digital jalur transmisi pipa mata air pegunungan dan sebaran 293 sambungan rumah warga Desa Kuajang.
               </p>
             </div>
           </ScrollReveal>

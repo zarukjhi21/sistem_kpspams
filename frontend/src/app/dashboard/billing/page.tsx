@@ -1016,10 +1016,10 @@ export default function BillingPage() {
                     Membuka periode baru <strong>{rolloverStatus?.target_next_period || "November 2026"}</strong> dengan status <span className="font-bold text-emerald-700">OPEN (Aktif)</span>.
                   </li>
                   <li>
-                    Menyalin stand meter terakhir <strong>83 SR</strong> menjadi stand meter awal periode baru secara otomatis.
+                    Menyalin stand meter terakhir <strong>{rolloverStatus?.total_active_connections || 293} SR</strong> menjadi stand meter awal periode baru secara otomatis.
                   </li>
                   <li>
-                    Menerbitkan <strong>83 lembar tagihan baru</strong> periode {rolloverStatus?.target_next_period || "November 2026"} @ Rp 10.000,- (UNPAID).
+                    Menerbitkan <strong>{rolloverStatus?.total_active_connections || 293} lembar tagihan baru</strong> periode {rolloverStatus?.target_next_period || "November 2026"} @ Rp 10.000,- (UNPAID).
                   </li>
                 </ul>
               </div>
@@ -1032,7 +1032,7 @@ export default function BillingPage() {
                   className="mt-0.5 rounded text-slate-900 focus:ring-slate-900 w-4 h-4"
                 />
                 <span className="text-[11px] font-bold text-amber-950">
-                  Saya menyetujui tutup buku {rolloverStatus?.current_period_name || "Oktober 2026"} dan pembukaan siklus penagihan {rolloverStatus?.target_next_period || "November 2026"} untuk 83 SR.
+                  Saya menyetujui tutup buku {rolloverStatus?.current_period_name || "Oktober 2026"} dan pembukaan siklus penagihan {rolloverStatus?.target_next_period || "November 2026"} untuk {rolloverStatus?.total_active_connections || 293} SR.
                 </span>
               </label>
             </div>
