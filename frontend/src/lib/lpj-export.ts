@@ -34,9 +34,12 @@ export interface LpjExportData {
   totalConnections: number;
   paidConnections: number;
   unpaidConnections: number;
+  waivedConnections?: number;
+  waivedAmount?: number;
   collectionRate: number;
   transactions: LpjTransactionItem[];
   customers: LpjCustomerItem[];
+  reportDate?: string;
 }
 
 export function exportLpjToExcel(data: LpjExportData) {
@@ -70,6 +73,7 @@ export function exportLpjToExcel(data: LpjExportData) {
         .td-center { border: 1px solid #cbd5e1; padding: 5px; text-align: center; }
         .sum-box { background-color: #f8fafc; font-weight: bold; border: 1px solid #64748b; }
         .lunas { color: #166534; font-weight: bold; }
+        .subsidi { color: #7e22ce; font-weight: bold; }
         .belum { color: #991b1b; font-weight: bold; }
         .ttd-box { text-align: center; font-size: 10pt; padding-top: 30px; }
       </style>
@@ -111,6 +115,10 @@ export function exportLpjToExcel(data: LpjExportData) {
         <tr>
           <td colspan="3" class="td-data">Sambungan Terbayar Lunas:</td>
           <td colspan="4" class="td-num" style="color: #166534;"><b>${data.paidConnections} SR (${data.collectionRate}% Efisiensi) - Rp ${(data.paidConnections * 10000).toLocaleString("id-ID")}</b></td>
+        </tr>
+        <tr>
+          <td colspan="3" class="td-data">Sambungan Bebas Iuran Resmi (Subsidi Fasum / Pemutihan):</td>
+          <td colspan="4" class="td-num" style="color: #7e22ce;"><b>${data.waivedConnections || 0} SR - Rp ${((data.waivedAmount !== undefined ? data.waivedAmount : (data.waivedConnections || 0) * 10000)).toLocaleString("id-ID")} (Subsidi Sah)</b></td>
         </tr>
         <tr>
           <td colspan="3" class="td-data">Sambungan Belum Lunas (Tertunggak):</td>
@@ -169,7 +177,7 @@ export function exportLpjToExcel(data: LpjExportData) {
 
         <!-- III. REKAPITULASI PELANGGAN -->
         <tr>
-          <td colspan="7" class="section-header">III. REKAPITULASI REALISASI IURAN AIR 83 SAMBUNGAN RUMAH (SR)</td>
+          <td colspan="7" class="section-header">III. REKAPITULASI REALISASI IURAN AIR ${data.totalConnections} SAMBUNGAN RUMAH (SR)</td>
         </tr>
         <tr>
           <th class="th-main">No</th>
@@ -187,7 +195,7 @@ export function exportLpjToExcel(data: LpjExportData) {
             <td class="td-data">${c.name.toUpperCase()}</td>
             <td class="td-center">${c.dusun}</td>
             <td class="td-num">${c.lastReading} m³</td>
-            <td class="td-center ${c.status === "PAID" ? "lunas" : "belum"}">${c.status === "PAID" ? "LUNAS" : "BELUM LUNAS"}</td>
+            <td class="td-center ${c.status === "PAID" ? "lunas" : c.status === "WAIVED" ? "subsidi" : "belum"}">${c.status === "PAID" ? "LUNAS" : c.status === "WAIVED" ? "BEBAS IURAN (SUBSIDI SAH)" : "BELUM LUNAS"}</td>
             <td class="td-num">Rp ${c.totalAmount.toLocaleString("id-ID")}</td>
           </tr>
         `).join("")}
@@ -222,7 +230,7 @@ export function exportLpjToExcel(data: LpjExportData) {
             Ketua Pengurus
           </td>
           <td class="ttd-box">
-            Kuajang, 31 Oktober 2026<br/>
+            Kuajang, ${data.reportDate || "31 Oktober 2026"}<br/>
             <b>Bendahara KPSPAMS</b><br/><br/><br/><br/>
             <u><b>M. DARMAWAN</b></u><br/>
             Pemegang Kas Resmi
@@ -255,6 +263,7 @@ export function exportLpjToCsv(data: LpjExportData) {
   csv += `=== I. RINGKASAN EKSEKUTIF REALISASI IURAN & KAS ===\n`;
   csv += `Total Sambungan Rumah (SR);${data.totalConnections} SR\n`;
   csv += `Sambungan Lunas;${data.paidConnections} SR (${data.collectionRate}% Efisiensi) - Rp ${(data.paidConnections * 10000).toLocaleString("id-ID")}\n`;
+  csv += `Sambungan Bebas Iuran Resmi (Subsidi Fasum);${data.waivedConnections || 0} SR - Rp ${(data.waivedAmount !== undefined ? data.waivedAmount : (data.waivedConnections || 0) * 10000).toLocaleString("id-ID")}\n`;
   csv += `Sambungan Belum Lunas;${data.unpaidConnections} SR - Rp ${(data.unpaidConnections * 10000).toLocaleString("id-ID")}\n`;
   csv += `Saldo Kas Awal;Rp ${data.openingBalance.toLocaleString("id-ID")}\n`;
   csv += `Total Penerimaan;Rp ${data.totalIncome.toLocaleString("id-ID")}\n`;
@@ -270,10 +279,11 @@ export function exportLpjToCsv(data: LpjExportData) {
   });
   csv += `;;;Total Akumulasi;;${data.totalIncome};${data.totalExpense}\n\n`;
 
-  csv += `=== III. REKAPITULASI REALISASI IURAN AIR 83 SAMBUNGAN RUMAH (SR) ===\n`;
+  csv += `=== III. REKAPITULASI REALISASI IURAN AIR ${data.totalConnections} SAMBUNGAN RUMAH (SR) ===\n`;
   csv += `No;No. Sambungan (SR);Nama Pelanggan;Wilayah / Dusun;Stand Meter (m3);Status Iuran;Nominal (Rp)\n`;
   data.customers.forEach((c, idx) => {
-    csv += `${idx + 1};"${c.connectionNo}";"${c.name}";"${c.dusun}";${c.lastReading};"${c.status === "PAID" ? "LUNAS" : "BELUM LUNAS"}";${c.totalAmount}\n`;
+    const statusLabel = c.status === "PAID" ? "LUNAS" : c.status === "WAIVED" ? "BEBAS IURAN (SUBSIDI SAH)" : "BELUM LUNAS";
+    csv += `${idx + 1};"${c.connectionNo}";"${c.name}";"${c.dusun}";${c.lastReading};"${statusLabel}";${c.totalAmount}\n`;
   });
   csv += `;;;;;Total Tertagih;${data.paidConnections * 10000}\n\n`;
 
@@ -281,7 +291,7 @@ export function exportLpjToCsv(data: LpjExportData) {
   csv += `Mengetahui;Kepala Desa Kuajang;H. MUHAMMAD S.\n`;
   csv += `Menyetujui;Ketua BPD Desa Kuajang;\n`;
   csv += `Pengelola;Ketua KPSPAMS;FADLI\n`;
-  csv += `Bendahara;Pemegang Kas Resmi;M. DARMAWAN\n`;
+  csv += `Bendahara;Pemegang Kas Resmi (Kuajang, ${data.reportDate || "31 Oktober 2026"});M. DARMAWAN\n`;
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);

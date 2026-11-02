@@ -36,6 +36,7 @@ import {
   Share2,
   FileSpreadsheet,
   Download,
+  Calendar,
 } from "lucide-react";
 import {
   exportLpjToExcel,
@@ -241,6 +242,9 @@ function KeuanganContent() {
   // State Modal Cetak Laporan Keuangan Bulanan & LPJ Resmi
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [reportCopied, setReportCopied] = useState<boolean>(false);
+  const [selectedLpjPeriod, setSelectedLpjPeriod] = useState<string>("2026-10");
+  const [allInvoices, setAllInvoices] = useState<any[]>([]);
+  const [customerLookup, setCustomerLookup] = useState<Record<string, any>>({});
   const [lpjCustomers, setLpjCustomers] = useState<LpjCustomerItem[]>([]);
   const [isLoadingLpj, setIsLoadingLpj] = useState(false);
 
@@ -249,6 +253,7 @@ function KeuanganContent() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
+  const [periodFilter, setPeriodFilter] = useState<string>("ALL");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -268,7 +273,7 @@ function KeuanganContent() {
     return Number(acc.kpspamsId) === Number(effectiveKpspamsId);
   });
 
-  // Filter mutasi transaksi berdasarkan unit, pencarian, dan tipe
+  // Filter mutasi transaksi berdasarkan unit, pencarian, periode, dan tipe
   const filteredTx = transactions.filter((tx) => {
     if (effectiveKpspamsId !== null && Number(tx.kpspamsId) !== Number(effectiveKpspamsId)) {
       return false;
@@ -278,6 +283,13 @@ function KeuanganContent() {
     }
     if (categoryFilter !== "ALL" && tx.category !== categoryFilter) {
       return false;
+    }
+    if (periodFilter !== "ALL") {
+      if (periodFilter === "2026") {
+        if (!tx.date.startsWith("2026")) return false;
+      } else {
+        if (!tx.date.startsWith(periodFilter)) return false;
+      }
     }
     if (
       debouncedQuery &&
@@ -536,15 +548,20 @@ function KeuanganContent() {
       `*LAPORAN PERTANGGUNGJAWABAN BUKU KAS OPERASIONAL KPSPAMS*\n` +
       `*PEMERINTAH DESA KUAJANG, KEC. BINUANG*\n` +
       `Unit: ${kpspamsName}\n` +
-      `Periode: Oktober 2026\n` +
+      `Periode: ${lpjMetrics.periodLabel}\n` +
       `----------------------------------------\n` +
-      `• Total Saldo Awal (Opening) : Rp ${totalOpeningBalance.toLocaleString("id-ID")}\n` +
-      `• Total Penerimaan Kas Masuk : Rp ${totalIncome.toLocaleString("id-ID")}\n` +
-      `• Total Beban & Biaya Operasional : Rp ${totalExpense.toLocaleString("id-ID")}\n` +
+      `• Total Sambungan Rumah (SR) : ${lpjMetrics.totalConnections} SR\n` +
+      `• Lunas Terbayar : ${lpjMetrics.paidConnections} SR (Rp ${(lpjMetrics.paidConnections * 10000).toLocaleString("id-ID")})\n` +
+      `• Bebas Iuran (Subsidi Fasum) : ${lpjMetrics.waivedConnections} SR (Masjid & Kompensasi Sah)\n` +
+      `• Belum Lunas (Tertunggak) : ${lpjMetrics.unpaidConnections} SR\n` +
       `----------------------------------------\n` +
-      `*TOTAL SALDO KAS OPERASIONAL SAAT INI: Rp ${totalLiquidCash.toLocaleString("id-ID")}*\n` +
+      `• Saldo Kas Awal Periode : Rp ${lpjMetrics.openingBalance.toLocaleString("id-ID")}\n` +
+      `• Total Penerimaan Kas Masuk : + Rp ${lpjMetrics.totalIncome.toLocaleString("id-ID")}\n` +
+      `• Total Beban & Biaya Operasional : - Rp ${lpjMetrics.totalExpense.toLocaleString("id-ID")}\n` +
+      `----------------------------------------\n` +
+      `*TOTAL SALDO KAS OPERASIONAL SAAT INI: Rp ${lpjMetrics.finalBalance.toLocaleString("id-ID")}*\n` +
       `Tercatat terpadu pada Kas Operasional Unit (Tunai & Rek. Bank Resmi).\n\n` +
-      `_Laporan resmi digital Sistem Informasi KPSPAMS Desa Kuajang._`;
+      `_Laporan resmi digital Sistem Informasi KPSPAMS Desa Kuajang (${lpjMetrics.reportDate})._`;
 
     navigator.clipboard.writeText(waText);
     setReportCopied(true);
@@ -558,8 +575,39 @@ function KeuanganContent() {
     }
   };
 
-  // Fetch daftar 83 pelanggan & tagihan untuk LPJ
-  const fetchLpjCustomers = async () => {
+  // Helper memetakan daftar pelanggan & tagihan berdasarkan periode yang dipilih
+  const mapInvoicesForPeriod = (periodKey: string, invs: any[], custMap: Record<string, any>): LpjCustomerItem[] => {
+    let targetInvs = invs;
+    if (periodKey === "2026-11") {
+      targetInvs = invs.filter((i) => String(i.billing_period_id) === "19" || String(i.invoice_date).startsWith("2026-11"));
+    } else if (periodKey === "2026-10") {
+      targetInvs = invs.filter((i) => String(i.billing_period_id) === "6" || String(i.invoice_date).startsWith("2026-10"));
+    } else if (periodKey === "2026-09") {
+      targetInvs = invs.filter((i) => String(i.billing_period_id) === "5" || String(i.invoice_date).startsWith("2026-09"));
+    } else {
+      // 2026 atau ALL: gunakan periode rekonsiliasi resmi Oktober 2026 (ID 6)
+      const octInvs = invs.filter((i) => String(i.billing_period_id) === "6");
+      if (octInvs.length > 0) targetInvs = octInvs;
+    }
+
+    return targetInvs.map((inv: any, idx: number) => {
+      const cust = custMap[inv.customer_id] || custMap[inv.connection_no] || {};
+      const statusUpper = (inv.status || "UNPAID").toUpperCase();
+      return {
+        id: inv.customer_id || idx + 1,
+        connectionNo: inv.connection_no || cust.connection_no || `SR-${inv.id}`,
+        name: inv.customer_name || cust.full_name || "Pelanggan",
+        dusun: cust.dusun || "Lemo Baru",
+        lastReading: Number(cust.last_reading || cust.initial_reading || inv.usage_m3 || 0),
+        status: statusUpper,
+        totalAmount: Number(inv.total_amount) || 10000,
+        paidAt: inv.paid_at,
+      };
+    });
+  };
+
+  // Fetch daftar seluruh pelanggan & tagihan untuk LPJ
+  const fetchLpjCustomers = async (periodKey = selectedLpjPeriod) => {
     setIsLoadingLpj(true);
     try {
       const [invRes, custRes] = await Promise.all([
@@ -573,23 +621,13 @@ function KeuanganContent() {
           custMap[c.id] = c;
           if (c.connection_no) custMap[c.connection_no] = c;
         });
+        setCustomerLookup(custMap);
       }
 
       if (invRes?.status === "success" && Array.isArray(invRes.data)) {
-        const items: LpjCustomerItem[] = invRes.data.map((inv: any, idx: number) => {
-          const cust = custMap[inv.customer_id] || custMap[inv.connection_no] || {};
-          return {
-            id: inv.customer_id || idx + 1,
-            connectionNo: inv.connection_no || cust.connection_no || `SR-${inv.id}`,
-            name: inv.customer_name || cust.full_name || "Pelanggan",
-            dusun: cust.dusun || "Lemo Baru",
-            lastReading: Number(cust.last_reading || cust.initial_reading || inv.usage_m3 || 0),
-            status: inv.status || "UNPAID",
-            totalAmount: Number(inv.total_amount) || 10000,
-            paidAt: inv.paid_at,
-          };
-        });
-        setLpjCustomers(items);
+        setAllInvoices(invRes.data);
+        const mapped = mapInvoicesForPeriod(periodKey, invRes.data, custMap);
+        setLpjCustomers(mapped);
       }
     } catch (e) {
       console.warn("Gagal fetch data pelanggan untuk LPJ:", e);
@@ -598,34 +636,116 @@ function KeuanganContent() {
     }
   };
 
+  const handlePeriodChangeLpj = (periodKey: string) => {
+    setSelectedLpjPeriod(periodKey);
+    if (allInvoices.length > 0) {
+      const mapped = mapInvoicesForPeriod(periodKey, allInvoices, customerLookup);
+      setLpjCustomers(mapped);
+    } else {
+      fetchLpjCustomers(periodKey);
+    }
+  };
+
   const handleOpenLpjModal = () => {
-    fetchLpjCustomers();
+    fetchLpjCustomers(selectedLpjPeriod);
     setShowReportModal(true);
   };
+
+  const lpjTransactions = React.useMemo(() => {
+    return transactions.filter((tx) => {
+      if (effectiveKpspamsId !== null && Number(tx.kpspamsId) !== Number(effectiveKpspamsId)) {
+        return false;
+      }
+      if (selectedLpjPeriod === "ALL") return true;
+      if (selectedLpjPeriod === "2026") return tx.date.startsWith("2026");
+      return tx.date.startsWith(selectedLpjPeriod);
+    });
+  }, [transactions, effectiveKpspamsId, selectedLpjPeriod]);
+
+  const lpjMetrics = React.useMemo(() => {
+    let periodLabel = "Periode Oktober 2026";
+    let reportDate = "31 Oktober 2026";
+
+    if (selectedLpjPeriod === "2026-11") {
+      periodLabel = "Periode November 2026 (Bulan Berjalan)";
+      reportDate = "2 November 2026";
+    } else if (selectedLpjPeriod === "2026-10") {
+      periodLabel = "Periode Oktober 2026";
+      reportDate = "31 Oktober 2026";
+    } else if (selectedLpjPeriod === "2026-09") {
+      periodLabel = "Periode September 2026";
+      reportDate = "30 September 2026";
+    } else if (selectedLpjPeriod === "2026") {
+      periodLabel = "Laporan Tahunan 2026 (Januari – Desember 2026)";
+      reportDate = "2 November 2026";
+    } else if (selectedLpjPeriod === "ALL") {
+      periodLabel = "Laporan Keseluruhan (Akumulasi Sejak Saldo Awal)";
+      reportDate = "2 November 2026";
+    }
+
+    const txList = lpjTransactions;
+    const periodIncome = txList
+      .filter((t) => t.type === "INCOME")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const periodExpense = txList
+      .filter((t) => t.type === "EXPENSE" && t.category !== "KOREKSI_SALAH_KLIK")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    let opening = totalOpeningBalance;
+    if (selectedLpjPeriod === "2026-10") {
+      opening = 13573000;
+    } else if (selectedLpjPeriod === "2026-11") {
+      opening = 8441000;
+    }
+
+    const finalBal =
+      selectedLpjPeriod === "ALL" || selectedLpjPeriod === "2026"
+        ? totalLiquidCash
+        : opening + periodIncome - periodExpense;
+
+    const paidCount = lpjCustomers.filter((c) => c.status === "PAID").length;
+    const waivedCount = lpjCustomers.filter((c) => c.status === "WAIVED").length;
+    const unpaidCount = lpjCustomers.filter((c) => c.status !== "PAID" && c.status !== "WAIVED").length;
+    const totalCount = lpjCustomers.length || 293;
+    const rate = (totalCount - waivedCount) > 0 ? Math.round((paidCount / (totalCount - waivedCount)) * 100) : 0;
+
+    return {
+      periodLabel,
+      reportDate,
+      openingBalance: opening,
+      totalIncome: periodIncome,
+      totalExpense: periodExpense,
+      finalBalance: finalBal,
+      totalConnections: totalCount,
+      paidConnections: paidCount,
+      waivedConnections: waivedCount,
+      unpaidConnections: unpaidCount,
+      collectionRate: rate,
+    };
+  }, [selectedLpjPeriod, lpjTransactions, totalOpeningBalance, totalLiquidCash, lpjCustomers]);
 
   const getLpjData = (): LpjExportData => {
     const kName =
       effectiveKpspamsId === null
-        ? "KPSPAMS Lemo Baru"
+        ? "Konsolidasi Seluruh Desa Kuajang"
         : DEMO_KPSPAMS_LIST.find((k) => k.id === effectiveKpspamsId)?.name || "KPSPAMS Lemo Baru";
 
-    const paidCount = lpjCustomers.filter((c) => c.status === "PAID").length || 82;
-    const unpaidCount =
-      lpjCustomers.length > 0 ? lpjCustomers.length - paidCount : 1;
-    const totalCount = lpjCustomers.length || 83;
-
     return {
-      periodName: "Oktober 2026",
+      periodName: lpjMetrics.periodLabel,
       kpspamsName: kName,
-      openingBalance: totalOpeningBalance,
-      totalIncome: totalIncome,
-      totalExpense: totalExpense,
-      finalBalance: totalLiquidCash,
-      totalConnections: totalCount,
-      paidConnections: paidCount,
-      unpaidConnections: unpaidCount,
-      collectionRate: totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 99,
-      transactions: filteredTx.map((t) => ({
+      openingBalance: lpjMetrics.openingBalance,
+      totalIncome: lpjMetrics.totalIncome,
+      totalExpense: lpjMetrics.totalExpense,
+      finalBalance: lpjMetrics.finalBalance,
+      totalConnections: lpjMetrics.totalConnections,
+      paidConnections: lpjMetrics.paidConnections,
+      unpaidConnections: lpjMetrics.unpaidConnections,
+      waivedConnections: lpjMetrics.waivedConnections,
+      waivedAmount: lpjMetrics.waivedConnections * 10000,
+      collectionRate: lpjMetrics.collectionRate,
+      reportDate: lpjMetrics.reportDate,
+      transactions: lpjTransactions.map((t) => ({
         id: t.id,
         txNumber: t.txNumber,
         date: t.date,
@@ -960,7 +1080,7 @@ function KeuanganContent() {
         />
 
         {/* Filter Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-4">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
@@ -974,8 +1094,28 @@ function KeuanganContent() {
 
           <div>
             <select
+              value={periodFilter}
+              onChange={(e) => {
+                setPeriodFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
+            >
+              <option value="ALL">Semua Periode (Keseluruhan)</option>
+              <option value="2026-11">November 2026 (Bulan Berjalan)</option>
+              <option value="2026-10">Oktober 2026 (Bulan Lalu)</option>
+              <option value="2026-09">September 2026</option>
+              <option value="2026">Tahun 2026 (Tahunan)</option>
+            </select>
+          </div>
+
+          <div>
+            <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
             >
               <option value="ALL">Semua Jenis Mutasi (+ / -)</option>
@@ -987,7 +1127,10 @@ function KeuanganContent() {
           <div>
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-600 bg-white font-medium"
             >
               <option value="ALL">Semua Kategori</option>
@@ -1577,6 +1720,42 @@ function KeuanganContent() {
               </div>
             </div>
 
+            {/* Filter Periode Laporan Interaktif */}
+            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3 sm:p-4 mb-5 print:hidden flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-slate-800">Rentang Periode Laporan &amp; LPJ:</div>
+                  <div className="text-[11px] text-slate-500">Pilih rentang bulan, tahun, atau akumulasi keseluruhan</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { id: "2026-11", label: "November 2026 (Bulan Ini)" },
+                  { id: "2026-10", label: "Oktober 2026 (Bulan Lalu)" },
+                  { id: "2026-09", label: "September 2026" },
+                  { id: "2026", label: "Tahun 2026 (Tahunan)" },
+                  { id: "ALL", label: "Keseluruhan (Akumulasi)" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handlePeriodChangeLpj(p.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                      selectedLpjPeriod === p.id
+                        ? "bg-sky-600 text-white shadow-sm"
+                        : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Official Report Document Body (A4 Ready) */}
             <div id="printable-financial-report" className="space-y-6 text-slate-900 text-xs">
               {/* Kop Surat Resmi */}
@@ -1604,41 +1783,46 @@ function KeuanganContent() {
                   Laporan Pertanggungjawaban Arus Kas & Keuangan Operasional
                 </h4>
                 <div className="text-xs font-semibold text-slate-600 mt-0.5">
-                  Unit: {effectiveKpspamsId === null ? "Konsolidasi Seluruh Desa Kuajang" : DEMO_KPSPAMS_LIST.find((k) => k.id === effectiveKpspamsId)?.name} • Periode: Oktober 2026
+                  Unit: {effectiveKpspamsId === null ? "Konsolidasi Seluruh Desa Kuajang" : DEMO_KPSPAMS_LIST.find((k) => k.id === effectiveKpspamsId)?.name} • {lpjMetrics.periodLabel}
                 </div>
               </div>
 
               {/* Ringkasan Eksekutif Neraca Kas */}
               <div className="grid grid-cols-2 sm:grid-cols-4 print:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Awal</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Awal Periode</div>
                   <div className="text-sm font-extrabold font-tabular text-slate-800">
-                    Rp {totalOpeningBalance.toLocaleString("id-ID")}
+                    Rp {lpjMetrics.openingBalance.toLocaleString("id-ID")}
                   </div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-bold text-slate-500">Total Penerimaan</div>
                   <div className="text-sm font-extrabold font-tabular text-emerald-700">
-                    + Rp {totalIncome.toLocaleString("id-ID")}
+                    + Rp {lpjMetrics.totalIncome.toLocaleString("id-ID")}
                   </div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-bold text-slate-500">Total Beban/Biaya</div>
                   <div className="text-sm font-extrabold font-tabular text-rose-700">
-                    - Rp {totalExpense.toLocaleString("id-ID")}
+                    - Rp {lpjMetrics.totalExpense.toLocaleString("id-ID")}
                   </div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-bold text-slate-500">Saldo Akhir Terpadu</div>
                   <div className="text-sm font-black font-tabular text-slate-900">
-                    Rp {totalLiquidCash.toLocaleString("id-ID")}
+                    Rp {lpjMetrics.finalBalance.toLocaleString("id-ID")}
                   </div>
                 </div>
               </div>
 
               {/* Rincian Transaksi Lengkap */}
               <div>
-                <div className="font-bold text-xs mb-2">Rincian Mutasi Arus Kas Buku Kas:</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-bold text-xs">Rincian Mutasi Arus Kas Buku Kas:</div>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    {lpjTransactions.length} Transaksi Tercatat
+                  </span>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse border border-slate-300 text-[11px] min-w-[520px]">
                     <thead>
@@ -1652,29 +1836,37 @@ function KeuanganContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredTx.map((t) => (
-                        <tr key={t.id} className="border-b border-slate-200">
-                          <td className="p-2 font-mono font-semibold border border-slate-300">{t.txNumber}</td>
-                          <td className="p-2 border border-slate-300">{t.date}</td>
-                          <td className="p-2 border border-slate-300">{getCategoryLabel(t.category)}</td>
-                          <td className="p-2 border border-slate-300">{t.description}</td>
-                          <td className="p-2 text-right font-tabular border border-slate-300">
-                            {t.type === "INCOME" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
-                          </td>
-                          <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
-                            {t.type === "EXPENSE" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                      {lpjTransactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-4 text-center text-slate-400 italic border border-slate-300">
+                            Belum ada mutasi transaksi kas untuk periode {lpjMetrics.periodLabel}.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        lpjTransactions.map((t) => (
+                          <tr key={t.id} className="border-b border-slate-200">
+                            <td className="p-2 font-mono font-semibold border border-slate-300">{t.txNumber}</td>
+                            <td className="p-2 border border-slate-300">{t.date}</td>
+                            <td className="p-2 border border-slate-300">{getCategoryLabel(t.category)}</td>
+                            <td className="p-2 border border-slate-300">{t.description}</td>
+                            <td className="p-2 text-right font-tabular border border-slate-300">
+                              {t.type === "INCOME" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                            </td>
+                            <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
+                              {t.type === "EXPENSE" ? `Rp ${t.amount.toLocaleString("id-ID")}` : "-"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                     <tfoot>
                       <tr className="bg-slate-100 font-bold text-slate-900">
                         <td colSpan={4} className="p-2 text-right border border-slate-300">Total Akumulasi:</td>
                         <td className="p-2 text-right font-tabular border border-slate-300 text-emerald-700">
-                          Rp {totalIncome.toLocaleString("id-ID")}
+                          Rp {lpjMetrics.totalIncome.toLocaleString("id-ID")}
                         </td>
                         <td className="p-2 text-right font-tabular border border-slate-300 text-rose-700">
-                          Rp {totalExpense.toLocaleString("id-ID")}
+                          Rp {lpjMetrics.totalExpense.toLocaleString("id-ID")}
                         </td>
                       </tr>
                     </tfoot>
@@ -1682,14 +1874,14 @@ function KeuanganContent() {
                 </div>
               </div>
 
-              {/* III. Rekapitulasi Realisasi Penerimaan Iuran 83 Sambungan Rumah (SR) */}
+              {/* III. Rekapitulasi Realisasi Penerimaan Iuran SR */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="font-bold text-xs">
-                    III. Rekapitulasi Realisasi Penerimaan Iuran Air 83 Sambungan Rumah (SR):
+                    III. Rekapitulasi Realisasi Penerimaan Iuran Air {lpjMetrics.totalConnections} Sambungan Rumah (SR):
                   </div>
-                  <span className="text-[10px] text-slate-500 font-semibold">
-                    82 Lunas • 1 Belum Lunas (Nurul Pratiwi)
+                  <span className="text-[10px] text-slate-600 font-semibold">
+                    {lpjMetrics.paidConnections} Lunas • {lpjMetrics.waivedConnections} Bebas Iuran (Subsidi Fasum) • {lpjMetrics.unpaidConnections} Belum Lunas
                   </span>
                 </div>
                 <div className="overflow-x-auto max-h-72 print:max-h-none print:overflow-visible border border-slate-300 rounded">
@@ -1709,7 +1901,7 @@ function KeuanganContent() {
                       {lpjCustomers.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="p-4 text-center text-slate-400 italic">
-                            {isLoadingLpj ? "Memuat data 83 sambungan rumah..." : "Klik pratinjau untuk memuat daftar tagihan."}
+                            {isLoadingLpj ? "Memuat data sambungan rumah..." : "Klik pratinjau untuk memuat daftar tagihan."}
                           </td>
                         </tr>
                       ) : (
@@ -1723,6 +1915,8 @@ function KeuanganContent() {
                             <td className="p-1.5 border border-slate-200 text-center font-bold">
                               {c.status === "PAID" ? (
                                 <span className="text-emerald-700">LUNAS</span>
+                              ) : c.status === "WAIVED" ? (
+                                <span className="text-purple-700">BEBAS IURAN (SUBSIDI SAH)</span>
                               ) : (
                                 <span className="text-rose-700 font-black">BELUM BAYAR</span>
                               )}
@@ -1740,7 +1934,7 @@ function KeuanganContent() {
                           Total Realisasi Iuran Tertagih:
                         </td>
                         <td className="p-1.5 text-right border border-slate-300 text-emerald-800">
-                          Rp {(lpjCustomers.filter(c => c.status === "PAID").length * 10000 || 820000).toLocaleString("id-ID")}
+                          Rp {(lpjMetrics.paidConnections * 10000).toLocaleString("id-ID")}
                         </td>
                       </tr>
                     </tfoot>
@@ -1785,7 +1979,7 @@ function KeuanganContent() {
                 </div>
 
                 <div>
-                  <div className="text-[10px] text-slate-500">Kuajang, 31 Oktober 2026</div>
+                  <div className="text-[10px] text-slate-500">Kuajang, {lpjMetrics.reportDate}</div>
                   <div className="font-bold text-slate-900">Bendahara KPSPAMS</div>
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-300 italic">
                     [Tanda Tangan]
