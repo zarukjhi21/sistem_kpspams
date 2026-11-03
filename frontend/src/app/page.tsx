@@ -275,53 +275,53 @@ export default function HomePage() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 text-xs sm:text-sm font-bold text-slate-600">
+          <nav className="hidden lg:flex items-center space-x-0.5 xl:space-x-1 text-xs xl:text-sm font-bold text-slate-600">
             <button
               onClick={() => scrollToSection("beranda")}
-              className="px-3 py-2 text-sky-600 font-extrabold relative group transition"
+              className="px-2.5 xl:px-3 py-2 text-sky-600 font-extrabold relative group transition whitespace-nowrap"
             >
               <span>Beranda</span>
-              <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-sky-600 rounded-full" />
+              <span className="absolute bottom-0 left-2.5 right-2.5 h-0.5 bg-sky-600 rounded-full" />
             </button>
             <button
               onClick={focusSearchInput}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Cek Tagihan
             </button>
             <button
               onClick={() => scrollToSection("layanan")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Layanan
             </button>
             <button
               onClick={() => scrollToSection("transparansi")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Transparansi Kas
             </button>
             <button
               onClick={() => scrollToSection("tentang-kami")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Unit Pengelola
             </button>
             <button
               onClick={() => scrollToSection("peta-gis")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Peta GIS
             </button>
             <button
               onClick={() => scrollToSection("galeri-kegiatan")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Galeri
             </button>
             <button
               onClick={() => scrollToSection("kontak")}
-              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+              className="px-2.5 xl:px-3 py-2 hover:text-sky-600 transition rounded-xl hover:bg-slate-50 whitespace-nowrap"
             >
               Kontak
             </button>
@@ -340,7 +340,7 @@ export default function HomePage() {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition active:scale-95"
+              className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition active:scale-95"
               aria-label="Toggle Navigation"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -350,7 +350,7 @@ export default function HomePage() {
 
         {/* Mobile Navigation Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white/98 px-4 pt-3 pb-5 space-y-2 shadow-xl animate-in slide-in-from-top-2">
+          <div className="lg:hidden border-t border-slate-200 bg-white/98 px-4 pt-3 pb-5 space-y-2 shadow-xl animate-in slide-in-from-top-2">
             <button
               onClick={() => scrollToSection("beranda")}
               className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-sky-600 bg-sky-50 flex items-center justify-between"
