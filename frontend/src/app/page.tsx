@@ -75,6 +75,21 @@ const PublicGisMapSection = dynamic(
   }
 );
 
+const ActivityGallerySection = dynamic(
+  () => import("@/components/gallery/ActivityGallerySection").then((m) => m.ActivityGallerySection),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-96 w-full animate-pulse bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200">
+        <div className="flex flex-col items-center gap-2 text-slate-500">
+          <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold">Memuat galeri dokumentasi kegiatan...</span>
+        </div>
+      </div>
+    ),
+  }
+);
+
 export default function HomePage() {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -299,6 +314,12 @@ export default function HomePage() {
               Peta GIS
             </button>
             <button
+              onClick={() => scrollToSection("galeri-kegiatan")}
+              className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
+            >
+              Galeri
+            </button>
+            <button
               onClick={() => scrollToSection("kontak")}
               className="px-3 py-2 hover:text-sky-600 transition rounded-lg hover:bg-slate-50"
             >
@@ -370,6 +391,13 @@ export default function HomePage() {
               className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
             >
               <span>Peta Satelit GIS Jaringan</span>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+            <button
+              onClick={() => scrollToSection("galeri-kegiatan")}
+              className="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Galeri Dokumentasi Lapangan</span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
             <button
@@ -1027,6 +1055,13 @@ export default function HomePage() {
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-md p-2 sm:p-4 overflow-hidden">
               <PublicGisMapSection />
             </div>
+          </ScrollReveal>
+        </section>
+
+        {/* 8. Section: Galeri Dokumentasi Kegiatan Lapangan */}
+        <section id="galeri-kegiatan" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          <ScrollReveal direction="up" delay={80}>
+            <ActivityGallerySection />
           </ScrollReveal>
         </section>
 

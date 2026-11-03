@@ -1589,6 +1589,87 @@ export async function onRequest(context: any) {
       return jsonResponse({ status: "success", data: rows });
     }
 
+    // 12b. Activity Documentations (Galeri Kegiatan Lapangan)
+    if (path === "documentations" || path.startsWith("documentations/")) {
+      if (method === "GET") {
+        const kIdParam = url.searchParams.get("kpspams_id");
+        const categoryParam = url.searchParams.get("category");
+        const dusunParam = url.searchParams.get("dusun");
+
+        let q = `
+          SELECT d.*, k.name as kpspams_name, k.code as kpspams_code
+          FROM activity_documentations d
+          LEFT JOIN kpspams k ON d.kpspams_id = k.id
+          WHERE 1=1
+        `;
+        const params: any[] = [];
+        let pIdx = 1;
+
+        if (kIdParam && kIdParam !== "null" && kIdParam !== "undefined") {
+          q += ` AND d.kpspams_id = $${pIdx++}`;
+          params.push(parseInt(kIdParam, 10));
+        }
+        if (categoryParam && categoryParam !== "ALL") {
+          q += ` AND d.category = $${pIdx++}`;
+          params.push(categoryParam);
+        }
+        if (dusunParam && dusunParam !== "Semua Dusun") {
+          q += ` AND d.dusun = $${pIdx++}`;
+          params.push(dusunParam);
+        }
+
+        q += ` ORDER BY d.activity_date DESC, d.id DESC`;
+
+        const rows = await sql.query(q, params);
+        return jsonResponse({ status: "success", data: rows });
+      }
+
+      if (method === "POST") {
+        const b = await request.json().catch(() => ({}));
+        const title = (b.title || "").trim();
+        const category = b.category || "PERBAIKAN_PIPA";
+        const dusun = b.dusun || "Lemo Baru";
+        const activityDate = b.activity_date || new Date().toISOString().split("T")[0];
+        const personInCharge = b.person_in_charge || "Petugas Lapangan";
+        const description = b.description || "";
+        const cashReference = b.cash_reference || null;
+        const imageUrl = b.image_url || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80";
+        const beforeImageUrl = b.before_image_url || null;
+        const afterImageUrl = b.after_image_url || null;
+        const hasBeforeAfter = Boolean(b.has_before_after || (beforeImageUrl && afterImageUrl));
+        const kpspamsId = parseInt(b.kpspams_id || "1", 10);
+
+        if (!title) {
+          return jsonResponse({ status: "fail", message: "Judul kegiatan wajib diisi." }, 400);
+        }
+
+        const inserted = await sql.query(`
+          INSERT INTO activity_documentations (
+            kpspams_id, title, category, dusun, activity_date, person_in_charge, description,
+            cash_reference, image_url, before_image_url, after_image_url, has_before_after, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+          RETURNING *
+        `, [
+          kpspamsId, title, category, dusun, activityDate, personInCharge, description,
+          cashReference, imageUrl, beforeImageUrl, afterImageUrl, hasBeforeAfter
+        ]);
+
+        return jsonResponse({ status: "success", data: inserted[0] });
+      }
+
+      if (method === "DELETE") {
+        const pathParts = path.split("/");
+        const idFromPath = pathParts.length > 1 ? pathParts[1] : null;
+        const idFromQuery = url.searchParams.get("id");
+        const docId = idFromPath || idFromQuery;
+        if (!docId) {
+          return jsonResponse({ status: "fail", message: "ID dokumentasi wajib disertakan" }, 400);
+        }
+        await sql.query("DELETE FROM activity_documentations WHERE id = $1", [parseInt(docId, 10)]);
+        return jsonResponse({ status: "success", message: "Dokumentasi berhasil dihapus" });
+      }
+    }
+
     // 13. Finance: Cash Accounts
     if (path === "finance/cash-accounts") {
       const rows = await sql.query(`

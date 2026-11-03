@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getApiBaseUrl } from "@/lib/api-client";
 import { downloadReceiptAsImage } from "@/lib/receipt-canvas";
+import { ActivityGallerySection } from "@/components/gallery/ActivityGallerySection";
 
 interface CustomerData {
   id: number;
@@ -570,6 +571,20 @@ function CitizenPortalContent() {
                 <p className="text-slate-500 leading-relaxed">
                   Jika mengalami air mati, pipa bocor, atau meteran rusak, ajukan pengaduan langsung melalui portal ini untuk penanganan teknisi.
                 </p>
+              </div>
+            </div>
+
+            {/* Dokumentasi Transparansi Lapangan untuk Warga */}
+            <div className="pt-6 border-t border-slate-200">
+              <ActivityGallerySection limit={3} showTitle={true} />
+              <div className="text-center pt-3">
+                <Link
+                  href="/#galeri-kegiatan"
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-sky-700 hover:text-sky-800 bg-sky-50 px-4 py-2.5 rounded-xl border border-sky-200/80 transition shadow-2xs hover:bg-sky-100"
+                >
+                  <span>Lihat Seluruh Dokumentasi Kegiatan Lapangan di Beranda</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           </div>

@@ -18,6 +18,7 @@ import {
   Smartphone,
   MessageCircle,
   Map,
+  Camera,
 } from "lucide-react";
 
 export function AppSidebar() {
@@ -74,6 +75,7 @@ export function AppSidebar() {
             { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
             { label: "Pelanggan & SR Dusun", href: "/dashboard/pelanggan", icon: Users },
             { label: "Peta GIS Sambungan Air", href: "/dashboard/peta-gis", icon: Map },
+            { label: "Dokumentasi Kegiatan", href: "/dashboard/dokumentasi", icon: Camera },
           ],
         },
         {
@@ -101,6 +103,7 @@ export function AppSidebar() {
             { label: "Register Pelanggan & SR", href: "/dashboard/pelanggan", icon: Users },
             { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
             { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
+            { label: "Dokumentasi & Galeri", href: "/dashboard/dokumentasi", icon: Camera },
           ],
         },
         {
@@ -128,6 +131,7 @@ export function AppSidebar() {
             { label: "Pelanggan & Sambungan", href: "/dashboard/pelanggan", icon: Users },
             { label: "Billing & Status Iuran", href: "/dashboard/billing", icon: MessageCircle },
             { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
+            { label: "Dokumentasi Kegiatan", href: "/dashboard/dokumentasi", icon: Camera },
           ],
         },
         {
@@ -159,6 +163,7 @@ export function AppSidebar() {
           category: "Pengawasan & Transparansi",
           items: [
             { label: "Buku Kas & Laporan LPJ", href: "/dashboard/keuangan", icon: Wallet },
+            { label: "Dokumentasi & Bukti Fisik", href: "/dashboard/dokumentasi", icon: Camera },
             { label: "Peta Master GIS Desa", href: "/dashboard/peta-gis", icon: Map },
             { label: "Data Pelanggan 3 Unit", href: "/dashboard/pelanggan", icon: Users },
           ],
@@ -186,6 +191,7 @@ export function AppSidebar() {
         items: [
           { label: "Pelanggan & SR", href: "/dashboard/pelanggan", icon: Users },
           { label: "Peta GIS Desa Kuajang", href: "/dashboard/peta-gis", icon: Map },
+          { label: "Dokumentasi & Galeri", href: "/dashboard/dokumentasi", icon: Camera },
           { label: "Catat & Tagih di Tempat", href: "/dashboard/penagihan-lapangan", icon: Smartphone },
           { label: "Billing & Broadcast WA", href: "/dashboard/billing", icon: MessageCircle },
         ],
