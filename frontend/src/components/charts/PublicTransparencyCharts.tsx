@@ -398,10 +398,7 @@ function buildSystemAllocation(
 }
 
 function formatRupiahDisplay(val: number): string {
-  if (val >= 1000000) {
-    return `Rp ${(val / 1000000).toFixed(1)} jt`;
-  }
-  return `Rp ${val.toLocaleString("id-ID")}`;
+  return `Rp ${Math.round(val).toLocaleString("id-ID")}`;
 }
 
 export function PublicTransparencyCharts() {
@@ -409,7 +406,7 @@ export function PublicTransparencyCharts() {
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
   const [customerCount, setCustomerCount] = useState<number>(293);
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
-    buildSystemAllocation(8441000, 0, 0, undefined, undefined, undefined, 293, 293)
+    buildSystemAllocation(8451000, 0, 0, undefined, undefined, undefined, 293, 293)
   );
 
   useEffect(() => {
@@ -424,7 +421,7 @@ export function PublicTransparencyCharts() {
     }>("/portal/transparency")
       .then((res) => {
         if (res?.data?.units) {
-          const lmb = res.data.units.LMB?.cash ?? 8441000;
+          const lmb = res.data.units.LMB?.cash ?? 8451000;
           const lmt = res.data.units.LMT?.cash ?? 0;
           const sr1 = res.data.units.SR1?.cash ?? 0;
           const lmbExp = res.data.units.LMB?.expenses;
@@ -706,6 +703,16 @@ export function PublicTransparencyCharts() {
               {currentSystemData.title} &bull; <span className="text-slate-500 font-normal">{currentSystemData.subtitle}</span>
             </div>
 
+            {/* Total Funds Indicator Banner */}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 mb-3 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+              <div className="text-slate-600 font-medium">
+                Total Dana Dikelola: <strong className="text-slate-900 font-bold">Rp {(currentSystemData.totalMonthly + currentSystemData.totalExpense).toLocaleString("id-ID")}</strong>
+              </div>
+              <div className="text-slate-500 text-[10px] font-medium">
+                Kas Riil: <span className="text-emerald-700 font-bold font-mono">Rp {currentSystemData.totalMonthly.toLocaleString("id-ID")}</span> &bull; Belanja: <span className="text-amber-700 font-bold font-mono">Rp {currentSystemData.totalExpense.toLocaleString("id-ID")}</span>
+              </div>
+            </div>
+
             {/* Donut Chart Alokasi Kas */}
             <div className="h-44 relative flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
@@ -759,9 +766,9 @@ export function PublicTransparencyCharts() {
               </ResponsiveContainer>
 
               {/* Center Donut Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-base font-black text-slate-900 font-tabular tracking-tight">
-                  {formatRupiahDisplay(currentSystemData.totalMonthly)}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2 text-center">
+                <span className="text-sm sm:text-base font-black text-slate-900 font-tabular tracking-tight">
+                  Rp {Math.round(currentSystemData.totalMonthly).toLocaleString("id-ID")}
                 </span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                   {currentSystemData.totalExpense === 0 ? "Kas Riil (Utuh)" : "Saldo Kas Tersedia"}
@@ -810,7 +817,7 @@ export function PublicTransparencyCharts() {
                     >
                       {item.percent}%
                     </span>
-                    <div className="text-[10px] text-slate-600 font-bold font-mono mt-0.5">
+                    <div className="text-[11px] text-slate-800 font-bold font-mono mt-0.5">
                       {formatRupiahDisplay(item.value)}
                     </div>
                   </div>
