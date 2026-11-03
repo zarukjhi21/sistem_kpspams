@@ -714,7 +714,7 @@ export function PublicTransparencyCharts() {
             </div>
 
             {/* Donut Chart Alokasi Kas */}
-            <div className="h-44 relative flex items-center justify-center">
+            <div className="h-56 relative flex items-center justify-center my-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -725,9 +725,9 @@ export function PublicTransparencyCharts() {
                       : currentSystemData.allocations.filter((a) => a.value > 0)}
                     cx="50%"
                     cy="50%"
-                    innerRadius={48}
-                    outerRadius={68}
-                    paddingAngle={currentSystemData.totalMonthly === 0 || currentSystemData.totalExpense === 0 ? 0 : 5}
+                    innerRadius={72}
+                    outerRadius={94}
+                    paddingAngle={currentSystemData.totalMonthly === 0 || currentSystemData.totalExpense === 0 ? 0 : 4}
                     dataKey="value"
                   >
                     {(currentSystemData.totalMonthly === 0
@@ -765,13 +765,16 @@ export function PublicTransparencyCharts() {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* Center Donut Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2 text-center">
-                <span className="text-sm sm:text-base font-black text-slate-900 font-tabular tracking-tight">
+              {/* Center Donut Label (Spacious Layout, Zero Overlapping) */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4 text-center select-none">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">
+                  {currentSystemData.totalExpense === 0 ? "Kas Riil Utuh" : "Saldo Kas Tersedia"}
+                </span>
+                <span className="text-base sm:text-lg font-black text-slate-900 font-tabular tracking-tight leading-tight">
                   Rp {Math.round(currentSystemData.totalMonthly).toLocaleString("id-ID")}
                 </span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                  {currentSystemData.totalExpense === 0 ? "Kas Riil (Utuh)" : "Saldo Kas Tersedia"}
+                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 mt-1">
+                  {currentSystemData.totalExpense === 0 ? "100% Utuh" : `${currentSystemData.allocations[0]?.percent || 26}% dari Kas Total`}
                 </span>
               </div>
             </div>
