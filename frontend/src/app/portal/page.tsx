@@ -153,7 +153,7 @@ function CitizenPortalContent() {
   const fetchRealCustomerData = async (query: string, exactId?: number) => {
     const cleanQuery = query.trim();
     if (!cleanQuery && !exactId) {
-      setErrorMessage("Silakan masukkan Nomor Sambungan (No. SR), NIK, atau Nama Anda.");
+      setErrorMessage("Silakan masukkan Nama Lengkap Warga atau NIK KTP Anda.");
       return;
     }
 
@@ -424,31 +424,21 @@ function CitizenPortalContent() {
                           setSearchSr(e.target.value);
                           if (errorMessage) setErrorMessage(null);
                         }}
-                        placeholder="Masukkan No. SR (cth: 00009), NIK KTP, atau Nama Warga..."
-                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-xs sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 text-slate-900 transition font-mono tracking-wide shadow-inner disabled:opacity-50"
+                        placeholder="Masukkan Nama Warga atau NIK KTP (cth: Syaharuddin / 7604...)"
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-xs sm:text-base font-semibold bg-slate-50 hover:bg-white focus:bg-white border-2 border-slate-300 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 text-slate-900 transition tracking-normal shadow-inner disabled:opacity-50"
                       />
                     </div>
 
                     {/* Quick Example Chips */}
                     <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-slate-500 pt-1">
-                      <span className="font-semibold text-slate-400">Pencarian Cepat:</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchSr("00009");
-                          fetchRealCustomerData("00009");
-                        }}
-                        className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-[10px] font-bold border border-slate-200 transition"
-                      >
-                        SR: 00009
-                      </button>
+                      <span className="font-semibold text-slate-400">Contoh Pencarian:</span>
                       <button
                         type="button"
                         onClick={() => {
                           setSearchSr("Syaharuddin");
                           fetchRealCustomerData("Syaharuddin");
                         }}
-                        className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-[10px] font-bold border border-slate-200 transition"
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 transition"
                       >
                         Nama: Syaharuddin
                       </button>
@@ -458,9 +448,19 @@ function CitizenPortalContent() {
                           setSearchSr("Mustari");
                           fetchRealCustomerData("Mustari");
                         }}
-                        className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono text-[10px] font-bold border border-slate-200 transition"
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 transition"
                       >
                         Nama: Mustari
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchSr("7604062111950003");
+                          fetchRealCustomerData("7604062111950003");
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold border border-slate-200 transition"
+                      >
+                        NIK: 7604062111950003
                       </button>
                     </div>
 
@@ -546,9 +546,9 @@ function CitizenPortalContent() {
                 <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
                   1
                 </div>
-                <h4 className="font-bold text-slate-900">Di Mana Melihat No. SR?</h4>
+                <h4 className="font-bold text-slate-900">Pencarian Nama / NIK</h4>
                 <p className="text-slate-500 leading-relaxed">
-                  Nomor SR tertera pada pelat barcode meteran air di rumah Anda atau tercetak pada struk pembayaran bulan lalu.
+                  Cukup masukkan Nama Lengkap Anda atau 16 digit NIK KTP. Sistem otomatis menemukan rekening dan tagihan air Anda.
                 </p>
               </div>
 
@@ -586,7 +586,7 @@ function CitizenPortalContent() {
                 className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-sky-700 transition px-3 py-1.5 rounded-xl hover:bg-slate-100"
               >
                 <ArrowLeft className="w-4 h-4 text-sky-600" />
-                <span>Cari Nomor SR Lain</span>
+                <span>Cari Warga / Rekening Lain</span>
               </button>
 
               <div className="text-right">

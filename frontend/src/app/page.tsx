@@ -423,7 +423,7 @@ export default function HomePage() {
                           type="text"
                           value={quickSearch}
                           onChange={(e) => setQuickSearch(e.target.value)}
-                          placeholder="Ketik ID Pelanggan (Contoh: PL-001) atau Nama"
+                          placeholder="Masukkan Nama Warga atau NIK KTP (cth: Syaharuddin)..."
                           className="w-full py-1.5 text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border-0 focus:ring-0 focus:outline-none bg-transparent"
                         />
                       </div>

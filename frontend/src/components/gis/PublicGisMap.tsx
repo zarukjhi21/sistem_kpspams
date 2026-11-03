@@ -501,8 +501,8 @@ export function PublicGisMap() {
           </div>
 
           <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 flex items-center space-x-2.5 shadow-2xs">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 font-black flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 stroke-[2.2]" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 font-black flex items-center justify-center flex-shrink-0">
+              <Mountain className="w-4 h-4 stroke-[2.2]" />
             </div>
             <div className="min-w-0">
               <div className="text-sm sm:text-base font-black text-slate-900 truncate">100% Gravitasi</div>
