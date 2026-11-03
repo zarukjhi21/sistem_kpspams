@@ -338,6 +338,7 @@ function PenagihanLapanganContent() {
       setIsInitialSetup(false);
       const cond = (selectedCustomer as any).meter_condition || (selectedCustomer as any).meterCondition;
       setIsMeterDamaged(cond === "STUCK" || cond === "DAMAGED");
+      setPaymentScope("ALL");
     }
   }, [selectedCustomerId, selectedCustomer]);
 
@@ -355,7 +356,24 @@ function PenagihanLapanganContent() {
         formulaDescription: `Reset Stand Titik Nol (${currentNum.toFixed(2)} m³) — Paket Beban Dasar: Rp ${rawBillCalc.baseFee.toLocaleString("id-ID")}`,
       }
     : rawBillCalc;
-  const totalDue = billCalc.totalAmount;
+
+  // Tunggakan Periode Lalu (Oktober 2026 dsb)
+  const hasArrears = Boolean(selectedCustomer.hasOctoberArrears);
+  const custTotalArrears = Number(selectedCustomer.totalArrears) || 0;
+  const arrearsAmount = hasArrears ? (custTotalArrears > 10000 ? custTotalArrears - 10000 : 10000) : 0;
+  const currentBillAmount = billCalc.totalAmount;
+
+  // Opsi Cakupan Pembayaran Saat Menagih (ALL = Lunas Semua, ARREARS_ONLY = Hanya Tunggakan, CURRENT_ONLY = Hanya Berjalan)
+  const [paymentScope, setPaymentScope] = useState<"ALL" | "ARREARS_ONLY" | "CURRENT_ONLY">("ALL");
+
+  const totalDue = !hasArrears
+    ? currentBillAmount
+    : paymentScope === "ALL"
+    ? currentBillAmount + arrearsAmount
+    : paymentScope === "ARREARS_ONLY"
+    ? arrearsAmount
+    : currentBillAmount;
+
   const changeDue = Math.max(0, tenderAmount - totalDue);
 
   // Handler Pilih Pelanggan Baru
@@ -460,8 +478,13 @@ function PenagihanLapanganContent() {
       }
 
       // 2. Eksekusi Pembayaran Kasir Atomik ke Backend API (Database Neon PostgreSQL)
+      const isOnlyPayArrears = hasArrears && paymentScope === "ARREARS_ONLY";
+      const isPayBoth = hasArrears && paymentScope === "ALL";
+
       const paymentPayload = {
-        invoice_id: targetInvoiceId || undefined,
+        invoice_id: isOnlyPayArrears ? selectedCustomer.octoberInvoiceId : (targetInvoiceId || undefined),
+        secondary_invoice_id: isPayBoth ? selectedCustomer.octoberInvoiceId : undefined,
+        only_pay_arrears: isOnlyPayArrears,
         customer_id: selectedCustomer.id,
         connection_id: connectionId,
         kpspams_id: selectedCustomer.kpspamsId,
@@ -493,11 +516,36 @@ function PenagihanLapanganContent() {
 
     // Update stand meter, phone & status tagihan Lunas secara realtime
     selectedCustomer.lastReading = currentNum;
-    selectedCustomer.billingStatus = "PAID";
     selectedCustomer.phone = customerPhone;
+
+    if (paymentScope === "ALL") {
+      selectedCustomer.hasOctoberArrears = false;
+      selectedCustomer.billingStatus = "PAID";
+      selectedCustomer.totalArrears = 0;
+      selectedCustomer.unpaidMonths = 0;
+    } else if (paymentScope === "ARREARS_ONLY") {
+      selectedCustomer.hasOctoberArrears = false;
+      selectedCustomer.billingStatus = "UNPAID";
+      selectedCustomer.totalArrears = currentBillAmount;
+      selectedCustomer.unpaidMonths = 1;
+    } else {
+      // CURRENT_ONLY
+      selectedCustomer.billingStatus = "PAID";
+      selectedCustomer.totalArrears = arrearsAmount;
+      selectedCustomer.unpaidMonths = 1;
+    }
+
     const updatedCustList = customers.map((c) =>
       c.id === selectedCustomer.id
-        ? { ...c, lastReading: currentNum, billingStatus: "PAID" as const, phone: customerPhone }
+        ? {
+            ...c,
+            lastReading: currentNum,
+            billingStatus: selectedCustomer.billingStatus,
+            hasOctoberArrears: selectedCustomer.hasOctoberArrears,
+            totalArrears: selectedCustomer.totalArrears,
+            unpaidMonths: selectedCustomer.unpaidMonths,
+            phone: customerPhone,
+          }
         : c
     );
     setCustomers(updatedCustList);
@@ -589,6 +637,29 @@ function PenagihanLapanganContent() {
       );
     }
 
+    const isPayBoth = hasArrears && paymentScope === "ALL";
+    const isPayArrearsOnly = hasArrears && paymentScope === "ARREARS_ONLY";
+
+    let rincianText = 
+      `Stand Lalu    : ${previousReading.toFixed(2)} m³\n` +
+      `Stand Kini    : ${currentNum.toFixed(2)} m³\n` +
+      `Pemakaian Air : ${usageM3.toFixed(2)} m³\n` +
+      `Rincian Tarif : ${billCalc.formulaDescription}\n`;
+
+    if (isPayBoth) {
+      rincianText =
+        `Stand Lalu    : ${previousReading.toFixed(2)} m³\n` +
+        `Stand Kini    : ${currentNum.toFixed(2)} m³\n` +
+        `Pemakaian Nov : ${usageM3.toFixed(2)} m³ (Rp ${currentBillAmount.toLocaleString("id-ID")})\n` +
+        `Tunggakan Okt : Rp ${arrearsAmount.toLocaleString("id-ID")} (LUNAS)\n` +
+        `Keterangan    : *Pelunasan Tunggakan & Tagihan Berjalan*\n`;
+    } else if (isPayArrearsOnly) {
+      rincianText =
+        `Keterangan    : *Pelunasan Khusus Tunggakan Oktober 2026*\n` +
+        `Nominal       : Rp ${arrearsAmount.toLocaleString("id-ID")}\n` +
+        `Catatan       : Tagihan berjalan periode November akan ditagihkan berikutnya.\n`;
+    }
+
     return encodeURIComponent(
       `*KWITANSI PEMBAYARAN AIR BERSIH RESMI*\n` +
       `*SI-KPSPAMS KUAJANG*\n` +
@@ -599,10 +670,7 @@ function PenagihanLapanganContent() {
       `Nama Warga    : ${selectedCustomer.name}\n` +
       `Wilayah       : ${selectedCustomer.dusun}\n` +
       `Periode       : ${displayPeriodName}\n` +
-      `Stand Lalu    : ${previousReading.toFixed(2)} m³\n` +
-      `Stand Kini    : ${currentNum.toFixed(2)} m³\n` +
-      `Pemakaian Air : ${usageM3.toFixed(2)} m³\n` +
-      `Rincian Tarif : ${billCalc.formulaDescription}\n` +
+      rincianText +
       `Total Bayar   : Rp ${totalDue.toLocaleString("id-ID")},-\n` +
       `Uang Diterima : Rp ${tenderAmount.toLocaleString("id-ID")},-\n` +
       `Kembalian     : Rp ${changeDue.toLocaleString("id-ID")},-\n` +
@@ -611,7 +679,7 @@ function PenagihanLapanganContent() {
       `Waktu Transaksi: ${transactionTime}\n` +
       `----------------------------------------\n` +
       `Terima kasih telah berpartisipasi menjaga kelestarian & operasional air bersih Desa Kuajang.\n` +
-      `_Pesan ini merupakan bukti pembayaran digital sah yang tercatat di Buku Kas Resmi._`
+      `_Bukti pembayaran digital sah tercatat di Buku Kas Resmi SI-KPSPAMS Kuajang._`
     );
   };
 
@@ -1235,10 +1303,36 @@ function PenagihanLapanganContent() {
                   </>
                 )}
 
+                {hasArrears && (
+                  <div className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1.5 text-amber-950 font-bold text-xs">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                        <span>Tunggakan Iuran Periode Lalu (Oktober 2026):</span>
+                      </div>
+                      <Badge variant="danger" size="sm">Menunggak</Badge>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold text-rose-700 bg-white p-2 rounded-lg border border-amber-200">
+                      <span>Tagihan Iuran Belum Dibayar:</span>
+                      <span className="font-tabular text-sm">+ Rp {arrearsAmount.toLocaleString("id-ID")}</span>
+                    </div>
+                    <p className="text-[10px] text-amber-800">
+                      Total di bawah otomatis mengakumulasi tagihan berjalan dan tunggakan agar dapat ditagihkan langsung ke warga.
+                    </p>
+                  </div>
+                )}
+
                 <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline">
-                  <span className="font-extrabold text-slate-900 text-xs">TOTAL YANG HARUS DIBAYAR:</span>
+                  <div>
+                    <span className="font-extrabold text-slate-900 text-xs block">TOTAL YANG HARUS DIBAYAR:</span>
+                    {hasArrears && (
+                      <span className="text-[10px] text-slate-500">
+                        (Akumulasi Tagihan Berjalan Nov + Tunggakan Okt)
+                      </span>
+                    )}
+                  </div>
                   <span className="font-black text-slate-900 text-xl font-tabular">
-                    Rp {totalDue.toLocaleString("id-ID")}
+                    Rp {((hasArrears ? currentBillAmount + arrearsAmount : currentBillAmount)).toLocaleString("id-ID")}
                   </span>
                 </div>
               </div>
@@ -1334,16 +1428,102 @@ function PenagihanLapanganContent() {
               </div>
             )}
 
+            {/* Pilihan Skema Pelunasan Jika Warga Memiliki Tunggakan */}
+            {hasArrears && (
+              <div className="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 space-y-2.5 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center space-x-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <span>Pilihan Pelunasan Tagihan Warga:</span>
+                  </span>
+                  <Badge variant="warning" size="sm">Tunggakan Terdeteksi</Badge>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentScope("ALL");
+                      setTenderAmount(currentBillAmount + arrearsAmount);
+                    }}
+                    className={`p-3 rounded-xl border-2 text-left transition flex flex-col justify-between ${
+                      paymentScope === "ALL"
+                        ? "bg-white border-emerald-600 shadow-sm ring-2 ring-emerald-500/20"
+                        : "bg-white/70 border-slate-200 hover:bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold text-slate-900">Bayar Lunas Semua</span>
+                      {paymentScope === "ALL" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                    </div>
+                    <span className="text-base font-black text-emerald-700 mt-1 font-tabular">
+                      Rp {(currentBillAmount + arrearsAmount).toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">Tunggakan Okt + Berjalan Nov</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentScope("ARREARS_ONLY");
+                      setTenderAmount(arrearsAmount);
+                    }}
+                    className={`p-3 rounded-xl border-2 text-left transition flex flex-col justify-between ${
+                      paymentScope === "ARREARS_ONLY"
+                        ? "bg-white border-amber-600 shadow-sm ring-2 ring-amber-500/20"
+                        : "bg-white/70 border-slate-200 hover:bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold text-slate-900">Hanya Tunggakan Okt</span>
+                      {paymentScope === "ARREARS_ONLY" && <CheckCircle2 className="w-4 h-4 text-amber-600" />}
+                    </div>
+                    <span className="text-base font-black text-amber-700 mt-1 font-tabular">
+                      Rp {arrearsAmount.toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">Tagihan Nov ditagih nanti</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentScope("CURRENT_ONLY");
+                      setTenderAmount(currentBillAmount);
+                    }}
+                    className={`p-3 rounded-xl border-2 text-left transition flex flex-col justify-between ${
+                      paymentScope === "CURRENT_ONLY"
+                        ? "bg-white border-sky-600 shadow-sm ring-2 ring-sky-500/20"
+                        : "bg-white/70 border-slate-200 hover:bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold text-slate-900">Hanya Berjalan Nov</span>
+                      {paymentScope === "CURRENT_ONLY" && <CheckCircle2 className="w-4 h-4 text-sky-600" />}
+                    </div>
+                    <span className="text-base font-black text-sky-700 mt-1 font-tabular">
+                      Rp {currentBillAmount.toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-[10px] text-slate-500 mt-0.5">Tunggakan Okt tetap tercatat</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Total Due Big Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white text-center space-y-1 border border-slate-800 shadow-md">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-300">
-                Total Tagihan Harus Dibayar Warga:
+                {hasArrears && paymentScope === "ALL"
+                  ? "Total Tagihan Akumulasi (Tunggakan + Berjalan):"
+                  : hasArrears && paymentScope === "ARREARS_ONLY"
+                  ? "Pelunasan Khusus Tunggakan Periode Lalu (Oktober 2026):"
+                  : "Total Tagihan Periode Berjalan (November 2026):"}
               </span>
               <div className="text-3xl sm:text-4xl font-black text-white font-tabular">
                 Rp {totalDue.toLocaleString("id-ID")}
               </div>
               <p className="text-xs text-slate-300">
-                Pemakaian: <strong>{usageM3.toFixed(2)} m³</strong> • ({billCalc.formulaDescription})
+                {hasArrears && paymentScope === "ALL"
+                  ? `Pemakaian Nov: ${usageM3.toFixed(2)} m³ (Rp ${currentBillAmount.toLocaleString("id-ID")}) + Tunggakan Okt (Rp ${arrearsAmount.toLocaleString("id-ID")})`
+                  : `Pemakaian: ${usageM3.toFixed(2)} m³ • (${billCalc.formulaDescription})`}
               </p>
             </div>
 
@@ -1367,14 +1547,14 @@ function PenagihanLapanganContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTenderAmount(20000)}
+                  onClick={() => setTenderAmount(totalDue <= 20000 ? 20000 : 50000)}
                   className={`py-2 rounded-xl text-xs font-bold transition border ${
-                    tenderAmount === 20000
+                    tenderAmount === (totalDue <= 20000 ? 20000 : 50000)
                       ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                       : "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
                   }`}
                 >
-                  Rp 20.000
+                  Rp {(totalDue <= 20000 ? 20000 : 50000).toLocaleString("id-ID")}
                 </button>
                 <button
                   type="button"
@@ -1524,6 +1704,29 @@ function PenagihanLapanganContent() {
                 <span className="text-slate-500">Rincian Tarif:</span>
                 <span className="font-bold text-slate-800 text-right">{billCalc.formulaDescription}</span>
               </div>
+              {hasArrears && paymentScope === "ALL" && (
+                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-[10px] space-y-0.5">
+                  <div className="flex justify-between text-slate-700">
+                    <span>Tagihan Berjalan (Nov 2026):</span>
+                    <span>Rp {currentBillAmount.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between text-rose-700 font-bold">
+                    <span>Pelunasan Tunggakan (Okt 2026):</span>
+                    <span>Rp {arrearsAmount.toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+              )}
+              {hasArrears && paymentScope === "ARREARS_ONLY" && (
+                <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-[10px] space-y-0.5">
+                  <div className="flex justify-between text-rose-700 font-bold">
+                    <span>Pelunasan Tunggakan (Okt 2026):</span>
+                    <span>Rp {arrearsAmount.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="text-[9px] text-slate-500 italic">
+                    Tagihan berjalan periode November akan ditagihkan berikutnya.
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t border-dashed border-slate-200 font-black text-xs text-slate-900">
                 <span>TOTAL LUNAS:</span>
                 <span>Rp {totalDue.toLocaleString("id-ID")}</span>

@@ -1489,16 +1489,46 @@ export async function onRequest(context: any) {
 
         const receiptNo = `KW/${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, "0")}/KP0${kpspamsId}/${Math.floor(1000 + Math.random() * 9000)}`;
 
-        if (invoiceId) {
+        const isOnlyPayArrears = b.only_pay_arrears === true;
+        const secondaryInvId = b.secondary_invoice_id || b.october_invoice_id;
+
+        if (isOnlyPayArrears && secondaryInvId) {
+          // Hanya lunasi tunggakan periode lampau (Oktober)
           await sql.query(`
             UPDATE invoices SET 
               status = 'PAID',
-              paid_amount = $1,
+              paid_amount = total_amount,
               balance_due = '0',
               paid_at = NOW(),
               updated_at = NOW()
-            WHERE id = $2
-          `, [amountPaid.toString(), invoiceId]);
+            WHERE id = $1
+          `, [secondaryInvId.toString()]);
+          invoiceId = secondaryInvId;
+        } else {
+          // Lunasi invoice berjalan periode aktif
+          if (invoiceId) {
+            await sql.query(`
+              UPDATE invoices SET 
+                status = 'PAID',
+                paid_amount = $1,
+                balance_due = '0',
+                paid_at = NOW(),
+                updated_at = NOW()
+              WHERE id = $2
+            `, [amountPaid.toString(), invoiceId]);
+          }
+          // Jika memilih Bayar Lunas Semua (Tunggakan Lampau ikut dilunasi)
+          if (secondaryInvId) {
+            await sql.query(`
+              UPDATE invoices SET 
+                status = 'PAID',
+                paid_amount = total_amount,
+                balance_due = '0',
+                paid_at = NOW(),
+                updated_at = NOW()
+              WHERE id = $1
+            `, [secondaryInvId.toString()]);
+          }
         }
 
         // Pastikan cash_account_id diarahkan ke akun kas operasional terpadu yang aktif untuk unit ini
