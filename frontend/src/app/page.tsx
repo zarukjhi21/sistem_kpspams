@@ -101,33 +101,33 @@ export default function HomePage() {
   const [collectionPeriodView, setCollectionPeriodView] = useState<"current" | "all">("current");
 
   const [stats, setStats] = useState({
-    lmbCash: 8441000,
-    lmbCustomers: 293,
-    lmbActiveConnections: 293,
+    lmbCash: 8471000,
+    lmbCustomers: 294,
+    lmbActiveConnections: 294,
     lmbSealedConnections: 0,
-    lmbUsageM3: 0,
-    lmbPhysicalMeterM3: 523136.49,
-    totalCash: 8441000,
-    totalCustomers: 293,
-    totalUsageM3: 0,
-    totalPhysicalMeterM3: 523136.49,
+    lmbUsageM3: 75,
+    lmbPhysicalMeterM3: 527240.49,
+    totalCash: 8471000,
+    totalCustomers: 294,
+    totalUsageM3: 75,
+    totalPhysicalMeterM3: 527240.49,
     billingPeriod: "November 2026",
-    totalCollected: 2190000,
-    paidCount: 219,
-    totalArrears: 540000,
-    unpaidCount: 54,
-    totalInvoices: 293,
-    collectionRate: 74.4,
-    waivedCount: 21,
-    totalWaived: 210000,
+    totalCollected: 2210000,
+    paidCount: 221,
+    totalArrears: 460000,
+    unpaidCount: 46,
+    totalInvoices: 294,
+    collectionRate: 37.6,
+    waivedCount: 30,
+    totalWaived: 300000,
     totalExpenses: 23505000,
     maintenanceExpenses: 19234000,
-    novemberPaidAmount: 10000,
-    novemberPaidCount: 1,
-    novemberBilledAmount: 2930000,
-    novemberCollectionRate: 0.3,
-    allTimeCollected: 2190000,
-    allTimePaidCount: 219,
+    novemberPaidAmount: 30000,
+    novemberPaidCount: 3,
+    novemberBilledAmount: 2940000,
+    novemberCollectionRate: 1.0,
+    allTimeCollected: 2210000,
+    allTimePaidCount: 221,
   });
 
   useEffect(() => {
@@ -638,7 +638,7 @@ export default function HomePage() {
                 <p className="text-[11px] text-slate-400 truncate mt-0.5">
                   {stats.lmbUsageM3 === 0
                     ? "Beban dasar Rp 10.000/SR"
-                    : `Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR`}
+                    : `Tercatat ${stats.lmbUsageM3} m³ (Rata-rata ${(stats.lmbCustomers > 0 ? (stats.lmbUsageM3 / stats.lmbCustomers).toFixed(1) : 0)} m³/SR)`}
                 </p>
               </div>
             </ScrollReveal>

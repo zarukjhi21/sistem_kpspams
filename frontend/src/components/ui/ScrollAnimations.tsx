@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 interface AnimatedCountProps {
   value: number;
@@ -29,17 +29,55 @@ export function AnimatedCount({
   startFromZero = false,
 }: AnimatedCountProps) {
   const [displayValue, setDisplayValue] = useState<number>(value);
-  const [hasAnimated, setHasAnimated] = useState<boolean>(false);
   const elementRef = useRef<HTMLSpanElement>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const isIntersectingRef = useRef<boolean>(false);
+  const currentValRef = useRef<number>(value);
+
+  // Keep track of current displayed value
+  useEffect(() => {
+    currentValRef.current = displayValue;
+  }, [displayValue]);
+
+  const startAnimation = useCallback((startVal: number, endVal: number) => {
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
+    if (startVal === endVal) {
+      setDisplayValue(endVal);
+      return;
+    }
+
+    const startTime = performance.now();
+    const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutExpo(progress);
+      const current = startVal + (endVal - startVal) * eased;
+
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        rafIdRef.current = requestAnimationFrame(animate);
+      } else {
+        setDisplayValue(endVal);
+        rafIdRef.current = null;
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(animate);
+  }, [duration]);
 
   useEffect(() => {
     const el = elementRef.current;
-    if (!el || hasAnimated) return;
+    if (!el) return;
 
-    // Check prefers-reduced-motion
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setDisplayValue(value);
-      setHasAnimated(true);
       return;
     }
 
@@ -47,47 +85,34 @@ export function AnimatedCount({
       (entries) => {
         const [entry] = entries;
         if (entry.isIntersecting) {
-          setHasAnimated(true);
+          isIntersectingRef.current = true;
           observer.disconnect();
-
-          const startTime = performance.now();
           const startVal = startFromZero ? 0 : Math.round(value * 0.6);
-          const endVal = value;
-
-          // easeOutExpo curve for modern, snappy count-up
-          const easeOutExpo = (t: number) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
-
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = easeOutExpo(progress);
-            const current = startVal + (endVal - startVal) * eased;
-
-            setDisplayValue(current);
-
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            } else {
-              setDisplayValue(endVal);
-            }
-          };
-
-          requestAnimationFrame(animate);
+          startAnimation(startVal, value);
         }
       },
       { threshold: 0.15, rootMargin: "0px 0px -30px 0px" }
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
-  }, [value, duration, hasAnimated, startFromZero]);
 
-  // If value prop changes after initial animation, update to target value
+    return () => {
+      observer.disconnect();
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, [value, startFromZero, startAnimation]);
+
+  // When value prop updates (e.g. after API response arrives)
   useEffect(() => {
-    if (hasAnimated) {
+    if (isIntersectingRef.current) {
+      startAnimation(currentValRef.current, value);
+    } else {
       setDisplayValue(value);
     }
-  }, [value, hasAnimated]);
+  }, [value, startAnimation]);
 
   const formatted = formatter
     ? formatter(displayValue)
