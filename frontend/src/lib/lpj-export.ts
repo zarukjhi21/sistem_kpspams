@@ -220,7 +220,7 @@ export function exportLpjToExcel(data: LpjExportData) {
           <td colspan="2" class="ttd-box">
             Menyetujui,<br/>
             <b>Ketua BPD Desa Kuajang</b><br/><br/><br/><br/>
-            <u><b>Ketua BPD</b></u><br/>
+            <u><b>TABIH T.</b></u><br/>
             Badan Permusyawaratan Desa
           </td>
           <td colspan="2" class="ttd-box">
@@ -289,7 +289,7 @@ export function exportLpjToCsv(data: LpjExportData) {
 
   csv += `=== LEMBAR PENGESAHAN RESMI ===\n`;
   csv += `Mengetahui;Kepala Desa Kuajang;H. MUHAMMAD S.\n`;
-  csv += `Menyetujui;Ketua BPD Desa Kuajang;\n`;
+  csv += `Menyetujui;Ketua BPD Desa Kuajang;TABIH T.\n`;
   csv += `Pengelola;Ketua KPSPAMS;FADLI\n`;
   csv += `Bendahara;Pemegang Kas Resmi (Kuajang, ${data.reportDate || "31 Oktober 2026"});M. DARMAWAN\n`;
 

@@ -1960,7 +1960,7 @@ function KeuanganContent() {
                   <div className="h-16 flex items-center justify-center text-[10px] text-slate-300 italic">
                     [Tanda Tangan &amp; Cap]
                   </div>
-                  <div className="font-bold underline text-slate-900">Ketua BPD</div>
+                  <div className="font-bold underline text-slate-900">TABIH T.</div>
                   <div className="text-[10px] text-slate-500">Badan Permusyawaratan Desa</div>
                 </div>
 
