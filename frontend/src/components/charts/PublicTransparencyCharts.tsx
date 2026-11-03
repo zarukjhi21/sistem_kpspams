@@ -405,9 +405,14 @@ export function PublicTransparencyCharts() {
   const [mounted, setMounted] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState<SystemViewKey>("LMB");
   const [customerCount, setCustomerCount] = useState<number>(293);
+  const [hoveredSlice, setHoveredSlice] = useState<AllocationItem | null>(null);
   const [systemDataMap, setSystemDataMap] = useState<Record<SystemViewKey, SystemData>>(() =>
     buildSystemAllocation(8451000, 0, 0, undefined, undefined, undefined, 293, 293)
   );
+
+  useEffect(() => {
+    setHoveredSlice(null);
+  }, [selectedSystem]);
 
   useEffect(() => {
     setMounted(true);
@@ -713,7 +718,7 @@ export function PublicTransparencyCharts() {
               </div>
             </div>
 
-            {/* Donut Chart Alokasi Kas */}
+            {/* Donut Chart Alokasi Kas (Interactive Center, No Hovering Box, No Transparency) */}
             <div className="h-56 relative flex items-center justify-center my-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -729,6 +734,14 @@ export function PublicTransparencyCharts() {
                     outerRadius={94}
                     paddingAngle={currentSystemData.totalMonthly === 0 || currentSystemData.totalExpense === 0 ? 0 : 4}
                     dataKey="value"
+                    onMouseEnter={(_, index) => {
+                      const dataList = currentSystemData.totalMonthly === 0 || currentSystemData.totalExpense === 0
+                        ? []
+                        : currentSystemData.allocations.filter((a) => a.value > 0);
+                      const item = dataList[index];
+                      if (item) setHoveredSlice(item);
+                    }}
+                    onMouseLeave={() => setHoveredSlice(null)}
                   >
                     {(currentSystemData.totalMonthly === 0
                       ? [{ color: "#cbd5e1" }]
@@ -736,46 +749,54 @@ export function PublicTransparencyCharts() {
                       ? [{ color: "#10b981" }]
                       : currentSystemData.allocations.filter((a) => a.value > 0)
                     ).map((entry, index) => (
-                      <Cell key={`cell-fund-${index}`} fill={entry.color} stroke="none" />
+                      <Cell
+                        key={`cell-fund-${index}`}
+                        fill={entry.color}
+                        stroke="none"
+                        className="cursor-pointer transition-opacity hover:opacity-85"
+                      />
                     ))}
                   </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const d = payload[0].payload;
-                        return (
-                          <div className="bg-white/95 backdrop-blur text-slate-900 p-2.5 rounded-xl shadow-lg border border-slate-200 text-xs">
-                            <div className="font-bold flex items-center space-x-1.5">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full"
-                                style={{ backgroundColor: d.color }}
-                              />
-                              <span className="text-slate-900">{d.name}</span>
-                            </div>
-                            <div className="mt-1 text-slate-600">
-                              <strong className="text-slate-900">Rp {d.value.toLocaleString("id-ID")}</strong> ({d.percent ?? 0}%)
-                            </div>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{d.desc}</p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* Center Donut Label (Spacious Layout, Zero Overlapping) */}
+              {/* Center Donut Label (Interactive, Solid Colors, Zero Transparency Bleed) */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4 text-center select-none">
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">
-                  {currentSystemData.totalExpense === 0 ? "Kas Riil Utuh" : "Saldo Kas Tersedia"}
-                </span>
-                <span className="text-base sm:text-lg font-black text-slate-900 font-tabular tracking-tight leading-tight">
-                  Rp {Math.round(currentSystemData.totalMonthly).toLocaleString("id-ID")}
-                </span>
-                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 mt-1">
-                  {currentSystemData.totalExpense === 0 ? "100% Utuh" : `${currentSystemData.allocations[0]?.percent || 26}% dari Kas Total`}
-                </span>
+                {hoveredSlice ? (
+                  <>
+                    <span
+                      className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider leading-none mb-1 truncate max-w-[130px]"
+                      style={{ color: hoveredSlice.color }}
+                    >
+                      {hoveredSlice.name}
+                    </span>
+                    <span className="text-base sm:text-lg font-black text-slate-900 font-tabular tracking-tight leading-tight">
+                      Rp {Math.round(hoveredSlice.value).toLocaleString("id-ID")}
+                    </span>
+                    <span
+                      className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border mt-1"
+                      style={{
+                        backgroundColor: `${hoveredSlice.color}15`,
+                        color: hoveredSlice.color,
+                        borderColor: `${hoveredSlice.color}35`,
+                      }}
+                    >
+                      {hoveredSlice.percent}% dari Total Dana
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">
+                      {currentSystemData.totalExpense === 0 ? "Kas Riil Utuh" : "Saldo Kas Tersedia"}
+                    </span>
+                    <span className="text-base sm:text-lg font-black text-slate-900 font-tabular tracking-tight leading-tight">
+                      Rp {Math.round(currentSystemData.totalMonthly).toLocaleString("id-ID")}
+                    </span>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80 mt-1">
+                      {currentSystemData.totalExpense === 0 ? "100% Utuh" : `${currentSystemData.allocations[0]?.percent || 26}% dari Total Dana`}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -788,7 +809,13 @@ export function PublicTransparencyCharts() {
                 <div
                   key={idx}
                   title={item.desc}
-                  className="p-2 sm:p-2.5 rounded-2xl bg-slate-50/80 hover:bg-slate-100/70 border border-slate-100 transition-all flex items-center justify-between group"
+                  onMouseEnter={() => setHoveredSlice(item)}
+                  onMouseLeave={() => setHoveredSlice(null)}
+                  className={`p-2 sm:p-2.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+                    hoveredSlice?.name === item.name
+                      ? "bg-slate-100/90 border-slate-300 ring-2 ring-slate-200"
+                      : "bg-slate-50/80 hover:bg-slate-100/70 border-slate-100"
+                  }`}
                 >
                   <div className="flex items-center space-x-2.5 sm:space-x-3 truncate">
                     <div
