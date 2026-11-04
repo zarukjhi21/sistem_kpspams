@@ -229,8 +229,7 @@ export function ActivityGallerySection({
       `Wilayah: Dusun ${item.dusun} • Tanggal: ${formatDateIndo(item.activity_date)}\n` +
       `Pelaksana: ${item.person_in_charge}\n\n` +
       `"${item.description}"\n\n` +
-      (item.cash_reference ? `Terhubung Kas Riil: ${item.cash_reference}\n` : "") +
-      `Lihat transparansi selengkapnya di: https://sikpspams-kuajang.pages.dev`;
+      `Lihat dokumentasi selengkapnya di: https://sikpspams-kuajang.pages.dev`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -426,19 +425,11 @@ export function ActivityGallerySection({
                     </p>
                   </div>
 
-                  {/* Footer Card: Cash Link & Action Button */}
+                  {/* Footer Card: Details & Action Button */}
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    {item.cash_reference ? (
-                      <Link
-                        href="/dashboard/keuangan"
-                        className="text-[10px] font-bold px-2 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition truncate max-w-[190px]"
-                        title="Terkait Pengeluaran Kas Operasional"
-                      >
-                        🔗 Kas: {item.cash_reference}
-                      </Link>
-                    ) : (
-                      <span className="text-[10px] text-slate-400">Kerja Bakti Rutin</span>
-                    )}
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      Dokumentasi Lapangan
+                    </span>
 
                     <button
                       type="button"
@@ -446,9 +437,9 @@ export function ActivityGallerySection({
                         setActiveItem(item);
                         setLightboxMode(toggleState);
                       }}
-                      className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center space-x-0.5 flex-shrink-0"
+                      className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center space-x-1 flex-shrink-0 px-2 py-1 rounded-lg hover:bg-sky-50 transition"
                     >
-                      <span>Rincian</span>
+                      <span>Lihat Rincian</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -557,22 +548,6 @@ export function ActivityGallerySection({
                 </span>
                 <p>{activeItem.description}</p>
               </div>
-
-              {/* Cash Ledger Reference */}
-              {activeItem.cash_reference && (
-                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-emerald-950 block">Bukti Mutasi Kas Terpadu:</span>
-                    <span className="text-emerald-800 font-medium">{activeItem.cash_reference}</span>
-                  </div>
-                  <Link
-                    href="/dashboard/keuangan"
-                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition"
-                  >
-                    Buka Buku Kas &rarr;
-                  </Link>
-                </div>
-              )}
             </div>
 
             {/* Modal Footer: Action Buttons */}

@@ -255,8 +255,7 @@ export default function DashboardDokumentasiPage() {
       `Wilayah: Dusun ${item.dusun} • Tanggal: ${item.activity_date}\n` +
       `Pelaksana: ${item.person_in_charge}\n\n` +
       `"${item.description}"\n\n` +
-      (item.cash_reference ? `Terhubung Kas Riil: ${item.cash_reference}\n` : "") +
-      `Lihat galeri transparansi: https://sikpspams-kuajang.pages.dev`;
+      `Lihat galeri dokumentasi: https://sikpspams-kuajang.pages.dev`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
   };
 
@@ -268,8 +267,7 @@ export default function DashboardDokumentasiPage() {
         searchQuery === "" ||
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.person_in_charge.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.cash_reference && item.cash_reference.toLowerCase().includes(searchQuery.toLowerCase()));
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchDusun && matchCat && matchSearch;
     });
   }, [activities, selectedDusun, selectedCategory, searchQuery]);
@@ -279,8 +277,8 @@ export default function DashboardDokumentasiPage() {
     const total = activities.length;
     const perbaikanPipa = activities.filter((a) => a.category === "PERBAIKAN_PIPA").length;
     const perawatanIntake = activities.filter((a) => a.category === "PERAWATAN_INTAKE").length;
-    const terhubungKas = activities.filter((a) => a.cash_reference).length;
-    return { total, perbaikanPipa, perawatanIntake, terhubungKas };
+    const sambunganUji = activities.filter((a) => a.category === "PASANG_BARU" || a.category === "UJI_KUALITAS").length;
+    return { total, perbaikanPipa, perawatanIntake, sambunganUji };
   }, [activities]);
 
   const formatDateIndo = (dateStr: string) => {
@@ -398,13 +396,13 @@ export default function DashboardDokumentasiPage() {
 
           <Card className="p-4 rounded-2xl border-slate-200/90 shadow-2xs">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Terhubung Kas</span>
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <Receipt className="w-4 h-4" />
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Sambungan &amp; Uji</span>
+              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <Droplet className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl font-black text-amber-700 mt-2 font-tabular">{stats.terhubungKas}</div>
-            <p className="text-[11px] text-slate-400 mt-0.5">Bukti kuitansi belanja</p>
+            <div className="text-2xl font-black text-purple-700 mt-2 font-tabular">{stats.sambunganUji}</div>
+            <p className="text-[11px] text-slate-400 mt-0.5">SR baru &amp; tera meteran</p>
           </Card>
         </div>
 
@@ -583,23 +581,6 @@ export default function DashboardDokumentasiPage() {
                       <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                         {act.description}
                       </p>
-
-                      {/* Cash Link Badge */}
-                      {act.cash_reference && (
-                        <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between text-[11px]">
-                          <div className="flex items-center space-x-1.5 truncate">
-                            <Receipt className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
-                            <span className="text-slate-600 font-medium">Bukti Kas:</span>
-                            <strong className="text-amber-900 font-bold truncate">{act.cash_reference}</strong>
-                          </div>
-                          <Link
-                            href="/dashboard/keuangan"
-                            className="text-amber-700 hover:text-amber-900 font-bold text-[10px] underline flex-shrink-0 ml-2"
-                          >
-                            Buku Kas
-                          </Link>
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -763,23 +744,6 @@ export default function DashboardDokumentasiPage() {
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
                     />
                   </div>
-                </div>
-
-                {/* Hubungkan Kas (Opsional) */}
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Hubungkan dengan Kas Pengeluaran (Opsional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cash_reference}
-                    onChange={(e) => setFormData({ ...formData, cash_reference: e.target.value })}
-                    placeholder="Contoh: BKK-088-2026 (Rp 450.000 - Belanja Pipa &amp; Lem)"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-medium focus:ring-2 focus:ring-sky-500 focus:outline-none"
-                  />
-                  <span className="text-[10px] text-slate-400 mt-1 block">
-                    Memudahkan warga &amp; BPD mencocokkan nota belanja kas dengan hasil fisik di lapangan.
-                  </span>
                 </div>
 
                 {/* Toggle Before / After */}
@@ -961,21 +925,6 @@ export default function DashboardDokumentasiPage() {
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   {lightboxItem.description}
                 </p>
-
-                {lightboxItem.cash_reference && (
-                  <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-800/60 flex items-center justify-between text-xs text-amber-200">
-                    <div className="flex items-center space-x-2">
-                      <Receipt className="w-4 h-4 text-amber-400" />
-                      <span>Alokasi Kas Riil Terkait: <strong>{lightboxItem.cash_reference}</strong></span>
-                    </div>
-                    <Link
-                      href="/dashboard/keuangan"
-                      className="text-amber-400 hover:text-amber-300 font-bold underline text-xs"
-                    >
-                      Buka Rincian Kas
-                    </Link>
-                  </div>
-                )}
               </div>
             </div>
           </div>
