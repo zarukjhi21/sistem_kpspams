@@ -549,7 +549,7 @@ export function MasterDesaGisMap({
               title="Filter 75 warga yang menunggak tagihan bulan Oktober 2026"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
-              <span>🔴 Tunggakan Okt ({spatialMetrics.octoberArrearsCount})</span>
+              <span>Tunggakan Okt ({spatialMetrics.octoberArrearsCount})</span>
             </button>
 
             {/* 🔵 Pin Biru: Tagihan Berjalan November */}
@@ -564,7 +564,7 @@ export function MasterDesaGisMap({
               title="Filter warga yang Oktobernya sudah lunas, hanya tagihan November berjalan (Jatuh tempo 20 Nov)"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
-              <span>🔵 Berjalan Nov ({spatialMetrics.novemberCurrentCount})</span>
+              <span>Berjalan Nov ({spatialMetrics.novemberCurrentCount})</span>
             </button>
 
             {/* 🟢 Pin Hijau: Lunas */}

@@ -521,26 +521,26 @@ export function GisBillingRouteMap({
 
           <div className="px-3 py-1 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 font-bold flex items-center space-x-1.5 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" />
-            <span>🔴 Tunggakan Okt: {totalOctoberArrears} Rumah</span>
+            <span>Tunggakan Okt: {totalOctoberArrears} Rumah</span>
           </div>
           <div className="px-3 py-1 rounded-xl bg-sky-50 border border-sky-300 text-sky-800 font-bold flex items-center space-x-1.5 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
-            <span>🔵 Berjalan Nov: {totalNovemberCurrent} Rumah</span>
+            <span>Berjalan Nov: {totalNovemberCurrent} Rumah</span>
           </div>
           <div className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 font-bold flex items-center space-x-1.5 shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span>🟢 Sudah Lunas: {totalPaid} Rumah</span>
+            <span>Sudah Lunas: {totalPaid} Rumah</span>
           </div>
           {totalWaived > 0 && (
             <div className="px-3 py-1 rounded-xl bg-purple-50 border border-purple-300 text-purple-800 font-bold flex items-center space-x-1.5 shadow-sm" title="Fasilitas Umum Bebas Iuran Resmi (Masjid Dusun)">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-              <span>🏛️ Bebas Iuran: {totalWaived}</span>
+              <span>Bebas Iuran: {totalWaived}</span>
             </div>
           )}
           {totalMeterDamaged > 0 && (
             <div className="px-3 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 font-bold flex items-center space-x-1.5 shadow-sm">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <span>🟠 Macet: {totalMeterDamaged}</span>
+              <span>Macet: {totalMeterDamaged}</span>
             </div>
           )}
           {totalSealed > 0 && (

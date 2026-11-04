@@ -824,8 +824,8 @@ function PenagihanLapanganContent() {
                 </button>
               </div>
 
-              {/* Broadcast WA Button & Status Summary */}
-              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              {/* Broadcast WA Button */}
+              <div className="flex items-center gap-2 self-start sm:self-auto">
                 <button
                   type="button"
                   onClick={() => setBroadcastModalOpen(true)}
@@ -833,47 +833,8 @@ function PenagihanLapanganContent() {
                   title="Kirim pengingat tagihan massal via WhatsApp ke warga"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>Broadcast WA</span>
-                  <span className="hidden sm:inline">Tagihan</span>
+                  <span>Broadcast WA Tagihan</span>
                 </button>
-
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
-                  <div className="flex items-center space-x-1.5 text-rose-700" title="Tunggakan dari bulan Oktober 2026">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
-                    <span>
-                      🔴 Tunggakan Okt:{" "}
-                      {availableCustomers.filter((c) => Boolean(c.hasOctoberArrears)).length}
-                    </span>
-                  </div>
-                  <span className="text-slate-300">|</span>
-                  <div className="flex items-center space-x-1.5 text-sky-700" title="Tagihan berjalan November 2026 (Oktober sudah lunas)">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
-                    <span>
-                      🔵 Berjalan Nov:{" "}
-                      {availableCustomers.filter((c) => c.billingStatus === "UNPAID" && !c.hasOctoberArrears).length}
-                    </span>
-                  </div>
-                  <span className="text-slate-300">|</span>
-                  <div className="flex items-center space-x-1.5 text-emerald-600">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span>
-                      🟢 Lunas:{" "}
-                      {availableCustomers.filter((c) => c.billingStatus === "PAID").length}
-                    </span>
-                  </div>
-                  {availableCustomers.some((c) => c.billingStatus === "WAIVED") && (
-                    <>
-                      <span className="text-slate-300">|</span>
-                      <div className="flex items-center space-x-1.5 text-purple-700" title="Fasilitas Umum Bebas Iuran Resmi (Masjid Dusun)">
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                        <span>
-                          🏛️ Bebas Iuran:{" "}
-                          {availableCustomers.filter((c) => c.billingStatus === "WAIVED").length}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </div>
 
